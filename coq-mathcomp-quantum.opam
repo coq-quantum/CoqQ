@@ -1,0 +1,18 @@
+opam-version: "2.0"
+name: "coq-mathcomp-quantum"
+maintainer: "coq-mathcomp-quantum@anonymous"
+license: "CeCILL-B"
+authors: ["Coq Quantum Dev. Team"]
+build: [ "dune" "build" "-p" name "-j" jobs ]
+depends: [
+  "coq"                      {>= "8.13" & < "8.16~"}
+  "dune"                     {>= "3.2"}
+  "coq-mathcomp-ssreflect"   {>= "1.14" & < "1.15~"}
+  "coq-mathcomp-algebra"     {>= "1.14" & < "1.15~"}
+  "coq-mathcomp-fingroup"    {>= "1.14" & < "1.15~"}
+  "coq-mathcomp-analysis"    {>= "0.5" & < "0.6~"}
+  "coq-mathcomp-real-closed" {>= "1.1" & < "1.2~" }
+  "coq-mathcomp-finmap"      {>= "1.5" & < "1.6~" }
+  "coq-elpi"                 {>= "1.13" & < "1.14~" }
+]
+synopsis: "Quantum et al"
