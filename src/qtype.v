@@ -238,7 +238,7 @@ have [/andP[pih0 pih2] cpih] := pihalf_02_cos_pihalf R.
 rewrite lt_neqAle andbA andbAC pih2 andbT; apply/andP; split; last first.
   by apply/eqP => hpi2; have := cos2_lt0 R; rewrite -hpi2 cpih ltxx.
 rewrite leNgt; apply/negP => hpi1; have [x /andP[x1 x2] cs0] := cos_exists.
-have := @cos_pihalf_uniq R (pi / 2%:R) x.
+have := @cos_02_uniq R (pi / 2%:R) x.
 rewrite pih0 pih2 cpih (le_trans _ x1)// x2 cs0 => /(_ erefl erefl erefl erefl).
 by move=> pih; move: hpi1; rewrite pih => /lt_le_trans/(_ x1); rewrite ltxx.
 Qed.
@@ -272,7 +272,7 @@ have le2_x: x <= 2%:R.
 have nz_cos c: c \in `[0, x] -> cos c != 0.
 - rewrite in_itv /= => /andP[gt0_c le_cx].
   apply/contraL: (lt_pihalf) => /eqP z_cosc.
-  rewrite -leNgt; have <-// := @cos_pihalf_uniq _ c (pi / 2%:R).
+  rewrite -leNgt; have <-// := @cos_02_uniq _ c (pi / 2%:R).
   - by rewrite gt0_c //= (le_trans le_cx).
   - rewrite mulr_ge0 //= ?(invr_ge0, pi_ge0) //.
     by rewrite ler_pdivr_mulr // -natrM pi_le4.

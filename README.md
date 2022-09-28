@@ -20,6 +20,7 @@ They can be installed in a local opam switch by executing:
 opam switch create \
     --yes \
     --deps-only \
+    --packages=coq-mathcomp-analysis=0.5.2,coq-mathcomp-fingroup=1.14.0 \
     --repositories=default=https://opam.ocaml.org,coq-released=https://coq.inria.fr/opam/released \
     .
 ```
