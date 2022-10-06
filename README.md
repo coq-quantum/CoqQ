@@ -8,7 +8,7 @@ We depend on the following external libraries:
   "coq-mathcomp-ssreflect"   {>= "1.14" & < "1.15~" }
   "coq-mathcomp-algebra"     {>= "1.14" & < "1.15~" }
   "coq-mathcomp-fingroup"    {>= "1.14" & < "1.15~" }
-  "coq-mathcomp-analysis"    {>= "0.5"  & < "0.6~"  }
+  "coq-mathcomp-analysis"    { = "0.5.2"            }
   "coq-mathcomp-real-closed" {>= "1.1"  & < "1.2~"  }
   "coq-mathcomp-finmap"      {>= "1.5"  & < "1.6~"  }
   "coq-elpi"                 {>= "1.13" & < "1.14~" }
