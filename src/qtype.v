@@ -1,15 +1,17 @@
-From mathcomp Require Import all_ssreflect all_algebra finalg.
-Require Import forms.
-From mathcomp.analysis Require Import boolp reals exp trigo.
-From mathcomp.analysis Require Import classical_sets normedtype derive topology.
-From mathcomp.real_closed Require Import complex mxtens.
-From mathcomp Require Import finset.
+From HB Require Import structures.
+From mathcomp Require Import all_ssreflect all_algebra finmap finalg.
+From mathcomp.analysis Require Import -(notations)forms.
+From mathcomp.classical Require Import boolp classical_sets.
+From mathcomp.analysis Require Import reals exp trigo normedtype derive topology.
+(* From mathcomp.real_closed Require Import complex. *)
+From quantum.external Require Import complex.
+From mathcomp.real_closed Require Import mxtens.
 
-Require Import mcextra hermitian prodvect tensor lfundef dirac mxpred.
-Require Import mxtopology quantum inhabited qwhile.
+Require Import mcextra mcaextra hermitian.
+Require Import mxpred extnum ctopology quantum inhabited.
 
-Import Order.TTheory GRing.Theory Num.Theory ComplexField Num.Def complex.
-Import Vector.InternalTheory.
+Import Order.TTheory GRing.Theory Num.Theory Num.Def.
+Import VectorInternalTheory.
 Import numFieldNormedType.Exports.
 
 (************************************************************************)
@@ -28,9 +30,9 @@ Import numFieldNormedType.Exports.
 (*        ''CZ, CNOT : controlled-Z gate, CNOT gate                     *)
 (*   partial unitary :                                                  *)
 (*      PUnitary u v : u v : PONBasis. construct unitary from two ponb  *)
-(*                     basis the extended unitary for \sum_i |v i><u i| *)
+(*                     basis the extendd unitary for \sum_i |v i><u i| *)
 (*                     i.e., U : |u i> |-> |v i>                        *)
-(*      VUnitary u v : u v : 'NS('Hs T). cextended unitary for          *)
+(*      VUnitary u v : u v : 'NS('Hs T). cextendd unitary for          *)
 (*                     [> v ; u <]; i.e., U : u |-> v                   *)
 (*                     i.e., U : |u i> |-> |v i>                        *)
 (*   General gates and states for abstract data type :                  *)
@@ -49,32 +51,29 @@ Import numFieldNormedType.Exports.
 Local Notation C := hermitian.C.
 Local Notation R := hermitian.R.
 Local Open Scope ring_scope.
-Local Open Scope set_scope.
+Local Open Scope fset_scope.
 Local Open Scope lfun_scope.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+Lemma natrS_neq0 (T : numDomainType) n : (n.+1%:R : T) != 0.
+Proof. by rewrite pnatr_eq0. Qed.
+Global Hint Extern 0 (is_true (_.+1%:R != 0)) => solve [apply: natrS_neq0] : core.
+Global Hint Extern 0 (is_true (0 <= _%:R)) => solve [apply: ler0n] : core.
+Global Hint Extern 0 (is_true (0 < _.+1%:R)) => solve [apply: ltr0Sn] : core.
+Lemma natr_nneg (F : numDomainType) n : (n%:R : F) \is Num.nneg.
+Proof. by rewrite nnegrE. Qed.
+Global Hint Extern 0 (is_true (_%:R \is Num.nneg)) => solve [apply: natr_nneg] : core.
+
+Global Hint Resolve leq_ord : core.
+Global Hint Extern 0 (is_true (uniq (index_enum _))) => solve [apply: index_enum_uniq] : core.
+
 Local Open Scope ring_scope.
 
-Section finZmodType_ihbFinType.
-Local Notation fin_ c := (@Finite.Class _ c c).
-Variable (T : finZmodType).
-
-Definition finZmodType_ihbType :=
-  @Inhabited.Pack T 
-  (Inhabited.Class ((@FinRing.Zmodule.class T)) 0) T.
-
-Definition finZmodType_ihbFinType :=
-  @FinInhabited.Pack T 
-  (FinInhabited.Class (fin_ (@FinRing.Zmodule.class T)) 0) T.
-
-End finZmodType_ihbFinType.
-Coercion finZmodType_ihbType : finZmodType >-> Inhabited.type.
-Canonical finZmodType_ihbType.
-Coercion finZmodType_ihbFinType : finZmodType >-> FinInhabited.type.
-Canonical finZmodType_ihbFinType.
+HB.instance Definition _ (T : finZmodType) := isPointed.Build T 0.
 
 Section ExpTrigoDef.
 
@@ -85,16 +84,20 @@ Proof. by rewrite /expi cosD sinD; simpc; f_equal; rewrite addrC. Qed.
 Lemma expiN (x : R) : expi (- x) = (expi x)^-1.
 Proof. by rewrite /expi /GRing.inv/= cos2Dsin2 !divr1 cosN sinN. Qed.
 
-Definition expip_fun (x : R) : C := expi (pi * x).
-Definition sinp_fun (x : R) : R := sin (pi * x).
-Definition cosp_fun (x : R) : R := cos (pi * x).
-Fact exp_key : unit. Proof. by []. Qed.
-Definition expip := locked_with exp_key (expip_fun).
-Definition sinp := locked_with exp_key (sinp_fun).
-Definition cosp := locked_with exp_key (cosp_fun).
-Canonical expip_unlockable := [unlockable fun expip].
-Canonical sinp_unlockable := [unlockable fun sinp].
-Canonical cosp_unlockable := [unlockable fun cosp].
+End ExpTrigoDef.
+
+HB.lock
+Definition expip (x : R) : C := expi (pi * x).
+HB.lock
+Definition sinp (x : R) : R := sin (pi * x).
+HB.lock
+Definition cosp (x : R) : R := cos (pi * x).
+Canonical expip_unlockable := Unlockable expip.unlock.
+Canonical sinp_unlockable := Unlockable sinp.unlock.
+Canonical cosp_unlockable := Unlockable cosp.unlock.
+
+Section ExpTrigoDef.
+
 (* we absorb pi into exp sin and cos. to work on rational number *)
 (* set up theories on rat - C *)
 (* remark: there already some automation of rat, ring_theory and field_theory *)
@@ -145,7 +148,7 @@ Proof.
 suff wlog: forall (y : R), 0 <= y < pi * 2%:R -> cos y = 1 -> y = 0.
 - case: (lerP 0 x) => [ge0_x|/ltW le0_x].
   - by rewrite ger0_norm // => ?; apply: wlog; apply/andP; split.
-  - rewrite ltr_norml => /andP[+ _]; rewrite ltr_oppl -cosN => bd_Nx.
+  - rewrite ltr_norml => /andP[+ _]; rewrite ltrNl -cosN => bd_Nx.
     move/wlog; rewrite bd_Nx oppr_ge0 le0_x /= => /(_ (erefl true)).
     by rewrite (rwP eqP) oppr_eq0 => /eqP ->.
 move=> {}x bd_x; case: (lerP x pi) => [le_x_pi|le_pi_x].
@@ -156,7 +159,7 @@ move=> {}x bd_x; case: (lerP x pi) => [le_x_pi|le_pi_x].
   rewrite mulrN1z mulr2n opprD addrA addrK -cospi.
   move/cos_inj; rewrite !in_itv /=.
   rewrite pi_ge0 lexx /= subr_ge0 [pi <= x]ltW //=.
-  rewrite ler_subl_addr -mulr2n -mulr_natr.
+  rewrite lerBlDr -mulr2n -mulr_natr.
   case/andP: (bd_x) => _ /ltW -> /(_ (erefl true) (erefl true)).
   move/(congr1 (fun x => x + pi)); rewrite subrK -mulr2n -mulr_natr => xE.
   by case/andP: bd_x => _; rewrite xE ltxx.
@@ -205,61 +208,14 @@ by rewrite mulrC expr2 invfM mulrCA divff // mulr1.
 Qed.
 End IsDeriveDiv.
 
-Section PiGe2.
-(* https://github.com/math-comp/analysis/pull/686 *)
-Lemma cos1_gt0 : cos 1 > 0 :> R.
-Proof.
-have h := @cvg_cos_coeff' R 1; rewrite -(cvg_lim (@Rhausdorff R) h).
-apply: (@lt_trans _ _ (\sum_(0 <= i < 2) cos_coeff' 1 i)).
-  rewrite big_nat_recr//= big_nat_recr//= big_nil add0r.
-  rewrite /cos_coeff' expr0z expr1n fact0 !mul1r expr1n expr1z.
-  by rewrite !mulNr subr_gt0 mul1r div1r ltf_pinv ?posrE ?ltr0n// ltr_nat.
-rewrite lt_sum_lim_series //; [by move/cvgP in h|move=> d].
-rewrite /cos_coeff' !(expr1n,mulr1).
-rewrite -muln2 -mulSn muln2 -exprnP -signr_odd odd_double expr0.
-rewrite -exprnP -signr_odd oddD/= muln2 odd_double/= expr1 add2n.
-rewrite mulNr subr_gt0 2!div1r ltf_pinv ?posrE ?ltr0n ?fact_gt0//.
-by rewrite ltr_nat ltn_pfact//ltn_double doubleS.
-Qed.
-
-Lemma cos_exists : exists2 pih : R, 1 <= pih <= 2%:R & cos pih = 0.
-Proof.
-have /IVT[] : minr (cos 1) (cos 2%:R) <= (0 : R) <= maxr (cos 1) (cos 2%:R).
-  - rewrite /minr /maxr ltNge (ltW (lt_trans (cos2_lt0 R) cos1_gt0))/=.
-    by rewrite (ltW (cos2_lt0 R))/= (ltW cos1_gt0).
-  - by rewrite ler1n.
-  - by move=> *; apply/continuous_subspaceT=> ? _; exact: continuous_cos.
-by move=> pih /itvP pihI chpi_eq0; exists pih; rewrite ?pihI.
-Qed.
-
-Let pihalf_12 : (1 <= pi / 2%:R :> R) && (pi / 2%:R < 2%:R :> R).
-Proof.
-have [/andP[pih0 pih2] cpih] := pihalf_02_cos_pihalf R.
-rewrite lt_neqAle andbA andbAC pih2 andbT; apply/andP; split; last first.
-  by apply/eqP => hpi2; have := cos2_lt0 R; rewrite -hpi2 cpih ltxx.
-rewrite leNgt; apply/negP => hpi1; have [x /andP[x1 x2] cs0] := cos_exists.
-have := @cos_02_uniq R (pi / 2%:R) x.
-rewrite pih0 pih2 cpih (le_trans _ x1)// x2 cs0 => /(_ erefl erefl erefl erefl).
-by move=> pih; move: hpi1; rewrite pih => /lt_le_trans/(_ x1); rewrite ltxx.
-Qed.
-
-Lemma pihalf_ge1 : 1 <= pi / 2%:R :> R.
-Proof. by have /andP[] := pihalf_12. Qed.
-End PiGe2.
-
-Lemma pi_ge2 : 2%:R <= pi :> R.
-Proof.
-by have := pihalf_ge1; rewrite ler_pdivl_mulr// mul1r. 
-Qed.
-
 Lemma pi_gt1 : 1 < pi :> R.
-Proof. by apply/(lt_le_trans _ pi_ge2) => //; rewrite (natrD _ 1 1) ltr_addl. Qed.
+Proof. by apply:(lt_le_trans _ (pi_ge2 R)) => //; rewrite (natrD _ 1 1) ltrDl. Qed.
 
 Lemma pi_le4 : pi <= 4%:R :> R.
 Proof.
 rewrite /pi; case xgetP => /= [x _ | _]; last by rewrite mul0rn.
 case=> /andP[_ le2_x] _; rewrite mulr2n -[4%:R]/(2+2)%:R.
-by rewrite natrD ler_add.
+by rewrite natrD lerD.
 Qed.
 
 Lemma ger_tan x : x \in `[0, pi / 2%:R[ -> x <= tan x :> R.
@@ -267,7 +223,7 @@ Proof.
 rewrite in_itv /= => /andP[+ lt_pihalf].
 rewrite le_eqVlt => /orP[/eqP<-|gt0_x]; first by rewrite tan0.
 have le2_x: x <= 2%:R.
-- apply/ltW/(lt_le_trans lt_pihalf); rewrite ler_pdivr_mulr //.
+- apply/ltW/(lt_le_trans lt_pihalf); rewrite ler_pdivrMr //.
   by rewrite -natrM /= pi_le4.
 have nz_cos c: c \in `[0, x] -> cos c != 0.
 - rewrite in_itv /= => /andP[gt0_c le_cx].
@@ -275,16 +231,16 @@ have nz_cos c: c \in `[0, x] -> cos c != 0.
   rewrite -leNgt; have <-// := @cos_02_uniq _ c (pi / 2%:R).
   - by rewrite gt0_c //= (le_trans le_cx).
   - rewrite mulr_ge0 //= ?(invr_ge0, pi_ge0) //.
-    by rewrite ler_pdivr_mulr // -natrM pi_le4.
+    by rewrite ler_pdivrMr // -natrM pi_le4.
   - by rewrite cos_pihalf.
 have dt: forall y, y \in `]0, x[ -> is_derive y 1 tan (cos y ^- 2).
 - move=> y rg_y; apply: is_derive_tan.
   by apply: nz_cos; apply: subset_itv rg_y.
-have ct: {within `[0, x], continuous tan}.
-- apply: continuous_subspaceT=> c; rewrite mem_setE /= => rg_c.
+have ct: {within `[0, x], continuous tan}%classic.
+- apply: continuous_in_subspaceT=>c; rewrite mem_setE /= => rg_c.
   by apply/continuous_tan/nz_cos; apply: subset_itv rg_c.
 have [d +] := MVT gt0_x dt ct; rewrite in_itv /= => /andP[gt0_d lt_dx].
-rewrite tan0 !subr0 => ->; rewrite ler_pemull //; first by apply/ltW.
+rewrite tan0 !subr0 => ->; rewrite ler_peMl //; first by apply/ltW.
 rewrite invf_ge1; last first.
 - rewrite exprn_ile1 // (cos_le1, cos_ge0_pihalf) //.
   by rewrite -ler_norml gtr0_norm // ltW // (lt_trans lt_dx).
@@ -301,7 +257,7 @@ suff wlog: forall (a : R), 0 <= a <= 1 -> sin a <= a.
   - by rewrite -[X in _ <= X]ger0_norm //; apply: wlog.
   move=> le0_a; have := wlog (-a).
   rewrite normrN oppr_ge0 => /(_ lt1_a le0_a).
-  by rewrite sinN normrN [`|a|]ler0_norm.
+  by rewrite sinN normrN [ `|a|]ler0_norm.
   rewrite !ger0_norm //; last first.
   - by apply/wlog/andP; split=> //; apply/ltW/ltr_normlW.
   apply/sin_ge0_pi; rewrite ge0_a /= (@le_trans _ _ 1) //.
@@ -310,9 +266,9 @@ suff wlog: forall (a : R), 0 <= a <= 1 -> sin a <= a.
 move=> {}a /andP[+ le1_a]; rewrite le_eqVlt => /orP[|lt0_a].
 - by move/eqP=> <-; rewrite sin0.
 have := @MVT R sin cos 0 a lt0_a (fun x _ => is_derive_sin x).
-case; first by apply: continuous_subspaceT => + _; apply/continuous_sin.
+case; first by apply/continuous_subspaceT/continuous_sin.
 move=> c rg_c; rewrite sin0 !subr0 => ->.
-by rewrite ler_pimull //; [apply/ltW | apply/cos_le1].
+by rewrite ler_piMl //; [apply/ltW | apply/cos_le1].
 Qed.
 
 Lemma ger_abs_sin (a : R) : `|a| <= pi / 2%:R -> (2%:R * `|a| / pi) <= `|sin a|.
@@ -323,10 +279,10 @@ wlog: a / (0 <= a) => [wlog|ge0_a].
   move=> bd_a; rewrite -ler0_norm //.
   have := wlog (-a); rewrite oppr_ge0 sinN !normrN.
   by apply=> //; rewrite ler0_norm.
-rewrite [`|a|]ger0_norm // => bd_a; rewrite ger0_norm.
+rewrite [ `|a|]ger0_norm // => bd_a; rewrite ger0_norm.
 - apply: sin_ge0_pi; rewrite ge0_a /=; apply: (le_trans bd_a).
-  rewrite ler_pdivr_mulr // ler_pmulr ?pi_gt0 //.
-  by rewrite (natrD _ 1 1) ler_addl.
+  rewrite ler_pdivrMr // ler_pMr ?pi_gt0 //.
+  by rewrite (natrD _ 1 1) lerDl.
 move: ge0_a; rewrite le_eqVlt => /orP[/eqP <-|gt0_a].
 - by rewrite !Monoid.simpm sin0.
 move: bd_a; rewrite le_eqVlt => /orP[/eqP->|bd_a].
@@ -342,9 +298,9 @@ have fF (c : R): c \in `[a, pi / 2%:R] -> is_derive c 1 f (F c).
   by rewrite {h}/d {}/F /= [LHS]mulrC mulr1 [c * cos c]mulrC.
 have h1 (c : R): c \in `]a, pi / 2%:R[ -> is_derive c 1 f (F c).
 - by move=> rg_c; apply: fF; apply: subset_itv rg_c.
-have h2: {within `[a, pi / 2%:R], continuous f}.
+have h2: {within `[a, pi / 2%:R], continuous f}%classic.
   (* this should be a direct consequence of `fF`! *)
-- apply: continuous_subspaceT => c rg_c.
+- apply: continuous_in_subspaceT => c rg_c.
   apply: cvgM; first by apply: continuous_sin.
   apply: cvgV; last by apply: cvg_id.
   move: rg_c; rewrite mem_setE in_itv /= => /andP[+ _].
@@ -353,12 +309,12 @@ have {h1 h2 fF}[c] := @MVT R f F a (pi / 2%:R) bd_a h1 h2.
 rewrite in_itv /= => /andP[lt_ac bd_c]; rewrite {}/f {}/F.
 rewrite sin_pihalf invf_div mul1r (rwP eqP) subr_eq.
 rewrite [_ + (sin a / a)]addrC -subr_eq => /eqP /esym sinaVaE.
-rewrite mulrAC -ler_pdivl_mulr // {}sinaVaE ler_subr_addl.
-rewrite ler_naddl //; apply: mulr_le0_ge0; last first.
+rewrite mulrAC -ler_pdivlMr // {}sinaVaE lerBrDl.
+rewrite ler_wnDl //; apply: mulr_le0_ge0; last first.
 - by rewrite subr_ge0; apply/ltW.
 apply: mulr_le0_ge0; last first.
 - by rewrite invr_ge0 exprn_ge0 //; apply/ltW/(lt_trans gt0_a).
-rewrite subr_le0; rewrite -ler_pdivl_mulr.
+rewrite subr_le0; rewrite -ler_pdivlMr.
 - apply: cos_gt0_pihalf; rewrite -ltr_norml ger0_norm //.
   by apply/ltW/(lt_trans gt0_a).
 rewrite -/(tan c); apply: ger_tan; rewrite in_itv /=.
@@ -385,7 +341,7 @@ Qed.
 Lemma expip_eq1_uniq r : `|r| < 2%:R -> expip r = 1 -> r = 0.
 Proof.
 move=>Pr; have P1: `|pi * r| < pi * 2%:R 
-  by rewrite normrM ger0_norm ?pi_ge0// ltr_pmul2l// ?pi_gt0.
+  by rewrite normrM ger0_norm ?pi_ge0// ltr_pM2l// ?pi_gt0.
 rewrite unlock /expi=>P2; inversion P2.
 by move: (cos_eq1 P1 H0)=>/eqP; rewrite mulf_eq0 pi_eq0/==>/eqP.
 Qed.
@@ -400,9 +356,9 @@ under eq_bigr do rewrite mulrC mulrA.
 case: eqP=>[->|]; first by rewrite expip_sum_cst ?mul1r// subrr !mulr0 expip0.
 move=>/eqP P1 P2; case: n P2=>[_|n P2]; first by rewrite big_ord0 mulr0.
 rewrite expip_sum; first apply/expip_neq1.
-rewrite !normrM 2?ger0_norm ?invr_ge0 ?ler0n// ltr_pdivr_mull ?ltr0n// 
-  mulrC ltr_pmul2r ?ltr0n// lter_distl ltr_subl_addl addrC; apply/andP; 
-  by split; apply/ltr_paddl; rewrite ?ler0n// ltr_nat; apply: (leq_trans _ P2).
+rewrite !normrM 2?ger0_norm ?invr_ge0 ?ler0n// ltr_pdivrMl ?ltr0n// 
+  mulrC ltr_pM2r ?ltr0n// lter_distl ltrBlDl addrC; apply/andP; 
+  by split; apply/ltr_wpDl; rewrite ?ler0n// ltr_nat; apply: (leq_trans _ P2).
 by rewrite !mulf_eq0 invr_eq0 !negb_or !natrS_neq0/= subr_eq0 eqr_nat.
 by rewrite mulrC mulfVK ?natrS_neq0// mulrBr 
   expipB -!natrM !expip2n invr1 mulr1 subrr mul0r mul0n.
@@ -435,12 +391,12 @@ Lemma cos2x_sin x : cos (x *+ 2) = 1 - ((sin x) ^+ 2) *+ 2.
 Proof. by rewrite cos2x -(cos2Dsin2 x) mulr2n opprD addrACA subrr addr0. Qed.
 
 End trigoExtra.
-  
-Lemma bigcup0 (L : finType) I (r : seq I) (P : pred I) :
-  \bigcup_(i <- r | P i) set0 = (set0 : {set L}).
+
+Lemma bigfcup0 (L : choiceType) I (r : seq I) (P : pred I) :
+  \bigcup_(i <- r | P i) fset0 = (fset0 : {fset L}).
 Proof.
 elim: r=>[|x r IH]; first by rewrite big_nil.
-by rewrite big_cons; case: (P x)=>//; rewrite IH setU0.
+by rewrite big_cons; case: (P x)=>//; rewrite IH fsetU0.
 Qed.
 
 Lemma eqbbb (b : bool) : (b == b) = true. Proof. by rewrite eqxx. Qed.
@@ -497,19 +453,19 @@ Notation "'''Z'" := PauliZ.
 
 Lemma Hadamard_unitary : Hadamard \is unitarylf.
 Proof. by apply/unitarylfP; rude_bmx; rewrite !divc_simp ?sign_simp// split2. Qed.
-Canonical Hadamard_unitaryfType := UnitaryfType Hadamard_unitary.
+HB.instance Definition _ := isUnitaryLf.Build ('Hs bool) Hadamard Hadamard_unitary.
 
 Lemma PauliX_unitary : PauliX \is unitarylf.
 Proof. by apply/unitarylfP; rude_bmx. Qed.
-Canonical PauliX_unitaryfType := UnitaryfType PauliX_unitary.
+HB.instance Definition _ := isUnitaryLf.Build ('Hs bool) PauliX PauliX_unitary.
 
 Lemma PauliY_unitary : PauliY \is unitarylf.
 Proof. by apply/unitarylfP; rude_bmx; simpc. Qed.
-Canonical PauliY_unitaryfType := UnitaryfType PauliY_unitary.
+HB.instance Definition _ := isUnitaryLf.Build ('Hs bool) PauliY PauliY_unitary.
 
 Lemma PauliZ_unitary : PauliZ \is unitarylf.
 Proof. by apply/unitarylfP; rude_bmx; simpc. Qed.
-Canonical PauliZ_unitaryfType := UnitaryfType PauliZ_unitary.
+HB.instance Definition _ := isUnitaryLf.Build ('Hs bool) PauliZ PauliZ_unitary.
 
 Definition pmbasis (b : bool) : 'Hs bool :=
   [bmv 1/sqrtC(2%:R) ; (-1)^b * 1/sqrtC(2%:R)].
@@ -521,26 +477,17 @@ Notation "''±' b" := (pmbasis b) (at level 2, format "''±' b").
 
 Lemma pmbasis_onb b1 b2 : [<'± b1 ; '± b2>] = (b1 == b2)%:R.
 Proof. by rude_bmx; case: b1; case: b2; rewrite !simpb !divc_simp ?sign_simp// split2. Qed.
-Canonical pmbasis_ponbasis := PONBasis (pmbasis_onb).
-Canonical pmbasis_onbasis := ONBasis (pmbasis_onb) (ihb_dim _).
+HB.instance Definition _ := isONB.Build ('Hs bool) bool pmbasis pmbasis_onb (ihb_dim _).
 
 Lemma pmbasis_ns b : [<'± b ; '± b>] == 1%:R.
 Proof. by rewrite onb_dot eqxx. Qed.
-Canonical pmbasis_nsType b := NSType (@pmbasis_ns b).
+HB.instance Definition _ b := isNormalState.Build ('Hs bool) (pmbasis b) (eqP (@pmbasis_ns b)).
 
 Lemma dotp_cbpm (b1 b2 : bool) : [<''b1 ; '±b2 >] = (-1)^(b1 && b2) / sqrtC 2%:R.
 Proof. by case: b1; case: b2; rude_bmx; rewrite// !sign_simp. Qed.
 
 Lemma dotp_pmcb (b1 b2 : bool) : [<'±b1 ; ''b2 >] = (-1)^(b1 && b2) / sqrtC 2%:R.
 Proof. by case: b1; case: b2; rude_bmx; rewrite !divc_simp// !sign_simp. Qed.
-
-Lemma outp_psd (U : chsType) (u : U) : [> u ; u <] \is psdlf.
-Proof. by apply/psdlfP=>v; rewrite outpE linearZ/= -conj_dotp -normCKC exprn_ge0//. Qed.
-Canonical outp_psdfType U u := PsdfType (@outp_psd U u).
-Lemma outp_den (U : chsType) (u : 'NS(U)) : [> u ; u <] \is denlf.
-Proof. apply/denlfP; split. apply/outp_psd. by rewrite outp_trlf ns_dot. Qed.
-Canonical outp_denfType U u := DenfType (@outp_den U u).
-Canonical outp_obsfType U (u : 'NS(U)) := [obs of [> u ; u <] as [obs of [den of [> u ; u <]]]].
 
 Definition Uniform : 'End('Hs bool) := 
   [bmx (2%:R)^-1 , (2%:R)^-1 ; (2%:R)^-1 , (2%:R)^-1].
@@ -549,10 +496,8 @@ Lemma plus_uniform : Uniform = [> '+ ; '+ <].
 Proof. by rude_bmx; rewrite !divc_simp. Qed.
 
 Lemma Uniform_den : Uniform \is denlf.
-Proof. by rewrite plus_uniform denf_den. Qed.
-Canonical Uniform_denfType := DenfType Uniform_den.
-Canonical Uniform_psdfType := [psd of Uniform as [psd of [den of Uniform]]].
-Canonical Uniform_obsfType := [obs of Uniform as [obs of [den of Uniform]]].
+Proof. by rewrite plus_uniform is_denlf. Qed.
+HB.instance Definition _ := isDenLf.Build ('Hs bool) Uniform Uniform_den.
 
 Ltac unfoldlf := rewrite /Hadamard /PauliX 
   /PauliY /PauliZ /t2tv /pmbasis /Uniform.
@@ -564,7 +509,7 @@ Proof. by unfoldlf; rude_bmx. Qed.
 Lemma Hadamard_conj : ''H^C = ''H.
 Proof. by rewrite conjfAT Hadamard_adj Hadamard_tr. Qed.
 Lemma Hadamard_id : ''H \o ''H = \1.
-Proof. by rewrite -{1}Hadamard_adj; apply/unitarylfP/unitaryf_unitary. Qed.
+Proof. by rewrite -{1}Hadamard_adj; apply/unitarylfP/is_unitarylf. Qed.
 Lemma HadamardK : cancel ''H ''H.
 Proof. by move=>x; rewrite -[RHS]id_lfunE -Hadamard_id lfunE/=. Qed.
 
@@ -575,7 +520,7 @@ Proof. by unfoldlf; rude_bmx. Qed.
 Lemma PauliX_conj : ''X^C = ''X.
 Proof. by rewrite conjfAT PauliX_adj PauliX_tr. Qed.
 Lemma PauliX_id : ''X \o ''X = \1.
-Proof. by rewrite -{1}PauliX_adj; apply/unitarylfP/unitaryf_unitary. Qed.
+Proof. by rewrite -{1}PauliX_adj; apply/unitarylfP/is_unitarylf. Qed.
 Lemma PauliXK : cancel ''X ''X.
 Proof. by move=>x; rewrite -[RHS]id_lfunE -PauliX_id lfunE/=. Qed.
 
@@ -586,7 +531,7 @@ Proof. by unfoldlf; rude_bmx=>//; rewrite opprK. Qed.
 Lemma PauliY_conj : ''Y^C = - ''Y.
 Proof. by rewrite conjfAT PauliY_adj PauliY_tr. Qed.
 Lemma PauliY_id : ''Y \o ''Y = \1.
-Proof. by rewrite -{1}PauliY_adj; apply/unitarylfP/unitaryf_unitary. Qed.
+Proof. by rewrite -{1}PauliY_adj; apply/unitarylfP/is_unitarylf. Qed.
 Lemma PauliYK : cancel ''Y ''Y.
 Proof. by move=>x; rewrite -[RHS]id_lfunE -PauliY_id lfunE/=. Qed.
 
@@ -597,7 +542,7 @@ Proof. by unfoldlf; rude_bmx. Qed.
 Lemma PauliZ_conj : ''Z^C = ''Z.
 Proof. by rewrite conjfAT PauliZ_adj PauliZ_tr. Qed.
 Lemma PauliZ_id : ''Z \o ''Z = \1.
-Proof. by rewrite -{1}PauliZ_adj; apply/unitarylfP/unitaryf_unitary. Qed.
+Proof. by rewrite -{1}PauliZ_adj; apply/unitarylfP/is_unitarylf. Qed.
 Lemma PauliZK : cancel ''Z ''Z.
 Proof. by move=>x; rewrite -[RHS]id_lfunE -PauliZ_id lfunE/=. Qed.
 
@@ -618,7 +563,8 @@ Proof.
 apply/unitarylfP; rude_bmx; simpc=>//. 
 by rewrite -expipNC -expipD addNr expip0.
 Qed.
-Canonical PhGate_unitaryfType r := UnitaryfType (@PhGate_unitary r).
+HB.instance Definition _ (r : R) :=
+  isUnitaryLf.Build ('Hs bool) (PhGate r) (@PhGate_unitary r).
 Definition PhGate_adj (r : R) : (PhGate r)^A = PhGate (-r).
 Proof. by rude_bmx=>//; rewrite -expipNC. Qed.
 Definition PhGate_conj (r : R) : (PhGate r)^C = PhGate (-r).
@@ -627,7 +573,6 @@ Definition PhGate_tr (r : R) : ((PhGate r)^T)%VF = PhGate r.
 Proof. by rude_bmx. Qed.
 
 Definition SGate := PhGate ((2%:R)^-1).
-Canonical SGate_unitaryfType := [unitary of SGate].
 
 Lemma SGate_cb b : SGate ''b = ('i ^ b) *: ''b.
 Proof. by rude_bmx; case: b; rewrite/= ?expr0z ?expr1z ?mulr0// ?expip_half// mulr1. Qed.
@@ -640,7 +585,8 @@ Proof.
 by rude_bmx; rewrite !divc_simp conjCc -expipNC -expipD addNr 
   expip0 mul1r -mulr2n -mulr_natr mulVf.
 Qed.
-Canonical phstate_nsType r := NSType (@phstate_ns r).
+HB.instance Definition _ (r : R) :=
+  isNormalState.Build ('Hs bool) (phstate r) (eqP (@phstate_ns r)).
 
 Lemma phstateE r : 'ph r = (sqrtC 2%:R)^-1 *: '0 + 
   ((sqrtC 2%:R)^-1 * expip (2%:R * r)) *: '1.
@@ -688,19 +634,22 @@ Proof.
 rewrite /RxGate FormGateE; apply/FormGate_unitary=>/=.
 by rewrite !unlock cos2Dsin2. by rewrite PauliX_adj.
 Qed.
-Canonical RxGate_unitaryfType r := UnitaryfType (@RxGate_unitary r).
+HB.instance Definition _ (r : R) :=
+  isUnitaryLf.Build ('Hs bool) (RxGate r) (@RxGate_unitary r).
 Lemma RyGate_unitary r : RyGate r \is unitarylf.
 Proof.
 rewrite /RyGate FormGateE; apply/FormGate_unitary=>/=.
 by rewrite !unlock cos2Dsin2. by rewrite PauliY_adj.
 Qed.
-Canonical RyGate_unitaryfType r := UnitaryfType (@RyGate_unitary r).
+HB.instance Definition _ (r : R) :=
+  isUnitaryLf.Build ('Hs bool) (RyGate r) (@RyGate_unitary r).
 Lemma RzGate_unitary r : RzGate r \is unitarylf.
 Proof.
 rewrite /RzGate FormGateE; apply/FormGate_unitary=>/=.
 by rewrite !unlock cos2Dsin2. by rewrite PauliZ_adj.
 Qed.
-Canonical RzGate_unitaryfType r := UnitaryfType (@RzGate_unitary r).
+HB.instance Definition _ (r : R) :=
+  isUnitaryLf.Build ('Hs bool) (RzGate r) (@RzGate_unitary r).
 
 (* write 'i to the end *)
 Lemma mulci1 (x : C) : 'i * x = x * 'i. Proof. exact: mulrC. Qed.
@@ -733,7 +682,8 @@ all: by rewrite -[RHS]mulNr -realcN mulrN sinN.
 Qed.
 Lemma RxGate0 : RxGate 0 = \1.
 Proof.
-by rewrite /RxGate mul0r !unlock mulr0 cos0 sin0 mulr0 scale1r scale0r subr0.
+by rewrite /RxGate mul0r [cosp]unlock [sinp]unlock
+  mulr0 cos0 sin0 mulr0 scale1r scale0r subr0.
 Qed.
 Lemma RyGateD (r1 r2 : R) : (RyGate r1) \o (RyGate r2) = RyGate (r1 + r2).
 Proof.
@@ -751,7 +701,7 @@ Lemma RzGateD (r1 r2 : R) : (RzGate r1) \o (RzGate r2) = RzGate (r1 + r2).
 Proof.
 rewrite /RzGate; rude_bmx; rewrite//!simp_muli.
 all: rewrite mulrDr !mulrDl !simp_muli !addrA addrC !addrA -addrA; f_equal.
-2,4: by rewrite -?opprD -mulrDl !unlock -!real2c -sinD -mulrDr.
+2,4: by rewrite -?opprD -!mulrDl !unlock -!real2c -sinD -mulrDr mulrDl.
 all: by rewrite addrC -!real2c !unlock -cosD -mulrDr.
 Qed.
 Lemma RzGate_adj r : (RzGate r)^A = RzGate (-r).
@@ -761,10 +711,10 @@ all: by simpc; rewrite ?mulrN sinN cosN// opprK.
 Qed.
 
 Lemma sumbtv_out : [> '0 ; '0 <] + [> '1 ; '1 <] = \1.
-Proof. by rewrite -[RHS](sumonb_out t2tv_onbasis) big_bool addrC. Qed.
+Proof. by rewrite -[RHS](sumonb_out t2tv) big_bool addrC. Qed.
 
 (* two qubit gate *)
-Definition BMultiplexer (U V : 'End('Hs bool)) : 'End('Hs (bool * bool)):=
+Definition BMultiplexer (U V : 'End('Hs bool)) : 'End('Hs(bool * bool)%type):=
   [> '0 ; '0 <] ⊗f U + [> '1 ; '1 <] ⊗f V.
 Lemma BMultiplexerE U V : 
   BMultiplexer U V = [> '0 ; '0 <] ⊗f U + [> '1 ; '1 <] ⊗f V.
@@ -777,8 +727,8 @@ rewrite !adj_outp linearDl/= !linearDr/= !tentf_comp !outp_comp.
 rewrite !onb_dot/= !scale0r !ten0tf !scale1r !unitaryf_form addr0 add0r.
 by rewrite -linearDl/= sumbtv_out tentf11.
 Qed.
-Canonical BMultiplexer_unitaryfType U V :=
-  UnitaryfType (@BMultiplexer_unitary U V).
+HB.instance Definition _ (U V : 'FU('Hs bool)) :=
+  isUnitaryLf.Build 'Hs(bool * bool)%type (BMultiplexer U V) (@BMultiplexer_unitary U V).
 
 Lemma BMultiplexer_adj U V : (BMultiplexer U V)^A = BMultiplexer U^A V^A.
 Proof. by rewrite /BMultiplexer raddfD/= !tentf_adj !adj_outp. Qed.
@@ -800,8 +750,6 @@ Qed.
 Definition BControl (U : 'End('Hs bool)) := BMultiplexer \1 U.
 Lemma BControlE U : BControl U = [> '0 ; '0 <] ⊗f \1 + [> '1 ; '1 <] ⊗f U.
 Proof. by []. Qed.
-Canonical BControl_unitaryfType (U : 'FU('Hs bool)) :=
-  [unitary of BControl U].
 Lemma BControlE0 (U : 'End('Hs bool)) (u : 'Hs bool) : 
   BControl U ('0 ⊗t u) = '0 ⊗t u.
 Proof. by rewrite BMultiplexerE0 lfunE. Qed.
@@ -815,7 +763,6 @@ Proof. by rewrite /BControl BMultiplexer_adj adjf1. Qed.
 Definition CNOT := BControl ''X.
 Lemma CNOTE : CNOT = [> '0 ; '0 <] ⊗f \1 + [> '1 ; '1 <] ⊗f ''X. 
 Proof. by []. Qed.
-Canonical CNOT_unitaryfType := [unitary of CNOT].
 Lemma CNOTE0 (u : 'Hs bool) : CNOT ('0 ⊗t u) = '0 ⊗t u. Proof. exact: BControlE0. Qed.
 Lemma CNOTE1 (u : 'Hs bool) : CNOT ('1 ⊗t u) = '1 ⊗t (''X u). Proof. exact: BControlE1. Qed.
 (* move *)
@@ -827,7 +774,6 @@ Proof. by case: b1; rewrite ?CNOTE0 ?CNOTE1 ?PauliX_cb. Qed.
 Definition CZGate := BControl ''Z.
 Lemma CZGateE : CZGate = [> '0 ; '0 <] ⊗f \1 + [> '1 ; '1 <] ⊗f ''Z. 
 Proof. by []. Qed.
-Canonical CZGate_unitaryfType := [unitary of CZGate].
 Lemma CZGateE0 (u : 'Hs bool) : CZGate ('0 ⊗t u) = '0 ⊗t u. Proof. exact: BControlE0. Qed.
 Lemma CZGateE1 (u : 'Hs bool) : CZGate ('1 ⊗t u) = '1 ⊗t (''Z u). Proof. exact: BControlE1. Qed.
 (* move *)
@@ -836,7 +782,7 @@ Proof. by case: b; rude_bmx. Qed.
 Lemma CZGate_cb b1 b2 : CZGate (''b1 ⊗t ''b2) = (''b1 ⊗t (-1)^(b1&&b2) *: ''b2).
 Proof. by case: b1; rewrite ?CZGateE0 ?CZGateE1 ?PauliZ_cb//= expr0z scale1r. Qed.
 
-(* Definition BSWAP : 'End('Hs (bool * bool)) := 
+(* Definition BSWAP : 'End('Hs (bool * bool)%type) := 
     @swaptf [ihbFinType of bool] [ihbFinType of bool].
 Lemma BSWAP_unitary : BSWAP \is unitarylf.
 Proof.
@@ -878,10 +824,10 @@ Lemma PUnitary_subproof : { U : 'FU(H) & forall i, U (f i) = g i}.
 Proof.
 pose U := \sum_i [> ponb_ext g i ; ponb_ext f i<].
 have UU: U \is unitarylf.
-apply/unitarylfP; rewrite /U linear_sumr/= -(sumonb_out [ONB of (ponb_ext f)]).
+apply/unitarylfP; rewrite /U linear_sumr/= -(sumonb_out (ponb_ext f)).
 by apply eq_bigr=>i _; rewrite linear_sum linear_suml/= (bigD1 i)//= big1=>[j/negPf nj|];
 rewrite adj_outp outp_comp onb_dot ?nj ?scale0r// eqxx scale1r addr0.
-exists (UnitaryfType UU)=>i/=.
+exists (UnitaryLf_Build UU)=>i/=.
 rewrite /U sum_lfunE (bigD1 (inl i))//= big1=>[j/negPf nj|];
 by rewrite outpE -!(ponb_extE f) onb_dot ?nj ?scale0r// eqxx scale1r addr0.
 Qed.
@@ -898,66 +844,70 @@ Variable (H : chsType).
 Definition ponb1_fun (u : H) := (fun i : 'I_1 => u).
 Lemma ponb1_ponb (u : 'NS(H)) i j : [< ponb1_fun u i ; ponb1_fun u j >] = (i == j)%:R.
 Proof. by rewrite /ponb1_fun ns_dot !ord1 eqxx. Qed.
-Canonical ponb1_ponbasis u := PONBasis (@ponb1_ponb u).
-Definition VUnitary (u v : 'NS(H)) := PUnitary (ponb1_ponbasis u) (ponb1_ponbasis v).
+HB.instance Definition _ (u : 'NS(H)) :=
+  isPONB.Build H 'I_1 (ponb1_fun u) (@ponb1_ponb u).
+Definition VUnitary (u v : 'NS(H)) := PUnitary (ponb1_fun u) (ponb1_fun v).
 Lemma VUnitaryE (u v : 'NS(H)) : @VUnitary u v (u : H) = v :> H.
-Proof. by move: (PUnitaryE (ponb1_ponbasis u) (ponb1_ponbasis v))=>/(_ ord0). Qed.
+Proof. by move: (PUnitaryE (ponb1_fun u) (ponb1_fun v))=>/(_ ord0). Qed.
 Lemma VUnitaryEV (u v : 'NS(H)) : (@VUnitary u v)^A (v : H) = u :> H.
 Proof. by rewrite -(VUnitaryE u) -comp_lfunE unitaryf_form lfunE. Qed.
 End VUnitary.
 
+HB.lock
+Definition uniformtv (T : ihbFinType) : 'Hs T := 
+    ((sqrtC #|T|%:R)^-1) *: \sum_i ''i.
+Canonical uniformtv_unlockable := Unlockable uniformtv.unlock.
+
+HB.lock
+Definition Multiplexer (T1 T2 : ihbFinType) :=
+  fun f : T1 -> 'End('Hs T2) => 
+  (\sum_i ([> ''i ; ''i <] ⊗f (f i))) : 'End('Hs (T1 * T2)%type).
+Canonical Multiplexer_unlockable := Unlockable Multiplexer.unlock.
+
 Section GeneralGates.
 Implicit Type (T : ihbFinType).
 
-Fact uniformtv_key : unit. Proof. by []. Qed.
-Definition uniformtv T : 'Hs T := 
-    locked_with uniformtv_key (((sqrtC #|T|%:R)^-1) *: \sum_i ''i).
-Canonical uniformtv_unlockable T := [unlockable of (@uniformtv T)].
 Lemma uniformtvE T :
   uniformtv T = (((sqrtC #|T|%:R)^-1) *: \sum_i ''i).
-Proof. by rewrite unlock. Qed.
+Proof. by rewrite [uniformtv]unlock. Qed.
 Lemma uniformtv_ns T : [< uniformtv T ; uniformtv T >] == 1%:R.
 Proof.
-apply/eqP; rewrite uniformtvE linearZl linearZr/= linear_suml/=.
+apply/eqP; rewrite uniformtvE linearZl_LR linearZr/= linear_suml/=.
 rewrite (eq_bigr (fun _=>1%:R))=>[i _|].
 by rewrite linear_sum/= (bigD1 i)//= big1=>[j/negPf nj|];
    rewrite onb_dot ?eqxx ?addr0// eq_sym nj.
 rewrite sumr_const cardE -cardT -mulr_natr mul1r mulrA ?divc_simp mulfV//.
 by rewrite lt0r_neq0// ltr0n ihb_dim ihb_dim_proper.
 Qed.
-Canonical uniformtv_nsType T := NSType (uniformtv_ns T).
+HB.instance Definition _ (T : ihbFinType) :=
+  isNormalState.Build ('Hs T) (uniformtv T) (eqP (uniformtv_ns T)).
 Global Arguments uniformtv {T}.
 
 Lemma dotp_uniformtvcb T (i : T) : [< uniformtv ; ''i >] = (sqrtC #|T|%:R)^-1.
 Proof.
-rewrite uniformtvE linearZl linear_suml/= (bigD1 i)//= big1=>[j/negPf nj|];
+rewrite uniformtvE linearZl_LR linear_suml/= (bigD1 i)//= big1=>[j/negPf nj|];
 by rewrite onb_dot ?nj// eqxx addr0 mulr1 !divc_simp.
 Qed.
 Lemma uniformtv_bool : uniformtv = '+.
 Proof.
-rewrite uniformtvE card_bool [RHS](onb_vec (t2tv_onbasis)).
+rewrite uniformtvE card_bool [RHS](onb_vec (t2tv)).
 by rewrite /= !big_bool !dotp_cbpm sign_simp scalerDr.
 Qed.
 
-Fact Multiplexer_key : unit. Proof. by []. Qed.
-Definition Multiplexer T1 T2 :=
-  locked_with Multiplexer_key (fun f : T1 -> 'End('Hs T2) => 
-  (\sum_i ([> ''i ; ''i <] ⊗f (f i))) : 'End('Hs (T1 * T2))).
-Canonical Multiplexer_unlockable T1 T2 := [unlockable fun (@Multiplexer T1 T2)].
 Lemma MultiplexerE T1 T2 f : 
   @Multiplexer T1 T2 f = \sum_i ([> ''i ; ''i<] ⊗f (f i)).
-Proof. by rewrite unlock. Qed. 
+Proof. by rewrite [Multiplexer]unlock. Qed. 
 Lemma Multiplexer_unitary T1 T2 (f : T1 -> 'FU('Hs T2)) :
   Multiplexer f \is unitarylf.
 Proof.
-apply/unitarylfP; rewrite MultiplexerE -tentf11 -[in RHS](sumonb_out (t2tv_onbasis)).
+apply/unitarylfP; rewrite MultiplexerE -tentf11 -[in RHS](sumonb_out (t2tv)).
 rewrite linear_sum/= !linear_suml/=; apply eq_bigr=>i _.
 rewrite tentf_adj adj_outp linear_sumr/= (bigD1 i)//= big1=>[j/negPf nj|];
 rewrite tentf_comp outp_comp onb_dot 1?eq_sym ?nj ?scale0r ?ten0tf//.
 by rewrite eqxx scale1r unitaryf_form addr0.
 Qed.
-Canonical Multiplexer_unitaryfType T1 T2 f :=
-  UnitaryfType (@Multiplexer_unitary T1 T2 f).
+HB.instance Definition _ T1 T2 (f : T1 -> 'FU('Hs T2)) :=
+  isUnitaryLf.Build 'Hs(T1 * T2)%type (Multiplexer f) (@Multiplexer_unitary T1 T2 f).
 
 Lemma MultiplexerEt T1 T2 (f : T1 -> 'End('Hs T2)) (t : T1) (u : 'Hs T2) : 
   Multiplexer f (''t ⊗t u) = ''t ⊗t (f t u).
@@ -979,27 +929,49 @@ Proof. by rewrite Multiplexer_adj MultiplexerEt. Qed.
 
 Definition runity N n := expip (2%:R * n%:R / N%:R).
 Lemma runityE N n : runity N n = expip (2%:R * n%:R / N%:R). Proof. by []. Qed.
-Fact QFTv_key : unit. Proof. by []. Qed.
+End GeneralGates.
+
+HB.lock
 Definition QFTv n (t : 'I_n.+1) : 'Hs ('I_n.+1) := 
-  locked_with QFTv_key (((sqrtC n.+1%:R)^-1) *: \sum_(i < n.+1) runity n.+1 (t * i)%N *: ''i).
+  ((sqrtC n.+1%:R)^-1) *: \sum_(i < n.+1) runity n.+1 (t * i)%N *: ''i.
+Canonical QFTv_unlockable := Unlockable QFTv.unlock.
 Global Arguments QFTv {n}.
-Canonical QFTv_unlockable n t := [unlockable of (@QFTv n t)].
+
+HB.lock
+Definition QFT n := \sum_i [>@QFTv n i ; ''i<].
+Canonical QFT_unlockable := Unlockable QFT.unlock.
+Global Arguments QFT {n}.
+
+HB.lock
+Definition PhOracle (T : ihbFinType) (f : T -> bool) : 'End('Hs T) :=
+  \sum_(i : T) (-1) ^ (f i) *: [> ''i ; ''i <].
+Canonical PhOracle_unlockable := Unlockable PhOracle.unlock.
+
+HB.lock
+Definition Oracle (T : ihbFinType) (W : finZmodType) (f : T -> W) : 'End('Hs (T * W)%type) :=
+  \sum_(i : T)\sum_(j : W) [>t2tv i ⊗t t2tv (j + f i); t2tv i ⊗t t2tv j<].
+Canonical Oracle_unlockable := Unlockable Oracle.unlock.
+
+Section GeneralGates.
+Implicit Type (T : ihbFinType).
+
 Lemma QFTvE n t : @QFTv n t =
   ((sqrtC n.+1%:R)^-1) *: \sum_(i < n.+1) runity n.+1 (t * i)%N *: ''i.
-Proof. by rewrite unlock. Qed.
+Proof. by rewrite [@QFTv]unlock. Qed.
 Lemma QFTv_onb n i j : [<@QFTv n i ; @QFTv n j >] = (i == j)%:R.
 Proof.
-rewrite !QFTvE linearZl/= linearZr/= linear_suml/=.
+rewrite !QFTvE linearZl_LR/= linearZr/= linear_suml/=.
 rewrite (eq_bigr (fun i0 : 'I_n.+1=>expip (2%:R * (j%:R - i%:R) * i0%:R / n.+1%:R)))=>[k _|].
 rewrite linear_sumr (bigD1 k)//= big1=>[l/negPf nl|];
-by rewrite linearZl/= linearZr/= onb_dot 1?eq_sym ?nl ?mulr0// eqxx mulr1 addr0 
+by rewrite linearZl_LR/= linearZr/= onb_dot 1?eq_sym ?nl ?mulr0// eqxx mulr1 addr0 
   /runity -expipNC -expipD !natrM mulrBr !mulrBl addrC !mulrA.
 rewrite expip_sum_ord// eq_sym; case: eqP=>_;
 by rewrite ?mul0r ?mulr0// mul1r !divc_simp mulfV// pnatr_eq0.
 Qed.
-Canonical QFTv_ponbasis n := PONBasis (@QFTv_onb n).
-Canonical QFTv_onbasis n := ONBasis (@QFTv_onb n) (ihb_dim _).
-Canonical QFTv_nsType n i := [NS of (@QFTv n i) as [NS of [ONB of (@QFTv n)] i]].
+HB.instance Definition _ n :=
+  isONB.Build 'Hs('I_n.+1) 'I_n.+1 (@QFTv n) (@QFTv_onb n) (ihb_dim _).
+HB.instance Definition _ n i := 
+  NormalState.copy (@QFTv n i) ((@QFTv n : 'PONB) i : 'NS).
 
 Lemma dotp_cbQFT m i j : 
   [< ''i ; @QFTv m j >] = (sqrtC m.+1%:R)^-1 * runity m.+1 (j * i).
@@ -1008,19 +980,16 @@ rewrite QFTvE dotpZr dotp_sumr (bigD1 i)//= big1=>[k/negPf nk|];
 by rewrite dotpZr ?ns_dot ?onb_dot 1?eq_sym ?nk ?mulr0// addr0 mulr1.
 Qed.
 
-Fact QFT_key : unit. Proof. by []. Qed.
-Definition QFT n := locked_with QFT_key (\sum_i [>@QFTv n i ; ''i<]).
-Global Arguments QFT {n}.
-Canonical QFT_unlockable n := [unlockable of @QFT n].
 Lemma QFTE n : @QFT n = \sum_i [> QFTv i ; ''i<].
-Proof. by rewrite unlock. Qed.
+Proof. by rewrite [@QFT]unlock. Qed.
 Lemma QFT_unitary n : @QFT n \is unitarylf.
 Proof.
-apply/unitarylfP; rewrite QFTE -(sumonb_out t2tv_onbasis) !linear_sum/= linear_suml/=.
+apply/unitarylfP; rewrite QFTE -(sumonb_out t2tv) !linear_sum/= linear_suml/=.
 apply eq_bigr=>i _; rewrite adj_outp linear_sumr/= (bigD1 i)//= big1=>[j/negPf nj|];
 by rewrite outp_comp onb_dot 1?eq_sym ?nj ?scale0r// eqxx scale1r addr0.
 Qed.
-Canonical QFT_unitaryfType n := UnitaryfType (@QFT_unitary n).
+HB.instance Definition _ n :=
+  isUnitaryLf.Build 'Hs('I_n.+1) (@QFT n) (@QFT_unitary n).
 Lemma QFTEt n (i : 'I_n.+1) : QFT ''i = QFTv i.
 Proof.
 rewrite QFTE sum_lfunE (bigD1 i)//= big1=>[j/negPf nj|];
@@ -1030,17 +999,12 @@ Qed.
 Definition IQFT n := (@QFT n)^A.
 Global Arguments IQFT {n}.
 Lemma IQFTE n : @IQFT n = QFT^A. Proof. by []. Qed.
-Canonical IQFT_unitaryfType n := [unitary of @IQFT n as [unitary of @IQFT n]].
 Lemma IQFTEt n (i : 'I_n.+1) : IQFT (QFTv i) = ''i.
 Proof. by rewrite IQFTE -QFTEt -comp_lfunE unitaryf_form lfunE. Qed.
 
-Fact PhOracle_key : unit. Proof. by []. Qed.
-Definition PhOracle T (f : T -> bool) : 'End('Hs T) := locked_with PhOracle_key
-  (\sum_(i : T) (-1) ^ (f i) *: [> ''i ; ''i <]).
-Canonical PhOracle_unlockable T f := [unlockable of @PhOracle T f].
 Lemma PhOracleE T (f : T -> bool) : PhOracle f = 
   \sum_(i : T) (-1) ^ (f i) *: [> ''i ; ''i <].
-Proof. by rewrite unlock. Qed.
+Proof. by rewrite [PhOracle]unlock. Qed.
 Lemma PhOracleEt T (f : T -> bool) t :
   PhOracle f ''t = (-1) ^ (f t) *: ''t.
 Proof.
@@ -1058,11 +1022,12 @@ Proof. by rewrite PhOracle_adj PhOracleEt. Qed.
 Lemma PhOracle_unitary T (f : T -> bool) :
   PhOracle f \is unitarylf.
 Proof.
-apply/unitarylfP; apply/(intro_onb t2tv_onbasis)=>i.
+apply/unitarylfP; apply/(intro_onb t2tv)=>i.
 by rewrite/= !lfunE/= PhOracleEt linearZ/= PhOracleEVt linearZ/= scalerA -!exprnP 
   -expr2 exprAC expr2 mulrN1 opprK expr1n scale1r.
 Qed.
-Canonical PhOracle_unitaryfType T f := UnitaryfType (@PhOracle_unitary T f).
+HB.instance Definition _ T (f : T -> bool) :=
+  isUnitaryLf.Build ('Hs T) (PhOracle f) (@PhOracle_unitary T f).
 
 (* Definition SWAP T : 'End('Hs (T * T)) := @swaptf T T.
 Arguments SWAP {T}.
@@ -1079,13 +1044,9 @@ Lemma SWAPb : SWAP = BSWAP. Proof. by []. Qed. *)
 Section Oracle.
 Implicit Type (W : finZmodType).
 
-Fact Oracle_key : unit. Proof. by []. Qed.
-Definition Oracle T W (f : T -> W) : 'End('Hs (T * W)) := locked_with Oracle_key
-  (\sum_(i : T)\sum_(j : W) [>t2tv i ⊗t t2tv (j + f i); t2tv i ⊗t t2tv j<]).
-Canonical Oracle_unlockable T W f := [unlockable of @Oracle T W f].
 Lemma OracleE T W (f : T -> W) : Oracle f = 
   \sum_(i : T)\sum_(j : W) [>t2tv i ⊗t t2tv (j + f i); t2tv i ⊗t t2tv j<].
-Proof. by rewrite unlock. Qed.
+Proof. by rewrite [Oracle]unlock. Qed.
 Lemma OracleEt T W (f : T -> W) t1 t2 :
   Oracle f (''t1 ⊗t ''t2) = ''t1 ⊗t ''(t2 + f t1).
 Proof.
@@ -1098,7 +1059,7 @@ Lemma OracleEVt T W (f : T -> W) t1 t2 :
   (Oracle f)^A (''t1 ⊗t ''t2) = ''t1 ⊗t ''(t2 - f t1).
 Proof.
 apply/(intro_onbl t2tv2_onbasis)=>[[i j]].
-rewrite /=/tentv_fun/= adj_dotEV OracleEt !tentv_dot !onb_dot.
+rewrite /=/tentv_fun/= adj_dotEr OracleEt !tentv_dot !onb_dot.
 by case: eqP=>[->|_]; rewrite ?mul0r// !mul1r eq_sym -subr_eq eq_sym.
 Qed.
 
@@ -1108,7 +1069,8 @@ Proof.
 apply/unitarylfP; apply/(intro_onb t2tv2_onbasis)=>[[i j]].
 by rewrite /=/tentv_fun/= !lfunE/= OracleEt OracleEVt addrK.
 Qed.
-Canonical Oracle_unitaryfType T W f := UnitaryfType (@Oracle_unitary T W f).
+HB.instance Definition _ T W (f : T -> W) :=
+  isUnitaryLf.Build 'Hs(T * W)%type (Oracle f) (@Oracle_unitary T W f).
 End Oracle.
 
 End GeneralGates.
@@ -1119,7 +1081,7 @@ Arguments IQFT {n}.
 
 (* we may introduce a set of variables, then proving things will be           *)
 (* much easier; direct proof suffers from cast problem, after intro           *)
-(* vars, we can inject things in qexpr, and no more cast                      *)
+(* vars, we can inject things in dirac, and no more cast                      *)
 Section UniformState.
 
 Lemma uniformtv2 (T1 T2 : ihbFinType) :
@@ -1132,31 +1094,23 @@ rewrite tentv_sumr; apply eq_bigr=>j _; exact: tentv_t2tv.
 Qed.
 
 Lemma uniformtv_tuple (T : ihbFinType) n :
-  tentv_tuple (nseq_tuple n (@uniformtv T)) = uniformtv.
+  tentv_tuple (fun i : 'I_n => (@uniformtv T)) = uniformtv.
 Proof.
-move: (vtuple_build T n)=>dis; pose vta := pvars_tuple dis.
-suff: ｜tentv_tuple (nseq_tuple n (uniformtv));vta〉= ｜uniformtv;vta〉.
-by move=>/ketqe_inj/tv2v_inj.
-rewrite !uniformtvE pvarsEv_nseq -tketZ -tket_sum.
-under eq_bigr do rewrite -tketZ -tket_sum; rewrite tensZ; f_equal.
-by rewrite prodr_const card_tuple natrX sqrtCX_nat exprVn card_ord.
-rewrite tenqA_distr_sumA (reindex tuple_of_finfun).
-by exists finfun_of_tuple=>i _; rewrite ?tuple_of_finfunK// finfun_of_tupleK.
-by apply eq_bigr=>i _; rewrite pvarsEt/= bigq; 
-  apply eq_bigr=>j _; rewrite tnth_ffun_tuple.
+apply/(intro_onbl t2tv)=>i/=.
+rewrite {1}t2tv_tuple tentv_tuple_dot -[in RHS]conj_dotp dotp_uniformtvcb.
+under eq_bigr do rewrite -conj_dotp dotp_uniformtvcb.
+rewrite -rmorph_prod prodr_const card_tuple.
+by rewrite natrX sqrtCX_nat exprVn card_ord.
 Qed.
 
 Lemma uniformtv_dffun (F : finType) (TF : F -> ihbFinType)  :
-  tentv_dffun (fun i : F=>@uniformtv (TF i)) = uniformtv.
+  tentv_dffun (fun i : F => @uniformtv (TF i)) = uniformtv.
 Proof.
-move: (vdffun_build TF)=>dis; pose vta := pvars_dffun dis.
-suff: ｜tentv_dffun (fun i : F=>uniformtv);vta〉= ｜uniformtv;vta〉.
-by move=>/ketqe_inj/tv2v_inj.
-rewrite !uniformtvE pvarsEv -tketZ -tket_sum.
-under eq_bigr do rewrite uniformtvE -tketZ -tket_sum; rewrite tensZ; f_equal.
+apply/(intro_onbl t2tv)=>i/=.
+rewrite {1}t2tv_dffun tentv_dffun_dot -[in RHS]conj_dotp dotp_uniformtvcb.
+under eq_bigr do rewrite -conj_dotp dotp_uniformtvcb.
+rewrite -rmorph_prod card_dep_ffun foldrE big_map big_enum; f_equal.
 rewrite -invf_prod -sqrt_prod -?natr_prod =>[? _ //|]; do 3 f_equal.
-by rewrite card_dep_ffun foldrE big_map big_enum.
-by rewrite tenqA_distr_dffun; under eq_bigr do rewrite pvarsEt.
 Qed.
 
 Lemma uniformtv_ffun (F : finType) (T : ihbFinType)  :
@@ -1168,8 +1122,7 @@ End UniformState.
 Section UniformTransformation.
 Variable (T : ihbFinType).
 
-Definition uniformtf := VUnitary [NS of ''(witness T)] [NS of uniformtv].
-Canonical uniformtf_unitaryfType := Eval hnf in [unitary of uniformtf].
+Definition uniformtf := VUnitary ''(witness T) uniformtv.
 Lemma uniformtfE : uniformtf ''(witness T) = uniformtv.
 Proof. by rewrite VUnitaryE. Qed.
 Lemma uniformtfEV : uniformtf^A uniformtv = ''(witness T).
@@ -1180,6 +1133,15 @@ End UniformTransformation.
 Arguments uniformtf {T}.
 Notation "''Hn'" := (@uniformtf _).
 
+Fixpoint bitstr2rat_fun (s : seq bool) : R :=
+    match s with
+    | [::] => 0
+    | x :: t => x%:R / 2%:R + (bitstr2rat_fun t) / 2%:R
+    end.
+HB.lock
+Definition bitstr2rat := bitstr2rat_fun.
+Canonical bitstr2rat_unlockable := Unlockable bitstr2rat.unlock.
+
 Section QFTTupleBasis.
 
 Lemma uniq_eqE (T : eqType) n (s : n.-tuple T) (i j : 'I_n) :
@@ -1188,16 +1150,6 @@ Proof.
 by move=>us; rewrite (tnth_nth (s~_i)) 
   [s~_j](tnth_nth (s~_i)) nth_uniq// size_tuple.
 Qed.
-
-(* use key here to avoid simplification *)
-Fact bitstr_key : unit. by []. Qed.
-Fixpoint bitstr2rat_fun (s : seq bool) : R :=
-    match s with
-    | [::] => 0
-    | x :: t => x%:R / 2%:R + (bitstr2rat_fun t) / 2%:R
-    end.
-Definition bitstr2rat := locked_with bitstr_key bitstr2rat_fun.
-Canonical bitstr2rat_unlockable := [unlockable fun bitstr2rat].
 
 Lemma bitstr_cons x (s : seq bool) : 
   bitstr2rat (x :: s) = x%:R / 2%:R + (bitstr2rat s) / 2%:R .
@@ -1325,13 +1277,19 @@ Qed.
 Lemma ltn_dropr n m p : (n < p -> n - m < p)%N.
 Proof. apply/leq_ltn_trans/leq_subr. Qed.
 
+End QFTTupleBasis.
+
+HB.lock
 Definition QFTbv n (bs : n.-tuple bool) : 'Hs (n.-tuple bool) :=
-  locked_with QFTv_key ((sqrtC 2%:R ^- n) *: \sum_(i : n.-tuple bool) 
-    (expip (2%:R * (bseq2ord bs * bseq2ord i)%:R / 2%:R ^+ n) *: ''i)).
-Canonical QFTbv_unlockable n bs := [unlockable of (@QFTbv n bs)].
+  (sqrtC 2%:R ^- n) *: \sum_(i : n.-tuple bool) 
+    (expip (2%:R * (bseq2ord bs * bseq2ord i)%:R / 2%:R ^+ n) *: ''i).
+Canonical QFTbv_unlockable := Unlockable QFTbv.unlock.
+
+Section QFTTupleBasis.
+
 Lemma QFTbvE n bs : @QFTbv n bs =  ((sqrtC 2%:R ^- n) *: \sum_(i : n.-tuple bool) 
   (expip (2%:R * (bseq2ord bs * bseq2ord i)%:R / 2%:R ^+ n) *: ''i)).
-Proof. by rewrite unlock. Qed.
+Proof. by rewrite [QFTbv]unlock. Qed.
 
 Lemma QFTbv_onb n (bs1 bs2 : n.-tuple bool) : 
   [< QFTbv bs1 ; QFTbv bs2 >] = (bs1 == bs2)%:R.
@@ -1347,8 +1305,8 @@ rewrite big_bseq eq_sym; under eq_bigr do rewrite ord2bseqK -natrX.
 by rewrite expip_sum_ord// natrX mulrCA (inj_eq (@bseq2ord_inj _))
    mulVf ?mulr1// expf_neq0.
 Qed.
-Canonical QFTbv_ponbasis n := PONBasis (@QFTbv_onb n).
-Canonical QFTbv_onbasis n := ONBasis (@QFTbv_onb n) (@ihb_dim _).
+HB.instance Definition _ n :=
+  isONB.Build 'Hs(n.-tuple bool) (n.-tuple bool) (@QFTbv n) (@QFTbv_onb n) (@ihb_dim _).
 
 Lemma QFTbv_uniform n : QFTbv (nseq_tuple n false) = uniformtv.
 Proof.
@@ -1371,14 +1329,13 @@ Qed.
 
 (* QFT state can be written as a tensor product states *)
 Lemma QFTbvTE n (bs : n.-tuple bool) :
-  QFTbv bs = tentv_tuple (tuple_of_finfun 
-    [ffun i : 'I_n => phstate (bitstr2rat (drop (n.-1 - i) bs))]).
+  QFTbv bs = tentv_tuple (fun i=> phstate (bitstr2rat (drop (n.-1 - i) bs))).
 Proof.
-apply/(intro_onbl (t2tv_onbasis))=>i.
+apply/(intro_onbl (t2tv))=>i.
 rewrite/= QFTbvE dotpZr dotp_sumr (bigD1 i)//= big1=>[j/negPf nj|];
 rewrite dotpZr ?ns_dot ?onb_dot 1?eq_sym ?nj ?mulr0// mulr1 addr0.
-rewrite t2tv_tuple tentv_tuple_dot; 
-under eq_bigr do rewrite !(tnth_ffun_tuple, ffunE) dotp_cbph.
+rewrite t2tv_tuple tentv_tuple_dot. 
+under eq_bigr do rewrite dotp_cbph.
 rewrite big_split/= expip_prod prodr_const card_ord exprVn; f_equal.
 elim: n bs i=>/=[bs i|n IH bs i].
 by rewrite !tuple0/=/bseq2nat/= mulr0 big_ord0 mul0r.
@@ -1387,22 +1344,25 @@ have P (i : 'I_n) : drop (n - i) [tuple of sl :: sh] = drop (n.-1 - i) sh.
 rewrite drop_cons. case: i. clear -n. case: n sh=>// n bh m Pm/=; rewrite -subnSK//.
 rewrite big_ord_recr/=; under eq_bigr do rewrite tnthNS P.
 rewrite expipD -IH tnthN subnn drop0 -!mulrA bseq2nat_rcons.
-rewrite bitstr2rat_nat/= !size_tuple mulnDr natrD mulrDl mulrDr expipD; f_equal.
+rewrite bitstr2rat_nat/= !size_tuple mulnDr natrD [_/_]mulrDl mulrDr expipD; f_equal.
 2: by do 2 f_equal; rewrite mulrA -natrM mulnC.
 rewrite natrM mulnC natrM -!mulrA exprS invfM [_ * (_^-1 / _)]mulrA mulfV// mul1r.
-rewrite bseq2nat_cons size_tuple natrD mulrDl mulrDr expipD !natrM natrX mulrA.
+rewrite bseq2nat_cons size_tuple natrD [X in 2 * X]mulrDl mulrDr expipD !natrM natrX mulrA.
 rewrite mulrACA [_ * sl%:R / _]mulrAC mulfV ?expf_neq0// mul1r -mulrA -!natrM.
 by rewrite expip2n mul1r natrM !mulrA.
 Qed.
 
 End QFTTupleBasis.
 
+HB.lock
+Definition expmxip (U : chsType) (F : finType) (onb : 'ONB(F;U)) (d : F -> R) : R -> 'End(U) := 
+  fun t => \sum_i expip (d i * t) *: [> onb i ; onb i <].
+Canonical expmxip_unlockable := Unlockable expmxip.unlock.
+
 Section expmxip.
 Variable (U : chsType) (F : finType) (onb : 'ONB(F;U)) (d : F -> R).
+Local Notation expmxip := (@expmxip U F onb d).
 (* e ^ i * pi * A * t *)
-Definition expmxip : R -> 'End(U) := 
-  locked_with exp_key (fun t => \sum_i expip (d i * t) *: [> onb i ; onb i <]).
-Canonical expmxip_unlockable := [unlockable fun expmxip].
 Lemma expmxipE t : expmxip t = \sum_i expip (d i * t) *: [> onb i ; onb i <].
 Proof. by rewrite unlock. Qed.
 Lemma expmxip_unitary t : expmxip t \is unitarylf.
@@ -1412,7 +1372,8 @@ apply eq_bigr=>i _. rewrite linear_sum/= linear_suml/= (bigD1 i)//= big1=>[j/neg
 rewrite adjfZ adj_outp -comp_lfunZl -comp_lfunZr outp_comp onb_dot ?nj ?scale0r ?scaler0//.
 by rewrite eqxx scale1r addr0 scalerA -expipNC -expipD addNr expip0 scale1r.
 Qed.
-Canonical expmxip_unitaryfType t := UnitaryfType (@expmxip_unitary t).
+HB.instance Definition _ (t : R) :=
+  isUnitaryLf.Build U (expmxip t) (@expmxip_unitary t).
 Lemma expmxip_adj t : (expmxip t)^A = expmxip (-t).
 Proof.
 rewrite !expmxipE linear_sum/=; apply eq_bigr=>i _.
@@ -1430,10 +1391,11 @@ Variable (V : chsType).
 
 Lemma explf_unitary (U : 'FU(V)) n : U%:VF ^+ n \is unitarylf.
 Proof.
-elim: n=>[|n /unitarylfP IH]; first by rewrite expr0 unitaryf_unitary.
+elim: n=>[|n /unitarylfP IH]; first by rewrite expr0 is_unitarylf.
 by apply/unitarylfP; rewrite exprS adjf_comp comp_lfunA comp_lfunACA unitaryf_form comp_lfun1r.
 Qed.
-Canonical explf_unitaryfType U n := UnitaryfType (@explf_unitary U n).
+HB.instance Definition _ (U : 'FU(V)) n :=
+  isUnitaryLf.Build V (U%:VF ^+ n) (@explf_unitary U n).
 
 Lemma explf_adj (U : 'End(V)) n : (U^+n)^A = U^A^+n.
 Proof.

@@ -1,11 +1,18 @@
+From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra all_fingroup.
-Require Import forms.
-From mathcomp.analysis Require Import boolp reals exp trigo.
-From mathcomp.real_closed Require Import complex.
+From mathcomp.classical Require Import boolp.
+From mathcomp.analysis Require Import -(notations)forms.
+From mathcomp.analysis Require Import reals exp trigo.
+(* From mathcomp.real_closed Require Import complex. *)
+From quantum.external Require Import complex.
 From mathcomp Require Import finset.
+Require Import Relation_Definitions.
+Require Import Setoid.
 
-Require Import mcextra mxnorm mxtopology tensor dirac lfundef quantum inhabited.
-Require Import hspace qwhile qhl qtype hspace hermitian.
+Require Import mcextra mcaextra autonat notation mxpred ctopology tensor.
+Require Import hermitian quantum hspace inhabited qtype qreg qmem.
+From quantum.dirac Require Import setdec hstensor dirac.
+From quantum.example.coqq_paper Require Import qwhile qhl.
 
 (************************************************************************)
 (* case study : prove Hoare triple of program via quantum Hoare logic   *)
@@ -19,217 +26,204 @@ Require Import hspace qwhile qhl qtype hspace hermitian.
 (*      hidden subgroup problem          : abstract                     *)
 (************************************************************************)
 
-Import Order.TTheory GRing.Theory Num.Theory ComplexField Num.Def complex.
-Import Vector.InternalTheory.
+Import Order.TTheory GRing.Theory Num.Theory Num.Def DefaultQMem.Exports.
 Local Notation C := hermitian.C.
 Local Notation R := hermitian.R.
 Local Open Scope ring_scope.
 Local Open Scope set_scope.
 Local Open Scope lfun_scope.
-Local Open Scope qexpr_scope.
+Local Open Scope dirac_scope.
+Local Open Scope reg_scope.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
 
-(* to hide the canonical of each cmd, define Phant later *)
-(* maybe also change all the rules *)
-(* e.g., definition unitary_of_ (U : 'FU) (phU : phant U) := unitary_ U *)
-(* then define Notation unitary U := (unitary_of_ (Phant U)) *)
-
-Section CaseStudy.
-Context (L : finType) (HA : L -> chsType).
-Notation vars T := (@tvars_of L HA _ (Phant T)).
-Notation cmd_ := (@cmd_ L HA).
-Notation seqc := (@seqc_ L HA).
-Notation skip := (@skip_ L HA).
+Module ParallelHadamardTuple.
 
 Section ParallelHadamardTuple.
-Variable (pt st : bool) (n : nat) (fx : n.-tuple (vars bool)).
-Hypotheses (disx : forall i j, i != j -> [disjoint lb (fx ~_ i) & lb (fx ~_ j)]).
-Let px := pvars_tuple disx. (* we can pack fx as a whole *)
+Variable (pt st : bool) (n : nat) (x : 'QReg[Bool.[n]]).
 
 Definition bitstr_dot n (b1 b2 : n.-tuple bool) : nat :=
   (\sum_i (b1~_i * b2~_i))%N.
 
 Lemma ParaHadamard_tuple (b : n.-tuple bool) :
-  \tens_(i < n) ⌈''H;fx ~_ i⌉ ∘ ｜''b ; px〉
-  = \sum_k sqrtC 2%:R ^- n *: ((-1) ^ bitstr_dot b k *: ｜''k ; px〉).
+  \ten_(i < n) '[''H; x.[i]] \· '|''b ; x>
+  = \sum_k sqrtC 2%:R ^- n *: ((-1) ^ bitstr_dot b k *: '|''k ; x>).
 Proof.
-rewrite pvarsEt dotq_com/=tensM//= =>[i j _ _ |]; first by apply: disx.
-under eq_bigr do rewrite tlin_ket Hadamard_cb (onb_vec t2tv_onbasis '±(_))/= -tket_sum.
+rewrite -tlinTV tlin_ket t2tv_tuple tentf_tuple_apply tketTV.
+under eq_bigr do rewrite Hadamard_cb (onb_vec t2tv '±(_))/= -tket_sum.
 under eq_bigr do under eq_bigr do rewrite dotp_cbpm -tketZ mulrC -scalerA.
-rewrite tenqA_distr_sumA (reindex (finfun_of_tuple)).
-by exists tuple_of_finfun=>x _; rewrite ?finfun_of_tupleK ?tuple_of_finfunK.
-apply eq_bigr=>i _; rewrite scalerA pvarsEt.
+rewrite tendA_distr_sumA (reindex (finfun_of_tuple))/=.
+  by exists tuple_of_finfun=>y _; rewrite ?finfun_of_tupleK ?tuple_of_finfunK.
+apply eq_bigr=>i _; rewrite scalerA t2tv_tuple tketTV.
 under eq_bigr do rewrite ffunE scalerA.
-rewrite tensZ; f_equal. rewrite big_split/= prodr_const card_ord exprVn; f_equal.
+rewrite tendsZ; f_equal. rewrite big_split/= prodr_const card_ord exprVn; f_equal.
 by rewrite -expr_sum /bitstr_dot exprnP; under eq_bigr do rewrite andbC -mulnb.
 Qed.
 
 Lemma RS_ParaHadamard_tuple (b : n.-tuple bool) :
-    ⊨s [pt,st] { ｜''b ; px〉 } 
-          [for i do [ut fx ~_ i := ''H]]
-        { (sqrtC 2%:R ^- n) *: \sum_i (-1) ^ (bitstr_dot b i) *: ｜''i ; px〉 }.
+    ⊨s [pt,st] { '|''b ; x> } 
+          [for i do [ut x.[i] := ''H]]
+        { (sqrtC 2%:R ^- n) *: \sum_i (-1) ^ (bitstr_dot b i) *: '|''i ; x> }.
 Proof.
 rewrite linear_sum/=; apply: (RS_forward _ (AxV_UTFP _))=>[|i j]/=.
-exact: ParaHadamard_tuple. apply: disx.
+exact: ParaHadamard_tuple. tac_qwhile_auto.
+Qed.
+
+Lemma RS_ParaHadamard_tuple0 :
+    ⊨s [pt,st] { \ten_i '| '0; x.[i] > } 
+          [for i do [ut x.[i] := ''H]]
+        { \ten_i '| '+; x.[i] > }.
+Proof.
+apply: (RS_forward _ (AxV_UTFP _))=>/=; last by tac_qwhile_auto.
+rewrite -tlinTV -tketTV tlin_ketG tentf_tuple_apply tketTV.
+by under eq_bigr do rewrite Hadamard_cb.
+Qed.
+
+Lemma RS_ParaHadamardV_tuple0 :
+    ⊨s [pt,st] { \ten_i '|'+; x.[i] > } 
+          [for i do [ut x.[i] := ''H]]
+        { \ten_i '|'0; x.[i] > }.
+Proof.
+apply: (RS_forward _ (AxV_UTFP _))=>/=; last by tac_qwhile_auto.
+rewrite -tlinTV -tketTV tlin_ket tentf_tuple_apply tketTV.
+by under eq_bigr do rewrite Hadamard_pm.
 Qed.
 
 End ParallelHadamardTuple.
-Global Arguments RS_ParaHadamard_tuple [pt st n fx].
+Global Arguments RS_ParaHadamard_tuple [pt st n x].
 
-Section ParallelHadamardFfun.
-Variable (pt st : bool) (F : finType) (fx : F -> (vars bool)).
-Hypotheses (disx : forall i j, i != j -> [disjoint lb (fx i) & lb (fx j)]).
+End ParallelHadamardTuple.
 
-Lemma RS_ParaHadamard_ffun :
-    ⊨s [pt,st] { \tens_i ｜'0; fx i〉 } 
-          [for i do [ut fx i := ''H]]
-        { \tens_i ｜'+; fx i〉 }.
-Proof.
-apply: (RS_forward _ (AxV_UTFP _))=>[|//].
-rewrite/=dotq_com/= tensM//==>[+ + _ _|]; first exact: disx.
-by under eq_bigr do rewrite tlin_ketM Hadamard_cb.
-Qed.
-
-Lemma RS_ParaHadamardV_ffun :
-    ⊨s [pt,st] { \tens_i ｜'+; fx i〉 } 
-          [for i do [ut fx i := ''H]]
-        { \tens_i ｜'0; fx i〉 }.
-Proof.
-apply: (RS_forward _ (AxV_UTFP _))=>[/=|//].
-rewrite/=dotq_com/= tensM//==>[+ + _ _|]; first exact: disx.
-by under eq_bigr do rewrite tlin_ketM Hadamard_pm.
-Qed.
-
-End ParallelHadamardFfun.
-
-
+Module RevTuple.
 Section RevTuple.
-Variable (pt st : bool) (T : ihbFinType) (n : nat).
-Variable (x : n.-tuple (vars T)).
-Hypotheses (disx : forall i j, i != j -> [disjoint lb (x ~_ i) & lb (x ~_ j)]).
-
-Lemma rev_disx i j : i != j -> 
-  [disjoint lb ([tuple of rev x] ~_ i) & lb ([tuple of rev x] ~_ j)].
-Proof. by rewrite -(inj_eq rev_ord_inj) !tnth_rev; exact: disx. Qed.
+Variable (pt st : bool) (n : nat) (T : qType) (x : 'QReg[T.[n]]).
 
 Definition rev_circuit :=
-  \big[seqc/skip]_(i : 'I_n | (i < (n./2))%N) 
-    [ut [x ~_ i , x ~_ (rev_ord i)] := SWAP ].
+  [for i < n./2 do 
+    [ut (x.[half_ord i] , x.[rev_ord (half_ord i)]) := SWAP ]].
 
-Lemma ltn_half_double : (n < (n./2).*2)%N = false.
+Lemma rev_unitaryE (t : 'Ht T.[n]) :
+  \ten_(i < n./2) '[ SWAP ; (x.[half_ord i] , x.[rev_ord (half_ord i)]) ]
+  \· '|t; x> = '|t; (tuple i => x.[rev_ord i]) >.
 Proof.
-by apply/negP; rewrite -{1}(odd_double_half n) addnC=>/ltn_dropl; rewrite ltnn.
+rewrite (onb_vec t2tv t)/= -!tket_sum dotd_sumr; apply eq_bigr=>i _.
+rewrite -!tketZ dotdZr; f_equal; rewrite t2tv_tuple !tketTV.
+case: n x t i; clear n x.
+by move=>x _ t; rewrite !big_ord0 bigd dot1d.
+move=>n x _ t; rewrite !big_half_split !bigdE/=.
+under [in X in _ \· X]eq_bigr do rewrite tketT.
+case E: (odd n); last rewrite dotdTll/=; last 
+  (rewrite eq_qrE uphalf_ord_odd_rev ?E//; f_equal).
+2,3: rewrite disjoint_sym; apply/bigcup_disjoint_seqP=>/= j/andP[] _ Pj;
+  move: E=>/negbT E; tac_qwhile_auto; AutoNat.mc_nat.
+all: rewrite ?tend1 dotd_mul/= tendsM//=; first by tac_qwhile_auto.
+all: f_equal; apply eq_bigr=>j _;
+by rewrite tlin_ketM swaptfEtv !eq_qrE tendC rev_ordK tketT.
 Qed.
 
-Lemma rev_half_neq (i j : 'I_n) : (i < n./2)%N -> (j < n./2)%N -> rev_ord i != j.
-Proof.
-move=>Pi Pj; apply/eqP=>P; move: (leq_add Pi Pj).
-by rewrite -P/= addnS addnC subnK// addnn ltn_half_double.
-Qed.
 
-Lemma rev_disjoint (i j : 'I_n) : (i < n./2)%N -> (j < n./2)%N -> i != j -> 
-  [disjoint lb (x ~_ i) :|: lb (x ~_ (rev_ord i)) & lb (x ~_ j) :|: lb (x ~_ (rev_ord j))].
-Proof.
-by move=>Pi Pj nij; rewrite disjointUX !disjointXU !disx// 
-  ?(can_eq rev_ordK)// ?[_ == rev_ord _]eq_sym ?rev_half_neq//.
-Qed.
+(* Lemma rev_disx i j : i != j -> 
+  [disjoint lb (frev x i) & lb (frev x j)].
+Proof. by rewrite -(inj_eq rev_ord_inj) !frevE; exact: disx. Qed. *)
 
-Lemma rev_unitaryE (t : 'Hs (n.-tuple T)) :
-  \tens_(i : 'I_n | (i < n./2)%N) ⌈ SWAP ; (x~_i , x~_(rev_ord i)) ⌉
-  ∘ ｜t; pvars_tuple disx〉= ｜t; pvars_tuple rev_disx〉.
-Proof.
-rewrite (onb_vec t2tv_onbasis t)/= -(t1ket_sum (pvars_tuple disx)).
-rewrite -(t1ket_sum (pvars_tuple rev_disx)) dotq_sumr; apply eq_bigr=>i _.
-rewrite -!tketZ dotqZr; f_equal; rewrite !pvarsEt.
-move: rev_disjoint. case: n x disx t i; clear n x disx.
-by move=>x disx t i; rewrite !big_ord0 bigq dot1q.
-move=>n x disx t i rd; rewrite !big_half_split !bigqE/=; case E: (odd n).
-2: under [in X in X ⊗ _]eq_bigr do rewrite tketT;
-rewrite dotqTll//=; last (rewrite tnth_rev uphalf_ord_odd_rev ?E//; f_equal).
-1,3: rewrite ?tenq1 dotq_com/= tensM//= bigq; apply eq_bigr=>j Pj;
-by rewrite ?[in LHS]tketT tlin_ketM ?disx// 1?eq_sym ?rev_ord_neq// tenqC tketT swaptfEtv !tnth_rev rev_ordK.
-rewrite disjoint_sym; apply/bigcup_disjointP=>j Pj;
-rewrite disjointXU !disx//; last rewrite -(can_eq rev_ordK) rev_ordK uphalf_ord_odd_rev ?E//.
-all: by rewrite uphalf_ord_neq.
-Qed.
-
-Lemma RS_rev_circuit (t : 'Hs (n.-tuple T)) :
-  ⊨s [pt,st] { ｜t; pvars_tuple disx〉 } 
+Lemma RS_rev_circuit (t : 'Ht T.[n]) :
+  ⊨s [pt,st] { '|t; x> } 
                 rev_circuit
-             { ｜t; pvars_tuple rev_disx〉 }.
+             { '|t; (tuple i => x.[rev_ord i]) > }.
 Proof.
-rewrite /rev_circuit.
 apply: (RS_forward _ (AxV_UTFP_seq _ _))=>//=.
-2: by move=>i j; apply: rev_disjoint.
-rewrite -rev_unitaryE; do 2 f_equal; apply eq_bigr=>i Pi;
-rewrite tf2f2cE// disx// -(inj_eq val_inj)/=. 
-apply/eqP=>/(f_equal (addn^~ i.+1)); rewrite subnK// addnS addnn=>Pc.
-move: Pi; rewrite -ltn_Sdouble Pc -{1}(odd_double_half n) addnC=>/ltn_dropl; 
-by rewrite ltnn.
+apply: rev_unitaryE. tac_qwhile_auto.
 Qed.
 
-Lemma RS_rev_circuitV (t : 'Hs (n.-tuple T)) :
-  ⊨s [pt,st] { ｜t; pvars_tuple rev_disx〉 } 
+Lemma RS_rev_circuitV (t : 'Ht T.[n]) :
+  ⊨s [pt,st] { '|t; (tuple i => x.[rev_ord i])> } 
                 rev_circuit
-             { ｜t; pvars_tuple disx〉 }.
+             { '|t; x> }.
 Proof.
-rewrite /rev_circuit.
-apply: (RS_back _ (AxV_UTP_seq _ _))=>//=.
-2: by move=>i j; apply: rev_disjoint.
-rewrite -rev_unitaryE tens_adj; do 2 f_equal; apply eq_bigr=>i Pi;
-rewrite tf2f2cE// ?tlin_adj ?swaptf_adj// disx// -(inj_eq val_inj)/=.
-apply/eqP=>/(f_equal (addn^~ i.+1)); rewrite subnK// addnS addnn=>Pc.
-move: Pi; rewrite -ltn_Sdouble Pc -{1}(odd_double_half n) addnC=>/ltn_dropl; 
-by rewrite ltnn.
+apply: (RS_back _ (AxV_UTP_seq _ _))=>//=; last by tac_qwhile_auto.
+rewrite tends_adj; under eq_bigr do rewrite tlin_adj swaptf_adj; apply: rev_unitaryE.
 Qed.
 
 End RevTuple.
-Arguments RS_rev_circuit [pt st T n x disx].
+Arguments RS_rev_circuit [pt st n T x].
+End RevTuple.
 
 (* implement QFT for tuple of qubits *)
+Module QuantumFourierTransform.
+Import RevTuple.
 Section QuantumFourierTransform.
 Variable (pt st : bool).
 
 Definition omegan (n : nat) : R := (2%:R ^- n.+1).
 
-Definition QFT_sub (x : vars bool) (s : seq (vars bool)) :=
-    [for i < (size s) do 
-        [ut [x , (nth x s i)] := BControl (PhGate (omegan i))]
+Definition QFT_sub n (s : 'QReg[Bool * Bool.[n]]) :=
+    [for i do 
+        [ut (s.1 , s.2.[i]) := BControl (PhGate (omegan i))]
     ].
 
-Fixpoint QFT_iter (s : seq (vars bool)) :=
-    match s with 
-    | [::] => skip
-    | x :: t => [ut x := ''H] ;; (QFT_sub x t) ;; (@QFT_iter t)
-    end.
+Definition QFT_iter n (s : 'QReg[Bool.[n]]) :=
+  [for i do 
+    [ut s.[i] := ''H] ;; 
+    QFT_sub <{(s.[i], (tuple j : 'I_(rev_ord i) => s.[right_ord j]))}>
+  ].
 
-Definition QFT_cir n (s : n.-tuple (vars bool)) :=
+Definition QFT_cir n (s : 'QReg[Bool.[n]]) :=
   ((QFT_iter s) ;; (rev_circuit s)).
 
-Lemma fvars_QFT_sub (x : vars bool) (s : seq (vars bool)) :
-    fvars (QFT_sub x s) =  \bigcup_(i <- s) (lb x :|: lb i).
+Lemma QFT_sub_cast n (x : 'QReg[Bool * Bool.[n]]) m 
+  (y : 'QReg[Bool * Bool.[m]]) (eqn : n = m) :
+  <{x.1}> =r <{y.1}> -> 
+  (forall i, <{ x.2.[i] }> =r <{ y.2.[cast_ord eqn i] }>) ->  
+    QFT_sub x =s QFT_sub y.
 Proof.
-rewrite /QFT_sub fvars_for (big_nth x)/= big_mkord.
-by apply eq_bigr =>i _.
+case: m / eqn y => y P1 Pn.
+apply/eq_forr=>i _; apply eq_unit=>//.
+by rewrite /= P1 Pn cast_ord_id.
 Qed.
 
-Lemma QFT_sub_rcons x y (s : seq (vars bool)) :
-    (QFT_sub x (rcons s y)) =s 
-    (QFT_sub x s ;; [ut [x,y] := BControl (PhGate (omegan (size s)))]).
+Lemma QFT_iterE n (s : 'QReg[Bool.[n.+1]]) :
+  QFT_iter s =s ([ut s.[0] := ''H] ;; 
+                 (QFT_sub <{(s.[0], (tuple i : 'I_n => s.[nlift 0 i]))}>) ;; 
+                 QFT_iter <{(tuple i => s.[nlift 0 i])}>).
 Proof.
-rewrite /eqcmd /QFT_sub/= fsemE !fsem_big/= size_rcons big_ord_recr .
-rewrite comp_soElr nth_rcons ltnn eqxx. congr (_ o: _).
-apply eq_bigr=>i _. rewrite nth_rcons. by destruct i=>/=; rewrite i.
+rewrite /QFT_iter big_ord_recl/=; do ! apply eq_seqc=>//.
+  apply/QFT_sub_cast=>//; first by rewrite subn1.
+  move=>P i; rewrite !eq_qrE; apply eq_qreg_qreg_tuplei=>//; mc_nat.
+apply/eq_forr=>i _; apply eq_seqc.
+apply eq_unit=>//=; first by rewrite eq_qrE.
+apply/QFT_sub_cast; first by rewrite /= !eq_qrE.
+move=>j /=; rewrite !eq_qrE; apply eq_qreg_qreg_tuplei=>//; mc_nat.
 Qed.
 
-Lemma QFT_iter_no_while (s : seq (vars bool)) : no_while (QFT_iter s).
-Proof. by elim: s=>[//|x r IH]; rewrite/= IH /QFT_sub no_while_for. Qed.
+(* Lemma QFT_iterE n x (s : 'I_n -> (vars bool)) :
+  QFT_iter (fcons x s) =s ([ut x := ''H] ;; (QFT_sub x s) ;; QFT_iter s).
+Proof.
+rewrite/eqcmd/QFT_iter fsem_big big_ord_recl [in RHS]fsem_seqE fsem_big comp_soElr; f_equal.
+do ! f_equal; by rewrite fcons0// fright0 fconsKV QFT_sub_cast.
+apply eq_bigr=>i _; do ! f_equal; by rewrite ?fright_consE// fconsE.
+Qed.
 
-Lemma bigcup_add T (r : seq T) (P : pred T) (fp : T -> {set L}) (A : {set L}) :
+Lemma fvars_QFT_sub n (x : vars bool) (s : 'I_n -> (vars bool)) :
+    fvars (QFT_sub x s) =  \bigcup_i (lb x :|: lb (s i)).
+Proof. rewrite /QFT_sub fvars_for; by apply eq_bigr =>i _. Qed. *)
+
+Lemma QFT_sub_rcons n (s : 'QReg[Bool * Bool.[n.+1]]) :
+    (QFT_sub s) =s 
+    (QFT_sub <{(s.1, (tuple i => s.2.[nlift ord_max i]))}> ;; 
+     [ut (s.1, s.2.[ord_max]) := BControl (PhGate (omegan n))]).
+Proof.
+rewrite /QFT_sub eq_for_ord_recr; apply eq_seqc=>//.
+apply/eq_forr=>/= i _; apply eq_unit=>//=.
+rewrite !eq_qrE; apply eq_qreg_qreg_pair=>//; apply eq_qreg_qreg_tuplei=>//; mc_nat.
+Qed.
+
+Lemma QFT_iter_no_while n (s : 'QReg[Bool.[n]]) : no_while (QFT_iter s).
+Proof. by apply/no_while_for=>/=i _; apply/no_while_for. Qed.
+
+(* Lemma bigcup_add T (r : seq T) (P : pred T) (fp : T -> {set L}) (A : {set L}) :
     A :|: \bigcup_(i <- r | P i) (fp i) = A :|: \bigcup_(i <- r | P i) (A :|: (fp i)).
 Proof.
 elim: r=>[|x r]; first by rewrite !big_nil.
@@ -237,116 +231,128 @@ by rewrite !big_cons; case: (P x)=>//; rewrite !setUA setUid
   [A :|: fp x]setUC -setUA=>->; rewrite setUA.
 Qed.
 
-Lemma fvars_QFT_iter (s : seq (vars bool)) : fvars (QFT_iter s) = \bigcup_(i <- s) lb i.
+Lemma fvars_QFT_iter n (s : 'I_n -> (vars bool)) : fvars (QFT_iter s) = \bigcup_i (lb (s i)).
 Proof.
-elim: s=>[|x r IH]; first by rewrite /= big_nil.
-by rewrite /= IH fvars_QFT_sub big_cons -bigcup_add -setUA setUid.
-Qed.
+elim: n s=>[s|n IH]; first by rewrite fvars_for !big_ord0.
+case/fconsP=>x s. rewrite fvars_for !big_ord_recl/= fcons0.
+under eq_bigr do rewrite fconsE fright_consE. under [in RHS]eq_bigr do rewrite fconsE.
+move: (IH s); rewrite fvars_for=>/=->. rewrite fright0 QFT_sub_cast fconsKV fvars_QFT_sub.
+by rewrite -bigcup_add -setUA setUid.
+Qed. *)
 
 Lemma PhGate_cb r b : PhGate r ''b = expip (b%:R * r) *: ''b.
 Proof. by rude_bmx; case: b=>/=; rewrite ?mul0r ?mulr0// ?mul1r ?mulr1// expip0. Qed.
 
-Lemma test1 b0 b (bs : seq bool) (x y : vars bool) : 
+(* Lemma test1 b0 b (bs : seq bool) (x y : vars bool) : 
   [disjoint lb x & lb y] ->
-  ｜'ph (bitstr2rat (b0 :: bs));x〉 ⊗ ｜''b;y〉
-  = ⌈ (BControl (PhGate (omegan (size bs))))^A;(x,y) ⌉ ∘ 
-    (｜'ph (bitstr2rat (b0 :: rcons bs b));x〉 ⊗ ｜''b;y〉).
+  '|'ph (bitstr2rat (b0 :: bs)), x> \⊗ '|''b, y>
+  = '[ (BControl (PhGate (omegan (size bs))))^A, x;y ] \· 
+    ('|'ph (bitstr2rat (b0 :: rcons bs b)), x> \⊗ '|''b, y>).
 Proof.
 move=>P1. rewrite !tketT tlin_ketG -?vars_labelE=>[//|].
-rewrite BControl_adj; congr (｜_;(_,_)〉).
+rewrite BControl_adj; congr ('|_, _;_>).
 rewrite BControlE lfunE/= !tentf_apply !outpE PhGate_adj.
 rewrite dotp_cb0ph dotp_cb1ph phstateE linearDl/= lfunE/= PhGate_cb.
 f_equal. rewrite !linearZl/= linearZr/= scalerA -mulrA. do 2 f_equal.
 rewrite -expipD -rcons_cons bitstr_rcons.
 case: b; last by rewrite !mul0r !addr0.
 by rewrite mulrDr /omegan !mul1r exprS invfM mulrA mulfV// mul1r addrK.
-Qed.
+Qed. *)
 
-Lemma RS_QFT_sub n (x : vars bool) (b : bool) (s : n.-tuple (vars bool)) 
-  (sb : n.-tuple bool) :
-    (forall i, [disjoint lb x & lb (s~_i)]) ->
-    (forall i j, i != j -> [disjoint lb (s~_i) & lb (s~_j)]) ->
-    let: prev := ｜''b;x〉 ⊗ (\tens_i｜''(sb~_i);s~_i〉) in
-    let: postv :=  ｜'ph (bitstr2rat (b :: sb));x〉 ⊗ (\tens_i｜''(sb~_i);s~_i〉) in
-    ⊨s [pt,st] { prev  } ([ut x := ''H] ;; (QFT_sub x s)) { postv }.
+Lemma RS_QFT_sub n (sb : n.-tuple bool) (b : bool) (s : 'QReg[ Bool * Bool.[n]]) :
+    let: prev := '|''b; s.1 > \⊗ (\ten_i '|''(sb~_i); s.2.[i] >) in
+    let: postv :=  '|'ph (bitstr2rat (b :: sb)); s.1 > \⊗ (\ten_i '|''(sb~_i); s.2.[i] >) in
+    ⊨s [pt,st] { prev  } ([ut s.1 := ''H] ;; (QFT_sub s)) { postv }.
 Proof.
-elim: n s sb=>[s sb _ _|n IH s bs xs us]; last first.
-case/tupleNP: s xs us=>sl sh /=/rcons_disjointx[]P1 P2/rcons_disjoint[]P3 P4.
+elim: n s sb=>[s sb |n IH s bs].
+  rewrite /QFT_sub !big_ord0 bigd !tend1.
+  apply: (RS_SC _ _ (AxS_Sk _))=>/=.
+  apply: RS_UT=>//=; rewrite ?sub0set// Hadamard_adj tlin_ket.
+  rewrite -Hadamard_pm; do ! f_equal. rude_bmx.
+  rewrite tuple0/= [in _ [::b]]unlock/= mul0r addr0 mulrCA mulfV// mulr1.
+  by case: b=>/=; rewrite ?expip0 ?expip1.
+rewrite QFT_sub_rcons fsem_seqA.
 case/tupleNP: bs=>bsl bsh/=.
-rewrite big_ord_recr/= bigqE.
-rewrite !tnthN. under eq_bigr do rewrite !tnthNS.
-rewrite [SPRE]tenqA [SPOST]tenqA.
-move: P1; rewrite QFT_sub_rcons fsem_seqA=>P1.
-apply (RS_SC (｜'ph (bitstr2rat (b :: bsh));x〉 
-  ⊗ (\tens_i｜''(bsh~_i);sh~_i〉) ⊗ ｜''bsl;sl〉))=>/=; last first.
-apply: RV_UT=>/=; rewrite [LHS]tenqAC [in RHS]tenqAC dotqTll/==>[//||].
-2: by f_equal; rewrite test1 ?size_tuple// tf2f2cE// tf2f2_adj.
-2: move: (IH sh bsh P2 P4); apply: RV_Frame.
-2: by rewrite/=/QFT_sub no_while_for//=; clear -pt; case: pt.
-1,2,3: rewrite ?setUid /=?fvars_QFT_sub -?bigcup_add disjointUX ?Q4/=.
-2,3: rewrite P1/= disjoint_sym ?big_tuple. 1: apply/andP; split.
-1,2,3,4: by apply/bigcup_disjoint_seqP=>i _.
-rewrite !tuple0 ![sb]tuple0 /QFT_sub/= {1 2}big_ord0 big_ord0 bigq !tenq1.
-apply: (RS_SC _ _ (AxS_Sk _))=>/=.
-apply RS_UT=>//=; rewrite ?sub0set// tf2f_adj tlin_ketG Hadamard_adj.
-rewrite -Hadamard_pm; do ! f_equal. rude_bmx.
-rewrite [in _ [::b]]unlock.
-by case: b; rewrite !sign_simp ?mul0r addr0 ?mulr0 ?mulfV// ?expip0 ?expip1 !sign_simp.
+rewrite big_ord_recr/= bigdE !tnthN.
+under eq_bigr do rewrite tnthNS widen_lift.
+rewrite [SPRE]tendA [SPOST]tendA.
+apply (RS_SC ('|'ph (bitstr2rat (b :: bsh)); s.1> 
+  \⊗ (\ten_i '|''(bsh~_i); s.2.[nlift ord_max i] >) \⊗ '|''bsl; s.2.[ord_max] >))=>/=; last first.
+  apply: RV_UT=>/=; rewrite [LHS]tendAC [in RHS]tendAC dotdTll/==>[||].
+    tac_qwhile_auto. tac_qwhile_auto.
+  f_equal; rewrite !tketT tlin_ket; f_equal.
+  rewrite BControl_adj BControlE lfunE/= !tentf_apply !outpE PhGate_adj.
+  rewrite dotp_cb0ph dotp_cb1ph phstateE linearDl/= lfunE/= PhGate_cb.
+  f_equal. rewrite !linearZl/= linearZr/= scalerA -mulrA. do 2 f_equal.
+  rewrite -rcons_cons bitstr_rcons mulrDr expipD -[LHS]mulr1 -mulrA; f_equal.
+  rewrite -expip0 -expipD; f_equal.
+  by rewrite mulrCA -mulrDr exprS invfM mulrA mulfV//= size_tuple mul1r addrN mulr0.
+move: IH=>/(_ <{ (s.1, (qreg_tuple (fun i : 'I_n => <{ s.2.[nlift ord_max i] }>)))}> bsh).
+rewrite [in SPRE]eq_qrE; under eq_bigr do rewrite !eq_qrE.
+rewrite [in SPOST]eq_qrE [in SCMD](eq_unitl _ (eq_qreg_fst _ _))/=.
+rewrite /QFT_sub; apply: RV_Frame.
+by apply/orP; right; apply/no_while_for.
+rewrite /QFT_sub/=; tac_qwhile_auto.
+tac_qwhile_auto.
 Qed.
 
-Lemma QFTbv_rev n (s : n.-tuple (vars bool)) (sb : n.-tuple bool) 
-  (diss : forall i j, i != j -> [disjoint lb (s ~_ i) & lb (s ~_ j)]) :
-  ｜QFTbv sb; pvars_tuple (rev_disx diss)〉 = 
-    \tens_(i < n) ｜'ph (bitstr2rat (drop i sb));s~_i〉.
+Lemma QFTbv_rev n (s : 'QReg[Bool.[n]]) (sb : n.-tuple bool) :
+  '|QFTbv sb; (tuple i => s.[rev_ord i])> = 
+    \ten_(i < n) '|'ph (bitstr2rat (drop i sb)); s.[i] >.
 Proof.
-rewrite QFTbvTE pvarsEv; clear diss.
-case: n s sb=>[s sb|n s sb]; first by rewrite !big_ord0.
-rewrite [in RHS](reindex_inj rev_ord_inj)/= bigq; apply eq_bigr=>i _; congr (｜_;_〉).
-by pose s0 := s~_ord0; rewrite !(tnth_nth s0)/= nth_rev size_tuple//.
-by rewrite tnth_ffun_tuple ffunE.
+rewrite QFTbvTE tketTV [in RHS](reindex_inj rev_ord_inj)/= bigd.
+by apply eq_bigr=>i _; rewrite eq_qrE subnS predn_sub.
 Qed.
 
-Lemma RS_QFT_iter n (s : n.-tuple (vars bool)) (sb : n.-tuple bool) 
-  (diss : forall i j, i != j -> [disjoint lb (s ~_ i) & lb (s ~_ j)]) :
-    ⊨s [pt,st] { ｜''sb ; pvars_tuple diss 〉 } (QFT_iter s) 
-        { ｜QFTbv sb; pvars_tuple (rev_disx diss)〉 }.
+Lemma RS_QFT_iter n (s : 'QReg[Bool.[n]]) (sb : n.-tuple bool) :
+    ⊨s [pt,st] { '|''sb ; s > } (QFT_iter s) 
+        { '|QFTbv sb ; (tuple i => s.[rev_ord i]) > }.
 Proof.
-rewrite QFTbv_rev pvarsEt.
-elim: n s sb diss =>[s sb _ | n IH s sb us];
-  first by rewrite /QFT_iter/= !big_ord0 bigq tuple0/=; apply: AxS_Sk.
-rewrite !big_ord_recl/= !bigqE.
-case/tupleP: s us=>x bs; case/tupleP: sb=>b bsb/cons_disjoint[] P2 P3.
-rewrite !tnth0; under eq_bigr do rewrite !tnthS.
-apply (RS_SC (｜'ph (bitstr2rat (b :: bsb));x〉
-  ⊗ (\tens_i ｜''(bsb ~_ i); bs ~_ i〉)))=>/=; last first.
-apply: RV_Framel=>/=; last by under [in SPOST]eq_bigr do rewrite tnthS; apply IH.
-clear -bs; case: pt=>//; apply: QFT_iter_no_while.
-3 : by apply RS_QFT_sub. rewrite fvars_QFT_iter. 
-2: rewrite setUC; under eq_bigr do rewrite tnthS.
-all: by rewrite 1?setUid disjoint_sym ?big_tuple; apply/bigcup_disjointP=>i _.
+rewrite QFTbv_rev.
+elim: n s sb=>[s sb|n IH s sb].
+  rewrite /QFT_iter t2tv_tuple tketTV !big_ord0 bigd; apply: AxS_Sk.
+rewrite !big_ord_recl/= !bigdE.
+case/tupleP: sb=>b sb.
+rewrite QFT_iterE/=.
+apply (RS_SC ('|'ph (bitstr2rat (b :: sb)); s.[0] >
+  \⊗ ('|''sb; (tuple i => s.[nlift 0 i])>)))=>/=.
+  move: RS_QFT_sub=>/(_ _ sb b <{(s.[0], (tuple i => s.[nlift 0 i]))}>)/=.
+  apply: eq_state_hoare.
+    - rewrite eq_qrE t2tv_tuple tketTV big_ord_recl bigdE tnth0 bigd.
+      by f_equal; apply eq_bigr=>i _; rewrite !eq_qrE tnthS.
+    - by rewrite (eq_unitl _ (eq_qreg_fst _ _)).
+    - by rewrite eq_qrE t2tv_tuple tketTV; under eq_bigr do rewrite eq_qrE.
+apply: RV_Framel=>/=[| _ | _ ||].
+  - rewrite /QFT_iter /QFT_sub; tac_qwhile_auto.
+  - by rewrite QFT_iter_no_while orbT.
+  - rewrite /QFT_iter/= fvars_for disjoint_sym; apply/bigcup_disjointP=>/= i _.
+    rewrite /QFT_sub/=; tac_qwhile_auto.
+  - tac_qwhile_auto.
+move: IH=>/(_ <{(tuple i => s.[nlift 0 i])}> sb)=>/=;
+by under eq_bigr do rewrite eq_qrE.
 Qed.
 
-Lemma RS_QFT_cir n (s : n.-tuple (vars bool)) (sb : n.-tuple bool) 
-  (diss : forall i j, i != j -> [disjoint lb (s ~_ i) & lb (s ~_ j)]) :
-    ⊨s [pt,st] { ｜''sb ; pvars_tuple diss 〉 } ((QFT_iter s) ;; (rev_circuit s))
-        { ｜QFTbv sb; pvars_tuple diss〉 }.
+Lemma RS_QFT_cir n (s : 'QReg[Bool.[n]]) (sb : n.-tuple bool) :
+    ⊨s [pt,st] { '|''sb ; s > } ((QFT_iter s) ;; (rev_circuit s))
+        { '|QFTbv sb; s > }.
 Proof.
 apply: (RS_SC _ (RS_QFT_iter _ _)).
 apply: RS_rev_circuitV.
 Qed.
 
 End QuantumFourierTransform.
+End QuantumFourierTransform.
 
-
-Local Open Scope hspace_scope.
 
 (* to hide local theorems, use Let instead of Definition and Lemma *)
+Module HHL.
+Local Open Scope hspace_scope.
+Local Open Scope ring_scope.
 Section HHL.
 Variable (m n : nat).
 (* q : m.+1 : dimension of data; p : n.+1 : dimension of control system *)
-Variable (p : vars 'I_n.+1) (q : vars 'I_m.+1) (r : vars bool).
 (* here, we provide the decomposition of data : A; pure state b *)
-Variable (u : 'ONB('I_m.+1; 'Hs 'I_m.+1)) (λ : 'I_m.+1 -> R) (b : 'NS('Hs 'I_m.+1)).
+Variable (u : 'ONB('I_m.+1; 'Ht 'I_m)) (λ : 'I_m.+1 -> R) (b : 'NS('Ht 'I_m)).
 Let A := \sum_i (λ i)%:C *: [> u i ; u i <].
 (* δ : ensure that control system is enough to store eigenvalue δ *)
 Variable  (t0 : R) (δ : 'I_m.+1 -> 'I_n.+1) (cc : C).
@@ -356,26 +362,27 @@ Hypothesis (Hyp : forall i, pi * 2%:R * (δ i)%:R = λ i * t0).
 Hypothesis (D_neq0 : forall i, (0 < (δ i))%N).
 (* to construct a valid control gate between p and auxiliary system r *)
 Hypothesis (cc_bound : `|cc| <= 1).
-Let β := (fun i=> [<u i ; b : 'Hs 'I_m.+1 >]).
-Let decb : ((b : 'Hs 'I_m.+1) = \sum_i (β i) *: (u i)).
+Let β := (fun i=> [<u i ; b : 'Ht 'I_m >]).
+Lemma decb : ((b : 'Ht 'I_m) = \sum_i (β i) *: (u i)).
 Proof. exact: onb_vec. Qed.
-Let lambda_gt0 : forall i, λ i != 0.
+Lemma lambda_gt0 : forall i, λ i != 0.
 Proof. 
 move=>i; apply/eqP=>P. move: (Hyp i)=>/eqP; apply/negP.
 rewrite P mul0r mulf_eq0 mulf_eq0 !pnatr_eq0 !negb_or.
 do ? (apply/andP; split=>//). apply pi_neq0. by apply/lt0n_neq0.
 Qed.
-Let t0_neq0 : t0 != 0.
+Lemma t0_neq0 : t0 != 0.
 Proof.
 apply/eqP=>P. move: (Hyp ord0)=>/eqP; apply/negP.
 rewrite P mulr0 mulf_eq0 mulf_eq0 !pnatr_eq0 !negb_or.
 do ? (apply/andP; split=>//). apply pi_neq0. by apply/lt0n_neq0.
 Qed.
-Let  lambdaE i : λ i = (pi * 2%:R / t0) * (δ i)%:R.
-Proof. by rewrite -mulrA [_^-1 * _]mulrC mulrA Hyp mulfK//. Qed.
+Lemma lambdaE i : λ i = (pi * 2%:R / t0) * (δ i)%:R.
+Proof. by rewrite -mulrA [_^-1 * _]mulrC mulrA Hyp mulfK// t0_neq0. Qed.
 Let x_uns := \sum_i (β i / (λ i)%:C) *: (u i).
 Let c := `|x_uns|.
-Let c_gt0 : c > 0.
+Lemma c_gt0 : c > 0.
+Proof.
 have : exists i, β i != 0.
   rewrite not_existsP=>P.
   have Pb : (b : 'Hs _) = 0 by rewrite decb big1// =>i _; 
@@ -389,60 +396,71 @@ all: rewrite big1=>[k/negPf nk|];
 rewrite dotpZl dotpZr onb_dot ?nk ?mulr0// eqxx mulr1 addr0 -normCKC ?exprn_ge0//.
 by rewrite sqrf_eq0 normr_eq0 mulf_eq0 Pi/= invr_eq0 realc_eq0 lambda_gt0.
 Qed.
-Let x := c^-1 *: x_uns.
-Let x_ns : [< x ; x >] == 1.
+Let x : 'Ht 'I_m := c^-1 *: x_uns.
+Lemma x_ns : [< x ; x >] = 1.
 Proof.
-rewrite dotp_norm /x normrZ -/c ger0_norm ?invr_ge0 ?mulVf ?expr1n//.
+rewrite dotp_norm /x hnormZ -/c ger0_norm ?invr_ge0 ?mulVf ?expr1n//.
 apply/ltW/c_gt0. apply/lt0r_neq0/c_gt0.
 Qed.
-Local Canonical x_nsType := NSType x_ns.
+HB.instance Definition _ := isNormalState.Build ('Ht 'I_m) x x_ns.
+(* Canonical x_nsType := NSType x_ns. *)
 (* Ub |0;p> -> b *)
-Let Ub := VUnitary [NS of ''ord0] b.
+Let Ub := VUnitary ''ord0 b.
 Let Uf_fun := (fun i : 'I_n.+1 => expmxip u λ (i%:R * t0 / pi / n.+1%:R)).
 (* Uf is a Multiplexer *)
 Let Uf := Multiplexer Uf_fun.
 (* QFT : QFT : QFT unitary; QFTv : QFT basis *)
 (* to defintion Uc, note that its partial *)
-Let Uc_from := (fun i : 'I_n.+1 => ''i ⊗t '0).
-Let v k := (fun i : 'I_k.+1 => if i == 0 then '0 else 
-  [bmv sqrtC (1 - `|cc|^+2/i%:R^+2) ; cc / i%:R]).
-Let v_ns k i : [< @v k i ; @v k i >] == 1.
+Let v k (i : 'I_k.+1) : 'Ht Bool := 
+  if i == 0 then '0 else 
+  [bmv sqrtC (1 - `|cc|^+2/i%:R^+2) ; cc / i%:R].
+Lemma v_ns k i : [< @v k i ; @v k i >] = 1.
 Proof.
-apply/eqP; rewrite /v; case: eqP=>[_|/eqP]; rude_bmx=>//.
-rewrite -lt0n=>P; rewrite -!normCKC [in X in _ + X]ger0_norm.
-rewrite sqrtC_ge0 subr_ge0 ler_pdivr_mulr ?exprn_gt0// ?ltr0n// mul1r.
-apply: ler_expn2r; rewrite ?nnegrE//.
+rewrite /v; case: eqP=>[_|/eqP]; rude_bmx=>//.
+rewrite -lt0n=>P; rewrite -!normCKC [ `|sqrtC _|]ger0_norm.
+rewrite sqrtC_ge0 subr_ge0 ler_pdivrMr ?exprn_gt0// ?ltr0n// mul1r.
+apply: lerXn2r; rewrite ?nnegrE//.
 by apply: (le_trans cc_bound); rewrite ler1n.
-by rewrite sqrtCK normf_div [`|i%:R|]ger0_norm// 
+by rewrite sqrtCK normf_div [ `|i%:R|]ger0_norm// 
   expr_div_n addrC -addrA addNr addr0.
 Qed.
-Local Canonical v_nsType k i := NSType (@v_ns k i).
-Let Uc_to := (fun i : 'I_n.+1 => ''i ⊗t v i).
-Let Uc_from_ponb : forall i j, [< Uc_from i ; Uc_from j >] = (i == j)%:R.
+HB.instance Definition _ k i := 
+  isNormalState.Build ('Ht Bool) (@v k i) (@v_ns k i).
+(* Local Canonical v_nsType k i := NSType (@v_ns k i). *)
+Let Uc_from : 'I_n.+1 -> 'Ht ('I_n * Bool) := (fun i : 'I_n.+1 => ''i ⊗t '0).
+Let Uc_to : 'I_n.+1 -> 'Ht ('I_n * Bool) := (fun i : 'I_n.+1 => ''i ⊗t v i).
+Lemma Uc_from_ponb : forall i j, [< Uc_from i ; Uc_from j >] = (i == j)%:R.
 Proof. by move=>i j; rewrite /Uc_from tentv_dot !onb_dot eqxx mulr1. Qed.
-Let Uc_to_ponb : forall i j, [< Uc_to i ; Uc_to j >] = (i == j)%:R.
+Lemma Uc_to_ponb : forall i j, [< Uc_to i ; Uc_to j >] = (i == j)%:R.
 Proof.
 move=>i j; rewrite /Uc_to tentv_dot onb_dot.
-by case: eqP=>[->|_]; rewrite ?mul0r// ns_dot mulr1.
+by case: eqP=>[->|_]; rewrite ?mul0r//= ns_dot mulr1.
 Qed.
-Local Canonical Uc_from_ponbasis := PONBasis Uc_from_ponb.
-Local Canonical Uc_to_ponbasis := PONBasis Uc_to_ponb.
-Let Uc := PUnitary [PONB of Uc_from] [PONB of Uc_to].
+HB.instance Definition _ := 
+  isPONB.Build ('Ht ('I_n * Bool)) 'I_n.+1 Uc_from Uc_from_ponb.
+HB.instance Definition _ := 
+  isPONB.Build ('Ht ('I_n * Bool)) 'I_n.+1 Uc_to Uc_to_ponb.
+(* Local Canonical Uc_from_ponbasis := PONBasis Uc_from_ponb. *)
+(* Local Canonical Uc_to_ponbasis := PONBasis Uc_to_ponb. *)
+Let Uc := PUnitary Uc_from Uc_to.
 
-(* we assume that p q r are different *)
-Hypothesis (npq : [disjoint lb p & lb q]) (nqr : [disjoint lb q & lb r]) 
-  (npr : [disjoint lb p & lb r]).
+(* quantum registers *)
+Variable (pqr : 'QReg['I_n * 'I_m * Bool]).
+Notation p := <{ pqr.1.1 }>.
+Notation q := <{ pqr.1.2 }>.
+Notation r := <{ pqr.2 }>.
+
 (* define the loop body of HHL *)
 (* we split the initial part out, to use etdf of HHL body *)
 Definition HHL_body := 
   [ut q := Ub ];;
   [ut p := 'Hn ];;
-  [ut [p,q] := Uf ];;
+  [ut (p,q) := Uf ];;
   [ut p := IQFT ];;
-  [ut [p,r] := Uc ];;
+  [ut (p,r) := Uc ];;
   [ut p := QFT ];;
-  [ut [p,q] := Uf^A ];;
-  [ut p := 'Hn^A ].
+  [ut (p,q) := (Uf^A)%VF ];;
+  [ut p := ('Hn^A)%VF ].
 
 Definition HHL :=
   [it p := ''ord0 ];;
@@ -451,8 +469,8 @@ Definition HHL :=
   [while tmeas[ r ] = false do [it q := ''ord0] ;; HHL_body].
 
 (* we show the correctness w.r.t. local correctness *)
-Let P := ⌈ [> ''ord0; ''ord0 <]; p ⌉ ⊗ ⌈ \1; q ⌉ ⊗ ⌈ [> '0; '0 <]; r ⌉.
-Let Q := ⌈ [> ''ord0; ''ord0 <]; p ⌉ ⊗ ⌈ [> x ; x <]; q ⌉ ⊗ ⌈ [> '1; '1 <]; r ⌉.
+Let P := '[ [> ''ord0; ''ord0 <]; p ] \⊗ '[ \1; q ] \⊗ '[ [> '0; '0 <]; r ].
+Let Q := '[ [> ''ord0; ''ord0 <]; p ] \⊗ '[ [> x ; x <]; q ] \⊗ '[ [> '1; '1 <]; r ].
 
 Let vv := \sum_(i < m.+1) (β i *: u i ⊗t v (δ i)).
 Lemma vv_norm1 : `|vv| = 1.
@@ -463,21 +481,23 @@ apply/eqP; apply eq_bigr=>i _; rewrite !dotp_suml; apply eq_bigr=>j _.
 rewrite !linearZl/= !linearZr/= tentv_dot onb_dot.
 by case: eqP=>[->|]; rewrite ?mul0r ?mulr0// ns_dot mulr1.
 Qed.
-Let pp0 := (\1 : 'End['I_m.+1]) ⊗f [> '0; '0 <].
-Let pp1 := [> x ; x <] ⊗f [> '1; '1 <].
+Let pp0 : 'End{'I_m * Bool} := (\1 : 'End{'I_m}) ⊗f [> '0; '0 <].
+Let pp1 : 'End{'I_m * Bool} := [> x ; x <] ⊗f [> '1; '1 <].
 Lemma pp0_proj : pp0 \is projlf.
 Proof.
 by apply/projlfP; rewrite /pp0 tentf_adj adj_outp adjf1 
   tentf_comp comp_lfun1l outp_comp onb_dot scale1r.
 Qed.
-Local Canonical pp0_projfType := ProjfType pp0_proj.
+HB.instance Definition _ := isProjLf.Build ('Ht 'I_m * Bool) pp0 pp0_proj.
+(* Local Canonical pp0_projfType := ProjfType pp0_proj. *)
 Lemma pp1_proj : pp1 \is projlf.
 Proof.
 by apply/projlfP; rewrite /pp1 tentf_adj !adj_outp
   tentf_comp !outp_comp !ns_dot !scale1r.
 Qed.
-Local Canonical pp1_projfType := ProjfType pp1_proj.
-Lemma pp0_ortho_pp1 : pp0 \o pp1 = 0.
+HB.instance Definition _ := isProjLf.Build ('Ht 'I_m * Bool) pp1 pp1_proj.
+(* Local Canonical pp1_projfType := ProjfType pp1_proj. *)
+Lemma pp0_ortho_pp1 : (pp0 \o pp1)%VF = 0.
 Proof. by rewrite /pp0 /pp1 tentf_comp outp_comp onb_dot/= scale0r tentf0. Qed.
 
 Lemma v_deltai i : v (δ i) = cc / (δ i)%:R *: '1 + sqrtC (1 - `|cc| ^+ 2 / (δ i)%:R ^+ 2) *: '0.
@@ -497,138 +517,127 @@ rewrite big_split/= addrC; apply: memhU.
   rewrite /pp1 tentv_out -hlineE.
 under eq_bigr do rewrite linearZl/= linearZr/= scalerA mulrC -mulrA -scalerA.
 rewrite -linear_sum/=; apply memhZ; rewrite /x linearZl/= hlineZ.
-by rewrite invr_eq0; apply/lt0r_neq0.
+  by rewrite invr_eq0; apply/lt0r_neq0/c_gt0.
 rewrite /x_uns tentv_suml. under [in X in <[X]> ]eq_bigr do rewrite lambdaE mulrC
   realcM invfM natrC tentvZl -[_ * _ * β _]mulrA -scalerA.
 rewrite -linear_sum/= hlineZ; last by apply: memh_line.
 by rewrite invr_eq0 realc_eq0 !mulf_eq0 !negb_or pi_neq0/= invr_eq0 t0_neq0 andbT.
 Qed.
 
-Let R := ｜''ord0;p〉 ⊗ ｜vv;(q,r)〉.
+Let R := '|''ord0; p> \⊗ '|vv; (q,r)>.
 Lemma RS_HHL_body pt st : 
-  ⊨s [pt,st] { ｜''ord0;p〉 ⊗ ｜''ord0;q〉 ⊗ ｜'0;r〉 } 
+  ⊨s [pt,st] { '|''ord0; p> \⊗ '|''ord0; q> \⊗ '|'0; r> } 
                HHL_body { R }.
+Proof.
 rewrite /HHL_body /R.
-apply: (RS_SC _ _ (AxV_UT _))=>/=.
-rewrite tf2f_adj tlin_ketTl/=.
-- by rewrite disjointXU npq npr.
-rewrite adjfK VUnitaryE/= uniformtvE card_ord -tketZ tenqZl /vv -tket_sum -tket_sum tenq_sumr.
 + apply: (RS_SC _ _ (AxV_UT _))=>/=.
-rewrite tf2f2c_adj adjfK [in SPOST]tf2f2cE// dotqZr dotq_sumr.
-under eq_bigr do rewrite tenq_suml dotq_sumr/=.
-suff P1: [disjoint lb p :|: lb q & lb r].
-under eq_bigr do under eq_bigr do rewrite -tketT tenqA tketT (t2lin_ketTl npq _ _ _ P1)/=.
+  rewrite adjfK dotdTll/=; try tac_qwhile_auto.
+  rewrite tlin_ket VUnitaryE/= uniformtvE card_ord/= -tketZ tendZl /vv -tket_sum -tket_sum tend_sumr.
 + apply: (RS_SC _ _ (AxV_UT _))=>/=.
-+ apply: (RS_forward (R := \sum_j(｜''(δ j) ⊗t v (δ j);(p,r)〉 ⊗ ｜β j *: u j;q〉))).
-rewrite linear_sum/= dotq_sumr; apply eq_bigr=>i _.
-rewrite tf2f_adj -/IQFT -tketT tenqAC -tenqA.
-under eq_bigr do rewrite 2!linearZ/= MultiplexerEt expmxipEt -tentvZS -linearZr/= -tketT -tenqA.
-rewrite -tenq_suml -tenqZl tket_sum tketZ tlin_ketTl/=.
-- by rewrite disjointXU npq npr.
-congr (｜_;p〉⊗ _).
-under eq_bigr do rewrite mulrA -[ _ / pi]mulrA [_%:R * _]mulrC !mulrA -Hyp -[ _ / pi]mulrC.
-under eq_bigr do rewrite !mulrA (mulVf pi_neq0) mul1r -[_%:R * _ * _]mulrA -natrM -runityE.
-by rewrite -QFTvE IQFTEt.
+  rewrite adjfK dotdZr dotd_sumr.
+  under eq_bigr do rewrite tend_suml dotd_sumr/=.
+  have P1: [disjoint mset <{(p,q)}> & mset r] by tac_qwhile_auto.
+  under eq_bigr do under eq_bigr do rewrite -tketT tendA tketT 
+    (dotdTll _ _ _ P1 P1)/= tlin_ket.
 + apply: (RS_SC _ _ (AxV_UT _))=>/=.
-rewrite tf2f2cE// tf2f2_adj dotq_sumr.
-suff P2: [disjoint lb p :|: lb r & lb q].
-under eq_bigr do rewrite (t2lin_ketTl npr _ _ _ P2)/= PUnitaryEV -tketT tenqAC.
-rewrite -tenq_suml.
-+ apply: RV_Frame=>//=; first by case: pt.
-- 1,2: rewrite ?disjointX0// ?[_ :|: lb p]setUC setUid// setUA setUid//.
-move: npq. rewrite -!fsem_seqA=>_.
++ apply: (RS_forward (R := \sum_j('|''(δ j) ⊗t v (δ j); (p,r)> \⊗ '|β j *: u j; q>))).
+  rewrite linear_sum/= dotd_sumr; apply eq_bigr=>i _.
+  rewrite -/IQFT -tketT tendAC -tendA.
+  under eq_bigr do rewrite 2!linearZ/= MultiplexerEt expmxipEt -tentvZS -linearZr/= -tketT -tendA.
+  rewrite -tend_suml -tendZl tket_sum tketZ dotdTll/=; try tac_qwhile_auto.
+  f_equal; rewrite tlin_ket.
+  under eq_bigr do rewrite mulrA -[ _ / pi]mulrA [_%:R * _]mulrC !mulrA -Hyp -[ _ / pi]mulrC.
+  under eq_bigr do rewrite !mulrA (mulVf pi_neq0) mul1r -[_%:R * _ * _]mulrA -natrM -runityE.
+  by rewrite -QFTvE IQFTEt.
++ apply: (RS_SC _ _ (AxV_UT _))=>/=.
+  rewrite dotd_sumr.
+  have P2: [disjoint mset <{(p,r)}> & mset q] by tac_qwhile_auto.
+  under eq_bigr do rewrite (dotdTll _ _ _ P2 P2)/= tlin_ket PUnitaryEV -tketT tendAC.
+  rewrite -tend_suml.
++ apply: RV_Frame=>//=; first by rewrite orbT.
+  tac_qwhile_auto. tac_qwhile_auto.
+  rewrite -!fsem_seqA. 
 + apply: (RS_SC _ (AxV_UTF _))=>/=.
-rewrite tlin_ketTr/= 1?disjoint_sym//.
+  rewrite dotdTlr/= ?tlin_ket; try tac_qwhile_auto.
 + apply: (RS_SC _ (AxV_UTF _))=>/=.
-rewrite tlin_ketTl//=.
+  rewrite dotdTll/= ?tlin_ket; try tac_qwhile_auto.
 + apply: (RS_SC _ (AxV_UTF _))=>/=.
-rewrite tketT tf2f2cE// tlin_ketG//.
+  rewrite tketT tlin_ket.
 + apply: RV_UTF.
-rewrite/= !VUnitaryE/= uniformtvE card_ord decb 2!linear_sum/= -tket_sum dotq_sumr.
+rewrite/= !VUnitaryE/= uniformtvE card_ord decb 2!linear_sum/= -tket_sum dotd_sumr.
 apply eq_bigr=>i _.
 rewrite linearZl/= [in RHS]linearZ/= -[in RHS]tketZ linear_suml/= linear_sum/= -tket_sum.
 under eq_bigr do rewrite 2!linearZ/= MultiplexerEt expmxipEt -tentvZS -linearZr/= -tketT
   mulrA -[ _ / pi]mulrA [_%:R * _]mulrC !mulrA -Hyp -[ _ / pi]mulrC 
   !mulrA (mulVf pi_neq0) mul1r -[_%:R * _ * _]mulrA -natrM -runityE.
-by rewrite -tenq_suml -tenqZl tket_sum tketZ -QFTvE tlin_ketTl -?disjoint_neqE//= IQFTEt.
-all: by rewrite disjointUX ?[[disjoint lb r & _]]disjoint_sym ?npq ?nqr// npr.
+rewrite -tend_suml -tendZl tket_sum tketZ -QFTvE dotdTll/=; try tac_qwhile_auto.
+by rewrite tlin_ket IQFTEt.
 Qed.
 
 (* need the theory of subspace/projection here *)
-(* set up a new file for this theory ; to replace vector vspace *)
-Let disjointr_pq : [disjoint lb r & lb p :|: lb q].
-Proof. by rewrite disjoint_sym disjointUX npr nqr. Qed.
-
-Lemma HHL_PQR_relation : R ∗ R`A ⊑ qeform (⌈ [> '1 ; '1 <];r ⌉) Q 
-  + qeform (⌈ [> '0 ; '0 <];r ⌉) P.
+Lemma HHL_PQR_relation : R \o R^A ⊑ dform ('[ [> '1 ; '1 <]; r ]) Q 
+  + dform ('[ [> '0 ; '0 <]; r ]) P.
 Proof.
-rewrite !qeformE !tlin_adj !adj_outp /P /Q ![_ ⊗ ⌈_;r⌉]tenqC.
-rewrite !tlin_comTll//= ?tlin_comTrl//=  !outp_comp !onb_dot !eqxx 
-  !scale1r !outp_comp !onb_dot !eqxx !scale1r ![⌈_;r⌉ ⊗ _]tenqC -!tenqA -tenqDr.
-rewrite /R adjqT !ket_adj tenq_com ?disjoint0X// !touter.
-apply: le_wptenq2l=>/=. by rewrite disjointXU npq npr.
-by rewrite lin_gef0 tf2f_ge0 outp_ge0.
-by rewrite !tlinT tlinD lin_lef tf2f2_lef// addrC vv_lef.
+rewrite !dformE !tlin_adj !adj_outp /P /Q ![_ \⊗ '[_;r]]tendC.
+rewrite !dotdTll/= ?tlinG ?dotdTrl/= ?tlinG; try tac_qwhile_auto.
+rewrite !outp_comp !ns_dot !scale1r !outp_comp !ns_dot !scale1r 
+  !['[_;r] \⊗ _]tendC -!tendA -tendDr !tlinT tlinD.
+rewrite /R adjdT !tket_adj tend_mul ?disjoint0X// !touter.
+apply: le_wptend2l=>/=. tac_qwhile_auto.
+by rewrite tlin_ge0 outp_ge0.
+by rewrite tlin_le addrC vv_lef.
 Qed.
 
-Let P' := ⌈ [> ''ord0; ''ord0 <]; p ⌉ ⊗ ⌈ [> ''ord0; ''ord0 <]; q ⌉ ⊗ ⌈ [> '0; '0 <]; r ⌉.
+Let P' := '[ [> ''ord0; ''ord0 <]; p ] \⊗ '[ [> ''ord0; ''ord0 <]; q ] \⊗ '[ [> '0; '0 <]; r ].
 Lemma R_HHL_loop_P :
-  ⊨p { qeform (⌈ [> ''(~~false) ; ''(~~false) <];r ⌉) Q + qeform (⌈ [> '0 ; '0 <];r ⌉) P } 
+  ⊨p { dform ('[ [> ''(~~false) ; ''(~~false) <]; r ]) Q + dform ('[ [> '0 ; '0 <]; r ]) P } 
   [while tmeas[r] = false do [it q := ''ord0] ;; HHL_body]
   { Q }.
-apply: tbR_LP_P=>/=.
-1,2: rewrite tlinT -tenqe_correct linqe_id -tenf11; apply: lev_pbreg2.
-1,6: by rewrite disjointUX npr nqr.
-1,5: rewrite tf2f2_ge0//. 4,7: rewrite tf2f2_le1//.
-1,2,3,7: apply: psdf_ge0.
-1,2,3,4: apply: obsf_le1.
-apply: (R_SC [sqr of P' ]).
-rewrite /=/P' -!tenqA [POST]tenqC -tenqA.
-rewrite tenqC -tenqA -tlin1 tenqC R_El/= 1?disjoint_sym.
-2: apply: tAx_InF.
-1,2: by rewrite disjointXU nqr disjoint_sym npq.
-rewrite/=. move: (RS_HHL_body false false); rewrite stateE.
-apply: R_Or; last by exact: HHL_PQR_relation.
-by rewrite /P'/= !adjqT !ket_adj !tenq_com/= ?disjointX0// !touterM.
-Qed.
-
-
-Lemma R_HHL_P : ⊨ps { |1 } HHL { ｜x;q〉}.
 Proof.
-rewrite stateE adjq1 cplxM mul1r ket_adj touterM.
-apply/(R_Er (W:= lb p :|: lb r) _)=>/=.
-by rewrite disjointXU nqr disjoint_sym npq.
-apply: (R_Orr (Q:=Q) _)=>/=.
-by rewrite /Q -tenqA tenqCA tlinT//; apply: le_wptenq2l=>/=;
-rewrite ?lin_gef0 ?psdf_ge0 ?lin_lef1 ?tf2f2_le1 ?obsf_le1// disjointXU nqr disjoint_sym npq.
-rewrite /HHL. apply: (R_SC _ _ R_HHL_loop_P)=>/=.
-have: ⊨p { |1 } ([it p := ''ord0] ;; [it q := ''ord0] ;; [it r := '0]) {P'}.
-rewrite /P' tenqC; apply: (R_SC _ _ (tAx_In _))=>/=.
-rewrite outpE ns_dot scale1r ns_dot scale1r.
-apply: (R_SC _ (tAx_InF _))=>/=;
-rewrite ?disjointX0// tenq1 tenqC; apply: tAx_InF.
-1,2: by rewrite ?disjointXU disjoint_sym ?npq// npr/= disjoint_sym.
-apply: R_Or=>//=. rewrite -[P']add0r lev_add//.
-all: rewrite tenqC qeformE tlin_adj adj_outp tlin_comTll// tlin_comTrl//=.
-all: rewrite outp_comp ns_dot scale1r outp_comp ns_dot scale1r /P'.
-2: rewrite tenqC. all: rewrite !tenqA tlinT -!tenqe_correct ?lin_lef.
-1: rewrite lin_gef0.
-apply: bregv_ge0. 4: apply: lev_wpbreg2l.
-2,5: rewrite tf2f2_ge0. 3,5,6: apply: psdf_ge0.
-5: by rewrite tf2f_lef obsf_le1.
-all: rewrite ?disjointUX ?npq disjoint_sym ?npr// ?nqr//.
+rewrite /P /Q !tlinT.
++ apply: tbR_LP_P=>/=.
+  1,2:  by rewrite tlin_lef1 -!tentf11 ?lev_pbreg2// 
+    ?ns_outp_le1// ?bregv_ge0// ?outp_ge0// lef01.
++ apply: (R_SC P').
+  rewrite -!tlinT tendAC -tlin1 R_El/=; first by tac_qwhile_auto.
+  rewrite /P' tendAC [POST]tendC; apply: tAx_InF; tac_qwhile_auto.
+move: (RS_HHL_body false false); rewrite stateE.
+rewrite -!tlinT -/P -/Q !tketT tket_adj touter -!tentv_out -!tlinT.
+by apply: R_Or=>//; exact: HHL_PQR_relation.
 Qed.
 
+Lemma R_HHL_P : ⊨ps { :1 } HHL { '|x; q>}.
+Proof.
+rewrite stateE adjd1 numdM mul1r tket_adj touter.
+apply/(R_Er (W:= mset <{(p,r)}>) _)=>/=; first by tac_qwhile_auto.
+apply: (R_Orr (Q:=Q) _)=>/=.
+  rewrite tlin1 /Q -tentf11 -tlinT tendA [X in X \⊗ _]tendC !tlinT.
+  by rewrite tlin_le ?lev_pbreg2// ?ns_outp_le1// ?outp_ge0// bregv_ge0// outp_ge0.
+rewrite /HHL. apply: (R_SC _ _ R_HHL_loop_P)=>/=.
+rewrite -fsem_seqA.
+apply: (R_SC _ (tAx_InF _))=>/=; first by rewrite disjointX0.
+apply: (R_SC _ (tAx_InF _))=>/=; first by rewrite setU0; tac_qwhile_auto.
+apply: (R_Orr _ (tAx_InF _))=>/=; last by rewrite setU0; tac_qwhile_auto.
+rewrite !dformE !tlin_adj !dotdTlr/= ?tlinG ?dotdTrr/=; try tac_qwhile_auto.
+rewrite !tlinG !adj_outp !outp_comp !ns_dot !scale1r !outp_comp !ns_dot !scale1r.
+rewrite tend1 tendAC -[X in X <= _]add0r levD//.
+by rewrite !tlinT tlin_ge0 !bregv_ge0 ?outp_ge0.
+rewrite tendCA tendA tendC tendA !tlinT tlin_le.
+by rewrite !lev_pbreg2// ?bregv_ge0// ?outp_ge0// ns_outp_le1.
+Qed.
+
+End HHL.
 End HHL.
 
 
 (* HLF *)
+Module HiddenLinearFunction.
+Import ParallelHadamardTuple.
 Section HiddenLinearFunction.
 Variable (pt st : bool) (N : nat). (* grid of N.+1 * N.+1 *)
 Variable (A : 'M[bool]_N.+1).
 Hypotheses (A_sym : forall i j, A i j = A j i).
-Variable (x : N.+1.-tuple (vars bool)).
-Hypothesis (disx : forall i j, i != j -> [disjoint lb (x ~_ i) & lb (x ~_ j)]).
+Variable (x : 'QReg[Bool.[N.+1]]).
 
 Definition HLF_q (k : N.+1.-tuple bool) :=
   ((\sum_j A j.1 j.2 * k ~_ j.1 * k ~_ j.2) %% 4)%N.
@@ -641,100 +650,100 @@ Lemma SS_inP y : y \in SS -> A y.1 y.2 = true /\ (y.1 < y.2)%N /\ y.1 != y.2.
 Proof. by rewrite inE=>/andP[/eqP]; split=>//; split=>//; apply: ltn_neq. Qed.
 
 Definition HLF_sub1 :=
-  [for i do [it x ~_ i := '0 ]];;
-  [for i do [ut x ~_ i := ''H ]].
+  [for i do [it x.[i] := '0 ]];;
+  [for i do [ut x.[i] := ''H ]].
 
 Definition HLF_sub2 (r1 : seq 'I_N.+1) (SP1 : pred 'I_N.+1) :=
-  [for i <- r1 | SP1 i do [ut x ~_ i := ''S ]].
+  [for i <- r1 | SP1 i do [ut x.[i] := ''S ]].
 
 Definition HLF_sub3 (r2 : seq ('I_N.+1 * 'I_N.+1)) (SP2 : pred ('I_N.+1 * 'I_N.+1)) :=
-  [for i <- r2 | SP2 i do [ut [x ~_ i.1 , x ~_ i.2] := ''CZ ]].
+  [for i <- r2 | SP2 i do [ut (x.[i.1] , x.[i.2]) := ''CZ ]].
 
 Definition HLF :=
-  [for i do [it x ~_ i := '0 ]];;
-  [for i do [ut x ~_ i := ''H ]];;
-  [for i in SD do [ut x ~_ i := ''S ]];;
-  [for i in SS do [ut [x ~_ i.1 , x ~_ i.2] := ''CZ ]];;
-  [for i do [ut x ~_ i := ''H ]].
+  [for i do [it x.[i] := '0 ]];;
+  [for i do [ut x.[i] := ''H ]];;
+  [for i in SD do [ut x.[i] := ''S ]];;
+  [for i in SS do [ut (x.[i.1] , x.[i.2]) := ''CZ ]];;
+  [for i do [ut x.[i] := ''H ]].
 
 Lemma fsem_big_rcons I i r (P : pred I) (F : I -> cmd_) :
-  let x := \big[seqc/skip]_(j <- r | P j) F j in
-  \big[seqc/skip]_(j <- rcons r i | P j) F j =s if P i then x ;; (F i) else x.
-Proof. by rewrite/=/eqcmd; case E: (P i)=>/=; rewrite ?fsemE !fsem_big big_rcons/= E//. Qed.
-
-Lemma fsem_big_recr n F :
-  \big[seqc/skip]_(i < n.+1) F i =s
-     ((\big[seqc/skip]_(i < n) F (widen_ord (leqnSn n) i)) ;; F ord_max).
-Proof. by rewrite/eqcmd fsemE !fsem_big big_ord_recr/=. Qed.
+  let x := [for j <- r | P j do F j] in
+  [for j <- rcons r i | P j do F j] =s if P i then x ;; (F i) else x.
+Proof.
+rewrite /= eqcmd.unlock; case E: (P i)=>/=;
+by rewrite ?fsemE !fsem_big big_rcons/= E.
+Qed.
 
 Lemma plus_dec : '+ = (sqrtC 2%:R)^-1 *: \sum_(i : bool) ''i.
 Proof. by rewrite big_bool/=; rude_bmx. Qed.
 
-Let PT: True. by []. Qed.
+(* Let PT: True. by []. Qed. *)
 
 Lemma RS_HLF_sub12 (r1 : seq 'I_N.+1) (SP1 : pred 'I_N.+1) :
-  ⊨s [pt,st] { |1 } (HLF_sub1 ;; HLF_sub2 r1 SP1) { (sqrtC 2%:R ^- N.+1 *:
-  (\sum_(i : N.+1.-tuple bool) ('i ^ (\sum_(j <- r1 | SP1 j) i ~_ j)%N) *: ｜''i;pvars_tuple disx〉)) }.
+  ⊨s [pt,st] { :1 } (HLF_sub1 ;; HLF_sub2 r1 SP1) { (sqrtC 2%:R ^- N.+1 *:
+  (\sum_(i : N.+1.-tuple bool) ('i ^ (\sum_(j <- r1 | SP1 j) i ~_ j)%N) *: '|''i; x>)) }.
 Proof.
-rewrite /HLF. move: {+}PT. rewrite -!fsem_seqA=>_.
-apply: (RS_SC _ (tAxV_InFP_seq _ _ _))=>[++ _ _|||]; 
-rewrite ?disjoint0X//=tenq1 -pvarsEt_nseq.
-apply: (RS_SC _ (RS_ParaHadamard_tuple disx _) _).
+rewrite /HLF. rewrite -!fsem_seqA.
+apply: (RS_SC _ (tAxV_InFP_seq _ _ _))=>/=[i j _ _|//|i _|]; try tac_qwhile_auto;
+rewrite ?disjoint0X//= tend1 tketT eq_qrE.
+have ->: tentv_tuple (fun=> '0) = ''(nseq_tuple N.+1 false) :> 'Ht Bool.[N.+1].
+  by rewrite t2tv_tuple; under [in RHS]eq_tentv_tuple do rewrite tnth_nseq.
+apply: (RS_SC _ (RS_ParaHadamard_tuple _) _).
 rewrite /HLF_sub2; elim/last_ind: r1=>[|r i IH].
-rewrite !big_nil; apply: (RS_forward _ (AxS_Sk _)).
-rewrite/=; f_equal; apply eq_bigr=>bs _; f_equal; 
-rewrite /bitstr_dot big_nil big1 ?expr0z// =>i _. by rewrite tnth_nseq.
-move: PT; rewrite fsem_big_rcons=>_; case E: (SP1 i); last first.
+rewrite !big_nil; apply: (RS_forward _ (AxS_Sk _));
+rewrite/=; f_equal; apply eq_bigr=>bs _; f_equal.
+by rewrite /bitstr_dot big_nil big1 ?expr0z// =>i _; rewrite tnth_nseq.
+rewrite fsem_big_rcons; case E: (SP1 i); last first.
 by apply: (RS_forward _ IH); under [in RHS]eq_bigr do rewrite big_rcons E/=.
 apply: (RS_SC _ IH).
 apply : (RS_forward _ (AxV_UTF _)).
 rewrite/= !linear_sum/=; apply eq_bigr=>bs _.
-rewrite !dotqZr; f_equal; rewrite/= pvarsEt (bigD1 i)//= bigqE tlin_ketTl/=; last first.
-rewrite SGate_cb -tketZ tenqZl scalerA; f_equal.
+rewrite !dotdZr; f_equal; rewrite/= t2tv_tuple tketTV (bigD1 i)//= bigdE tketGTl.
+  tac_qwhile_auto.
+rewrite SGate_cb -tketZ tendZl scalerA; f_equal.
 by rewrite big_rcons E/= -!exprnP -exprD.
-apply/bigcup_disjoint_seqP=>j/andP[_]; rewrite disjoint_sym; apply: disx.
 Qed.
 
 Lemma RS_HLF_sub (r1 : seq 'I_N.+1) (SP1 : pred 'I_N.+1) 
   (r2 : seq ('I_N.+1 * 'I_N.+1)) (SP2 : pred ('I_N.+1 * 'I_N.+1)) :
   (forall x, SP2 x -> x.1 != x.2) -> 
-  ⊨s [pt,st] { |1 } (HLF_sub1 ;; HLF_sub2 r1 SP1 ;; HLF_sub3 r2 SP2) { (sqrtC 2%:R ^- N.+1 *:
+  ⊨s [pt,st] { :1 } (HLF_sub1 ;; HLF_sub2 r1 SP1 ;; HLF_sub3 r2 SP2) { (sqrtC 2%:R ^- N.+1 *:
   (\sum_(i : N.+1.-tuple bool) 
     ('i ^ (\sum_(j <- r1 | SP1 j) i ~_ j + 2 * \sum_(j <- r2 | SP2 j) i ~_ j.1 * i ~_ j.2)%N) 
-      *: ｜''i;pvars_tuple disx〉)) }.
+      *: '|''i; x>)) }.
 Proof.
 move=>H2; apply: (RS_SC _ (RS_HLF_sub12 _ _)).
 rewrite /HLF_sub3; elim/last_ind: r2=>[|r i IH].
 rewrite !big_nil; apply: (RS_forward _ (AxS_Sk _)).
 by rewrite/=; f_equal; apply eq_bigr=>bs _; f_equal; 
 rewrite /bitstr_dot big_nil muln0 addn0.
-move: PT; rewrite fsem_big_rcons=>_; case E: (SP2 i); last first.
+rewrite fsem_big_rcons; case E: (SP2 i); last first.
 by apply: (RS_forward _ IH); under [in RHS]eq_bigr do rewrite big_rcons E/=.
 apply: (RS_SC _ IH).
+have Hx : valid_qreg <{ (x.[i.1], x.[i.2]) }>.
+  by tac_qwhile_auto=>/=; rewrite H2.
 apply : (RS_forward _ (AxV_UTF _)).
 rewrite/= !linear_sum/=; apply eq_bigr=>bs _.
-rewrite !dotqZr; f_equal; rewrite/= big_rcons E/= mulnDr addnA -!exprnP [in RHS]exprD.
-rewrite -scalerA; f_equal. rewrite exprM sqrCi tf2f2cE; last first.
-rewrite pvarsEt (bigD1 i.1)//= bigqE (bigD1 i.2) 1?eq_sym ?H2// bigqE tenqA  
-  tketT tlin_ketTl; last first.
-rewrite/= CZGate_cb tentvZr -tketZ tenqZl; f_equal.
+rewrite !dotdZr; f_equal; rewrite/= big_rcons E/= mulnDr addnA -!exprnP [in RHS]exprD.
+rewrite -scalerA; f_equal. rewrite exprM sqrCi t2tv_tuple tketTV.
+rewrite (bigD1 i.1)//= bigdE (bigD1 i.2)/= 1?eq_sym ?H2// bigdE tendA tketT tketGTl.
+  by tac_qwhile_auto=>/=; rewrite eq_sym orbF; move: H => /andP[].
+rewrite/= CZGate_cb tentvZr -tketZ tendZl; f_equal.
 by case: (bs ~_ i.1); case: (bs ~_ i.2).
-rewrite disjointUX; apply/andP; split; apply/bigcup_disjoint_seqP;
-  by move=>j/andP[_]/andP[]P1 P2; apply disx; rewrite eq_sym.
-all: by rewrite disx// H2.
 Qed.
 
 Lemma RS_HLF_gen :
-  ⊨s [pt,st] { |1 } HLF { (2%:R ^- N.+1 *:
+  ⊨s [pt,st] { :1 } HLF { (2%:R ^- N.+1 *:
   (\sum_(z : N.+1.-tuple bool) (\sum_(k : N.+1.-tuple bool) 
     ('i ^ (\sum_(j in SD) k ~_ j + 2 * (\sum_(j in SS) k ~_ j.1 * k ~_ j.2) + 2 * \sum_j k~_j * z ~_ j)%N)) 
-      *: ｜''z;pvars_tuple disx〉)) }.
+      *: '|''z; x>)) }.
+Proof.
 rewrite /HLF big_setEV.
 apply: (RS_SC _ (RS_HLF_sub _ _ _ _)).
 by move=>i; rewrite inE=>/andP[] _; exact: ltn_neq.
-apply: (RS_forward _ (AxV_UTFP_seq _ _))=>[|//|++ _ _]; last by [].
-rewrite/= dotqZr dotq_sumr.
-under eq_bigr do rewrite dotqZr (ParaHadamard_tuple disx) linear_sum/=.
+apply: (RS_forward _ (AxV_UTFP_seq _ _))=>/=[|//|]; last by tac_qwhile_auto.
+rewrite/= dotdZr dotd_sumr.
+under eq_bigr do rewrite dotdZr (ParaHadamard_tuple x) linear_sum/=.
 rewrite exchange_big !linear_sum/=; apply eq_bigr=>bs _.
 under eq_bigr do rewrite scalerA mulrC scalerA -mulrA -scalerA.
 rewrite -linear_sum/= scalerA -invfM -expr2 exprAC sqrtCK -scaler_suml; do 2 f_equal.
@@ -751,7 +760,7 @@ have ->: (\sum_(j in SD) k ~_ j + 2 * (\sum_(j in SS) k ~_ j.1 * k ~_ j.2))%N
 rewrite [in RHS](bigID (fun i=>(i.1 == i.2)))/=; f_equal.
 rewrite -big_setE pair_bigV/= big_mkcond /=; apply eq_bigr=>i _.
 rewrite (bigD1 i)//= big1=>[j|]; first by rewrite eq_sym andbN.
-by rewrite addn0; case: (A i i); rewrite /= ?mul0n// mul1n mulnb Bool.andb_diag.
+rewrite addn0; case: (A i i); rewrite /= ?mul0n// mul1n mulnb; by case: (k ~_ i).
 rewrite mul2n -addnn [in RHS](bigID (fun i : 'I_N.+1 * 'I_N.+1=>(i.1 < i.2)%N))/=.
 f_equal. rewrite -big_setE big_mkcond/= [RHS]big_mkcond/=.
 2: rewrite [RHS]big_mkcond/= [RHS]pair_bigV exchange_big pair_big/= -big_setE big_mkcond/=.
@@ -764,45 +773,47 @@ by rewrite -[RHS]opprK -mulrN1 -!sqrCi -exprD exprnP.
 Qed.
 
 Lemma RS_HLF :
-  ⊨s [pt,st] { |1 } HLF { (2%:R ^- N.+1 *:
+  ⊨s [pt,st] { :1 } HLF { (2%:R ^- N.+1 *:
   (\sum_(z : N.+1.-tuple bool) (\sum_(k : N.+1.-tuple bool) 
     ('i ^ (HLF_q k + 2 * \sum_j k~_j * z ~_ j)%N)) 
-      *: ｜''z;pvars_tuple disx〉)) }.
+      *: '|''z; x>)) }.
 Proof.
 apply: (RS_forward _ RS_HLF_gen). f_equal; apply eq_bigr=>z _; f_equal.
 by apply eq_bigr=>k _; rewrite exprzD_nat HLF_quadE -exprzD_nat PoszM.
 Qed.
 
 End HiddenLinearFunction.
+End HiddenLinearFunction.
 
 Ltac simpc2r := rewrite -?(natrC, realcN, realcD, realcM, realcI, realcX, realc_norm).
 
+Module GroverAlgorithm.
 Section GroverAlgorithm.
-Variable (pt st : bool) (T : ihbFinType). (* arbitrary ihbFinType *)
-Variable (x : vars T).
-Variable (Pw : pred T). (* Solution *)
-Hypothesis (card_Pw : (0 < #|Pw| < #|T|)%N). (* proper number of solutions *)
-Local Notation t0 := (witness T : T).
-Local Notation us := (@uniformtv T).
+Variable (pt st : bool) (T : qType) (x : 'QReg[T]). (* arbitrary ihbFinType *)
+Notation TT := (evalQT T).
+Variable (Pw : pred TT). (* Solution *)
+Hypothesis (card_Pw : (0 < #|Pw| < #|TT|)%N). (* proper number of solutions *)
+Local Notation t0 := (witness TT : TT).
+Local Notation us := (@uniformtv TT).
 Let Uw := PhOracle Pw.
 Let Ut0 := 2%:R *: [> ''t0 ; ''t0 <] - \1.
 Let Us := 2%:R *: [> us ; us <] - \1.
-Lemma Us_diffE : Us = 'Hn \o Ut0 \o 'Hn^A.
+Lemma Us_diffE : Us = ('Hn \o Ut0 \o 'Hn^A)%VF.
 Proof.
 by rewrite /Ut0 linearBr/= linearZr/= outp_compr VUnitaryE/= comp_lfun1r 
   linearBl/= linearZl/= outp_compl adjfK VUnitaryE/= unitaryf_formV.
 Qed.
-Let Ut0_unitary : Ut0 \is unitarylf.
+Lemma Ut0_unitary : Ut0 \is unitarylf.
 Proof.
 apply/unitarylfP; rewrite /Us raddfB/= adjf1 adjfZ conjC_nat adj_outp.
 rewrite linearBr/= !linearBl/= !comp_lfun1l comp_lfun1r linearZl/= linearZr/=.
 rewrite scalerA outp_comp ns_dot scale1r opprB -scalerBl [\1 - _]addrC.
 by rewrite addrA -scalerBl mulr_natr mulr2n addrK subrr scale0r add0r.
 Qed.
-Local Canonical Ut0_unitaryfType := UnitaryfType Ut0_unitary.
-Let Us_unitary : Us \is unitarylf.
-Proof. by rewrite Us_diffE unitaryf_unitary. Qed.
-Local Canonical Us_unitaryfType := UnitaryfType Us_unitary.
+HB.instance Definition _ := isUnitaryLf.Build _ Ut0 Ut0_unitary.
+Lemma Us_unitary : Us \is unitarylf.
+Proof. by rewrite Us_diffE is_unitarylf. Qed.
+HB.instance Definition _ := isUnitaryLf.Build _ Us Us_unitary.
 
 Definition Grover_sub :=
   [ut x := Uw];;
@@ -815,36 +826,38 @@ Definition Grover (r : nat) :=
   [ut x := 'Hn ];;
   [for i < r do Grover_sub].
 
-Let t := asin (Num.sqrt (#|Pw|%:R / #|T|%:R) : R).
-Let cos2Dsin2c : (cos t ^+ 2)%:C + (sin t ^+2 )%:C = 1.
+Let t := asin (Num.sqrt (#|Pw|%:R / #|TT|%:R) : R).
+Lemma cos2Dsin2c : (cos t ^+ 2)%:C + (sin t ^+2 )%:C = 1.
 Proof. by rewrite -realcD cos2Dsin2. Qed.
-Let sin2t : (sin t ^+2 )%:C = #|Pw|%:R / #|T|%:R.
+Lemma sin2t : (sin t ^+2 )%:C = #|Pw|%:R / #|TT|%:R.
 Proof.
 rewrite /t asinK; last first.
 by rewrite sqr_sqrtr ?realcM ?realcI ?natrC// divr_ge0.
 rewrite itv_boundlr/= /<=%O/=; apply/andP; split.
 by apply: (le_trans (lerN10 _)); rewrite sqrtr_ge0.
-by rewrite -{3}sqrtr1; apply/ler_wsqrtr; rewrite ler_pdivr_mulr 
+by rewrite -{3}sqrtr1; apply/ler_wsqrtr; rewrite ler_pdivrMr 
   ?ihb_card_gtr0// mul1r ler_nat max_card.
 Qed.
-Let sint_neq0 : (sin t) != 0.
+Lemma sint_neq0 : (sin t) != 0.
 Proof.
 rewrite -sqrf_eq0 -eqcR sin2t; apply/lt0r_neq0; apply divr_gt0;
 by rewrite ?ihb_card_gtr0// ltr0n; move: card_Pw=>/andP[].
 Qed.
-Let cos2t : (cos t ^+ 2)%:C = (#|T|%:R - #|Pw|%:R) / #|T|%:R.
+Let sint_neq0 := sint_neq0.
+Lemma cos2t : (cos t ^+ 2)%:C = (#|TT|%:R - #|Pw|%:R) / #|TT|%:R.
 Proof.
 rewrite mulrBl mulfV ?ihb_card_neq0// -sin2t; apply/subr0_eq.
 by rewrite opprB addrA -realcD cos2Dsin2 subrr.
 Qed.
-Let cost_neq0 : cos t != 0.
+Lemma cost_neq0 : cos t != 0.
 Proof.
 rewrite -sqrf_eq0 -eqcR cos2t; apply/lt0r_neq0; apply divr_gt0;
 by rewrite ?ihb_card_gtr0// subr_gt0 ltr_nat; move: card_Pw=>/andP[].
 Qed.
+Let cost_neq0 := cost_neq0.
 
-Let vw := (sqrtC #|T|%:R)^-1 *: \sum_(i | Pw i) ''i.
-Let vwc := (sqrtC #|T|%:R)^-1 *: \sum_(i | ~~ Pw i) ''i.
+Let vw := (sqrtC #|TT|%:R)^-1 *: \sum_(i | Pw i) ''i.
+Let vwc := (sqrtC #|TT|%:R)^-1 *: \sum_(i | ~~ Pw i) ''i.
 Lemma us_vwE : us = vw + vwc.
 Proof. by rewrite uniformtvE /vw /vwc (bigID Pw)/= scalerDr. Qed.
 Lemma vw_vwc_dot : [<vw ; vwc >] = 0.
@@ -856,11 +869,12 @@ Lemma vw_dot : [<vw ; vw >] = (sin t ^+ 2)%:C.
 Proof.
 rewrite /vw dotpZl dotpZr mulrA geC0_conj ?invr_ge0 ?sqrtC_ge0// -invfM -expr2 sqrtCK 
   sin2t [RHS]mulrC; f_equal; rewrite dotp_suml (eq_bigr (fun=>1)) ?sumr_const// =>i Pi.
-by rewrite dotp_sumr (bigD1 i)//= big1=>[j/andP[_]/negPf/eqsymPf Pj|]; rewrite onb_dot ?Pj// eqxx addr0.
+by rewrite dotp_sumr (bigD1 i)//= big1=>[j/andP[_]/negPf Pj|]; 
+  rewrite ?ns_dot ?addr0// onb_dot eq_sym Pj.
 Qed.
 Lemma vwc_dot : [<vwc ; vwc >] = (cos t ^+ 2)%:C.
 Proof.
-move: (ns_dot [NS of us]); rewrite/= us_vwE dotpD vw_vwc_dot vw_dot conjC0 !addr0=>/eqP.
+move: (ns_dot us); rewrite/= us_vwE dotpD vw_vwc_dot vw_dot conjC0 !addr0=>/eqP.
 by rewrite eq_sym addrC -subr_eq=>/eqP<-; rewrite -cos2Dsin2c addrK.
 Qed.
 Lemma Uw_vw : Uw vw = - vw.
@@ -876,7 +890,7 @@ Qed.
 
 Let uw (r : R) := ((sin r / sin t)%:C *: vw + (cos r / cos t)%:C *: vwc).
 
-Lemma UsUwE_ind (r : R) : (Us \o Uw) (uw r) = uw (r + t *+ 2).
+Lemma UsUwE_ind (r : R) : (Us \o Uw)%VF (uw r) = uw (r + t *+ 2).
 Proof.
 rewrite lfunE/= linearP/= Uw_vw scalerN [Uw _]linearZ/= Uw_vwc /Us us_vwE lfunE/= !lfunE/= lfunE/=.
 rewrite outpE dotpDr dotpNr dotpZr (dotpZr (_%:C)) !dotpDl vw_dot -conj_dotp !vw_vwc_dot vwc_dot conjC0.
@@ -884,44 +898,42 @@ rewrite addr0 add0r scalerA scalerDr opprD opprK addrACA -scalerDl -[_ - _ *: vw
 do ? f_equal; simpc2r; f_equal; rewrite !expr2 mulrACA mulVf// mulrACA mulVf//;
 rewrite !mulr1 mulr_natl mulrnDl.
 rewrite /uw sinD cos2x_sin sin2x addrC mulrDl mulrBr mulrBl mulr1 addrA [sin t * _]mulrC; do 2 f_equal.
-3: rewrite cosD cos2x_cos sin2x mulrBr mulr1 [in RHS]addrC mulrDl mulrBl addrA; do 2 f_equal.
+3: rewrite cosD cos2x_cos sin2x mulrBr mulr1 [in RHS]addrC mulrDl mulrBl [in RHS]addrA; do 2 f_equal.
 all: by rewrite -[in RHS]mulr_natl ?mulNr -!mulrA  ?mulfV// mulr1 mulr_natl mulrnAr// mulNrn.
 Qed.
 
-Lemma unitaryf_sym (V : chsType) (U : 'FU(V)) u v : (U^A u == v) = (U v == u).
-Proof.
-by apply/eqb_iff; rewrite !eq_iff; split=><-; 
-rewrite -comp_lfunE ?unitaryf_form ?unitaryf_formV lfunE.
-Qed.
-Lemma UsUwEV_ind (r : R) : (Us \o Uw)^A (uw r) = (uw (r - t *+ 2)).
+Lemma UsUwEV_ind (r : R) : ((Us \o Uw)^A)%VF (uw r) = (uw (r - t *+ 2)).
 Proof. by apply/eqP; rewrite unitaryf_sym/= UsUwE_ind addrNK. Qed.
 
-Let vw_uw : vw = (sin t)%:C *: uw (pi/2%:R).
-Proof. by rewrite /uw cos_pihalf sin_pihalf mul0r scale0r addr0 scalerA mul1r -realcM mulfV// scale1r. Qed.
+Lemma vw_uw : vw = (sin t)%:C *: uw (pi/2%:R).
+Proof.
+by rewrite /uw cos_pihalf sin_pihalf mul0r scale0r addr0 
+  scalerA mul1r -realcM mulfV// scale1r.
+Qed.
 
 Lemma RS_Grover_sub (n : nat) : 
-  ⊨s [pt,st] { ｜uw (pi/2%:R - t *+ 2 *+ n);x〉 } 
+  ⊨s [pt,st] { '|uw (pi/2%:R - t *+ 2 *+ n); x> } 
     [for i < n do Grover_sub]
-      { ｜(sin t)%:C ^-1 *: vw ; x〉 }.
+      { '|(sin t)%:C ^-1 *: vw ; x> }.
 Proof.
 elim: n=>[|n IH].
 rewrite big_ord0 mulr0n subr0 vw_uw scalerA -realcI -realcM mulVf// scale1r; exact: AxS_Sk.
 rewrite big_ord_recl; apply: (RS_SC _ _ (IH)); rewrite /Grover_sub.
-do 3 (apply: (RS_SC _ _ (AxV_UT _)); rewrite/= tf2f_adj tlin_ket).
+do 3 (apply: (RS_SC _ _ (AxV_UT _)); rewrite/= tlin_ket).
 apply: (RS_back _ (AxV_UT _)).
-rewrite/= tf2f_adj tlin_ket -!comp_lfunE -!adjf_comp !comp_lfunA.
+rewrite/= tlin_ket -!comp_lfunE -!adjf_comp !comp_lfunA.
 by rewrite -Us_diffE UsUwEV_ind -addrA -opprD -mulrSr.
 Qed.
 
 Lemma RS_Grover (n : nat) : 
-  ⊨s [pt,st] { (cos (pi / 2%:R - t *+ (2 * n + 1)))%:C *: |1 } 
-    (Grover n) { ｜(sin t)%:C ^-1 *: vw;x〉 }.
+  ⊨s [pt,st] { (cos (pi / 2%:R - t *+ (2 * n + 1)))%:C *: :1 } 
+    (Grover n) { '|(sin t)%:C ^-1 *: vw; x> }.
 Proof.
 rewrite /Grover. apply: (RS_SC _ _ (RS_Grover_sub _)).
 apply: (RS_SC _ _ (AxV_UT _)).
-rewrite/= tf2f_adj tlin_ket -[SPOST]tenq1.
+rewrite/= tlin_ket -[SPOST]tend1.
 apply: (RS_back _ (tAxV_In _ )).
-rewrite /= adj_dotEV VUnitaryE/=.
+rewrite /= adj_dotEr VUnitaryE/=.
 set tx := (pi / 2%:R - t *+ 2 *+ n).
 rewrite /uw us_vwE dotpDr dotpZr dotpDl vw_dot -conj_dotp vw_vwc_dot conjC0.
 rewrite dotpZr dotpDl vw_vwc_dot vwc_dot addr0 add0r; simpc2r.
@@ -939,19 +951,20 @@ rewrite /solution linear_suml/=; apply eq_bigr=>i Pi.
 rewrite linear_sumr/= (bigD1 i)//= big1=>[j/andP[] _/negPf nj|];
 by rewrite outp_comp ?ns_dot ?scale1r ?addr0// onb_dot eq_sym nj scale0r.
 Qed.
+HB.instance Definition _ := isProjLf.Build _ solution solution_proj.
 
 Lemma R_Grover (n : nat) : 
-  ⊨ [pt] { ((sin (t *+ (2 * n + 1)))^+2)%:C%:QE } 
-    (Grover n) { ⌈(\sum_(i | Pw i) [> ''i ; ''i <]);x⌉ }.
+  ⊨ [pt] { ((sin (t *+ (2 * n + 1)))^+2)%:C%:D } 
+    (Grover n) { '[(\sum_(i | Pw i) [> ''i ; ''i <]); x] }.
 Proof.
 move: (RS_Grover n)=>/saturated_weakS.
 rewrite stateE; apply: R_Or.
 rewrite le_eqVlt; apply/orP; left; apply/eqP.
-rewrite adjqZ comqZl comqZr conjC_real scalerA cplx_adj cplxM conjC1 mulr1 cplxZ mulr1
-  -realcM -expr2/=; do 3 f_equal.
+rewrite adjdZ muldZl muldZr conjC_real scalerA numd_adj numdM conjC1 
+  mulr1 numdZ mulr1 -realcM -expr2/=; do 3 f_equal.
 by rewrite [in RHS]addrC cosDpihalf sinN opprK.
-rewrite ket_adj touterM/= lin_lef tf2f_lef -/solution.
-have ->: solution = HSType (ProjfType solution_proj) by rewrite hsE/=.
+rewrite tket_adj touterM/= tlin_le -/solution.
+have ->: solution = HSType solution by rewrite hsE/=.
 apply lef_outp.
 rewrite hnorm_le1 dotpZl dotpZr vw_dot -!real2c conjC_real -!real2c
   mulrA -invfM -expr2 mulVf// expf_neq0//.
@@ -962,16 +975,19 @@ by apply/eqP; apply eq_bigr=>i Pi; rewrite linearZ/=; f_equal;
 Qed.
 
 End GroverAlgorithm.
+End GroverAlgorithm.
 
+Module PhaseEstimation.
 Section PhaseEstimation.
-Variable (pt st : bool) (T : ihbFinType) (U : 'FU('Hs T)) (phi : 'Hs T) (theta : R).
+Variable (pt st : bool) (T : qType) (U : 'FU('Ht T)) (phi : 'Ht T) (theta : R).
 (* since 'End[T] is a ringType, exp can be directly written as ^+ *)
 Hypothesis (eigU : U phi = (expip (2%:R * theta) *: phi)).
 Hypothesis (theta_bound : 0 <= theta < 1).
 Variable (n : nat). (* control system *)
-Variable (x : vars 'I_n.+1) (y : vars T).
-Hypothesis (nxy : [disjoint lb x & lb y]).
-Let eigUn m : (U%:VF ^+ m)^A phi = expip (- (2%:R * theta * m%:R)) *: phi.
+Variable (xy : 'QReg['I_n * T]).
+Notation x := <{xy.1}>.
+Notation y := <{xy.2}>.
+Let eigUn m : ((U%:VF ^+ m)^A)%VF phi = expip (- (2%:R * theta * m%:R)) *: phi.
 Proof.
 apply/eqP; rewrite unitaryf_sym/= linearZ/=.
 elim: m=>[|m/eqP IH]; first by rewrite expr0 lfunE/= mulr0 oppr0 expip0 scale1r.
@@ -985,39 +1001,40 @@ Let Uf := Multiplexer Uf_fun.
 Definition QPE :=
   [it x := ''ord0 ];;
   [ut x := 'Hn ];;
-  [ut [x,y] := Uf ];;
+  [ut (x,y) := Uf ];;
   [ut x := IQFT ].
 
 Let c (a : 'I_n.+1) := (\sum_(i < n.+1) expip (2%:R * (a%:R / n.+1%:R - theta) * i%:R)) / n.+1%:R.
 
 Lemma RS_QPE (a : 'I_n.+1) : 
-  ⊨s [pt,st] { c a *: ｜phi;y〉 } QPE { ｜''a;x〉 ⊗ ｜phi;y〉 }.
+  ⊨s [pt,st] { c a *: '|phi; y> } QPE { '|''a; x> \⊗ '|phi; y> }.
 Proof.
 apply: (RS_SC _ _ (AxV_UT _)).
-rewrite /= tf2f_adj adjfK tlin_ketTl//=.
+rewrite /= adjfK tketGTl//=; first by tac_qwhile_auto.
 apply: (RS_SC _ _ (AxV_UT _)).
-rewrite/= tf2f2cE// tf2f2_adj tketT tlin_ket//.
+rewrite/= tketT tlin_ket//.
 apply: (RS_SC _ _ (AxV_UT _)).
-rewrite/= QFTEt QFTvE tentvZl tentv_suml linearZ/= linear_sum/= -tketZ -tket_sum dotqZr dotq_sumr.
+rewrite/= QFTEt QFTvE tentvZl tentv_suml linearZ/= linear_sum/= -tketZ -tket_sum dotdZr dotd_sumr.
+have nxy : disjoint_qreg x y by tac_qwhile_auto.
 under eq_bigr do rewrite tentvZl linearZ/= MultiplexerEVt /Uf_fun eigUn tentvZr 
-  scalerA -tketZ dotqZr tf2f_adj -tketT (t1lin_ketTl _ _ _ nxy)/= -tenqZl tketZ.
-rewrite -tenq_suml -tenqZl tket_sum [in SPOST]tketZ.
-apply: (RS_back _ (tAxV_In _ ))=>//.
+  scalerA -tketZ dotdZr (tketGl _ _ _ _ nxy) tentf_apply lfunE/= tketTV !eq_qrE -tendZl tketZ.
+rewrite -tend_suml -tendZl tket_sum [in SPOST]tketZ.
+apply: (RS_back _ (tAxV_In _ )); last tac_qwhile_auto.
 rewrite/= dotpZr dotp_sumr.
-under eq_bigr do rewrite dotpZr adj_dotEV VUnitaryE/= dotp_uniformtvcb card_ord
+under eq_bigr do rewrite dotpZr adj_dotEr VUnitaryE/= dotp_uniformtvcb card_ord
   runityE -expipD natrM -!mulrA -mulrBr [_ / n.+1%:R]mulrC mulrA -mulrBl mulrA.
 by rewrite -mulr_suml mulrC -mulrA -invfM -expr2 sqrtCK.
 Qed.
 
 Lemma RS_QPE_exact (a : 'I_n.+1) : 
   a%:R = theta * n.+1%:R ->
-  ⊨s [pt,st] { ｜phi;y〉 } QPE { ｜''a;x〉 ⊗ ｜phi;y〉 }.
+  ⊨s [pt,st] { '|phi; y> } QPE { '|''a; x> \⊗ '|phi; y> }.
 Proof.
 move=>P1; move: (RS_QPE a); 
 by rewrite /c expip_sum_cst ?P1 ?mulfK ?mulfV/= ?scale1r// subrr mulr0 expip0.
 Qed.
 
-Lemma foo1 a : `|1 - expip (2%:R * a)| = 2%:R * `|sin (pi * a)|%:C.
+Lemma abs_expip_sin a : `|1 - expip (2%:R * a)| = 2%:R * `|sin (pi * a)|%:C.
 Proof.
 have ->: 2%:R * `|sin (pi * a)|%:C = `|2%:R * sinp a|%:C.
 by rewrite unlock normrM ger0_norm// realcM natrC.
@@ -1037,26 +1054,27 @@ Proof.
 rewrite /c; case E: (a%:R / n.+1%:R - theta == 0).
 rewrite expip_sum_cst=>[|_].
 by move: E=>/eqP->; rewrite mulr0 expip0.
-by rewrite mulfV ?natrS_neq0// normr1 lecR1 ler_pdivr_mulr ?pi_gt0// mul1r pi_ge2.
+by rewrite mulfV ?natrS_neq0// normr1 lecR1 ler_pdivrMr ?pi_gt0// mul1r pi_ge2.
 move: E; rewrite foo5; set t := a%:R / n.+1%:R - theta; move=>P1 P2.
 have P4: `|t| <= (2%:R^-1)%R.
-by apply: (le_trans _ P2); rewrite normrM ler_pemulr// ger0_norm// ler1n.
+by apply: (le_trans _ P2); rewrite normrM ler_peMr// ger0_norm// ler1n.
 have P5: `|t| < 1 by apply: (le_lt_trans P4); rewrite invf_lt1 ?ltr0n// ltr1n.
-have P6 : `|pi * t| <= pi / 2%:R by rewrite normrM ger0_norm ?pi_ge0// ler_pmul2l// ?pi_gt0.
+have P6 : `|pi * t| <= pi / 2%:R by rewrite normrM ger0_norm ?pi_ge0// ler_pM2l// ?pi_gt0.
 have P7 : `|pi * (t * n.+1%:R)| <= pi / 2%:R.
-  by rewrite normrM ger0_norm ?pi_ge0// ler_pmul2l// ?pi_gt0.
+  by rewrite normrM ger0_norm ?pi_ge0// ler_pM2l// ?pi_gt0.
 rewrite expip_sum.
 apply/expip_neq1; rewrite ?mulf_eq0 ?negb_or ?P1 ?andbT// !normrM 
-  ger0_norm// gtr_pmulr// ltr0n//.
-rewrite !normrM !normfV -[_ * t * _]mulrA !foo1 [2%:R * _%:C]mulrC invfM mulrA mulfK//.
+  ger0_norm// gtr_pMr// ltr0n//.
+rewrite !normrM !normfV -[_ * t * _]mulrA !abs_expip_sin [2%:R * _%:C]mulrC invfM mulrA mulfK//.
 rewrite -natrC -realc_norm; simpc2r; rewrite lecR.
-rewrite ler_pdivl_mulr ?normr_gt0// ler_pdivl_mulr.
+rewrite ler_pdivlMr ?normr_gt0// ler_pdivlMr.
 apply: (lt_le_trans _ (ger_abs_sin P6)); rewrite !mulr_gt0// ?normrM 
   1?gtr0_norm ?mulr_gt0// ?invr_gt0 ?pi_gt0// normr_gt0 P1//.
-apply: (le_trans _ (ger_abs_sin P7)). rewrite -!mulrA ler_pmul2l ?ltr0n// mulrC ler_pmul2r 
-  ?invr_gt0 ?pi_gt0// mulrA normrM mulrC ler_pmul2r ?ler_abs_sin// gtr0_norm ltr0n//.
+apply: (le_trans _ (ger_abs_sin P7)). rewrite -!mulrA ler_pM2l ?ltr0n// mulrC ler_pM2r 
+  ?invr_gt0 ?pi_gt0// mulrA normrM mulrC ler_pM2r ?ler_abs_sin// gtr0_norm ltr0n//.
 Qed.
 
+End PhaseEstimation.
 End PhaseEstimation.
 
 Section FinGroupPartition.
@@ -1077,7 +1095,7 @@ exists (fun i=>i * (repr j)^-1)%g.
 by move=>y _; rewrite -mulgA mulgV mulg1.
 by move=>y _; rewrite -mulgA mulVg mulg1.
 move: Px2; rewrite rcosetE=>Px2. apply eq_bigl=>y.
-rewrite rcosetE; apply/Bool.eq_iff_eq_true; split.
+rewrite rcosetE; apply/Coq.Bool.Bool.eq_iff_eq_true; split.
 move=>/eqP.
 rewrite Px2 -{2}[(H :* x)%g]rcoset_repr.
 set t := repr (H :* x)%g =>P.
@@ -1132,11 +1150,14 @@ Proof. by move=>f g h; apply/ffunP=>i; rewrite !ffunE addrA. Qed.
 Lemma ZZ_addC : commutative ZZ_add.
 Proof. by move=>f g; apply/ffunP=>i; rewrite !ffunE addrC. Qed.
 
-Definition ZZ_zmodMixin := ZmodMixin ZZ_addA ZZ_addC ZZ_add0z ZZ_addNz.
+HB.instance Definition _ := GRing.isZmodule.Build ZZ ZZ_addA ZZ_addC ZZ_add0z ZZ_addNz.
+HB.instance Definition _ := [finGroupMixin of ZZ for +%R].
+
+(* Definition ZZ_zmodMixin := ZmodMixin ZZ_addA ZZ_addC ZZ_add0z ZZ_addNz.
 Canonical ZZ_zmodType := Eval hnf in ZmodType ZZ ZZ_zmodMixin.
 Canonical ZZ_finZmodType := Eval hnf in [finZmodType of ZZ].
 Canonical ZZ_baseFinGroupType := Eval hnf in [baseFinGroupType of ZZ for +%R].
-Canonical ZZ_finGroupType := Eval hnf in [finGroupType of ZZ for +%R].
+Canonical ZZ_finGroupType := Eval hnf in [finGroupType of ZZ for +%R]. *)
 (* Local Notation ZZ' := ZZ_finGroupType. *)
 
 Definition charZZ (x y : ZZ) := 
@@ -1178,23 +1199,18 @@ End dffun_group.
 (* Section lfunsemExtra.
 Context (L : finType) (H : L -> chsType).
 
-Lemma com1q S (e : {bra H | S}) : |1 ∗ e = e.
-Proof. by rewrite -dotq_com/= dot1q. Qed.
-Lemma comq1 S (e : {ket H | S}) : e ∗ |1 = e.
-Proof. by rewrite -dotq_com/= dotq1. Qed.
+Lemma com1q S (e : 'Bra[H]_S) : :1 \o e = e.
+Proof. by rewrite -dotd_mul/= dot1d. Qed.
+Lemma muld1 S (e : 'Ket[H]_S) : e \o :1 = e.
+Proof. by rewrite -dotd_mul/= dotd1. Qed.
 
 End lfunsemExtra. *)
 
+Module HSP.
 Section HSP.
 Variable (n : nat) (fn : 'I_n.+1 -> nat).
-Variable (x : forall i, vars ('I_(fn i).+2)).
-Hypothesis (disx : forall i j, i != j -> [disjoint lb (x i) & lb (x j)]).
-Notation px := (pvars_dffun disx).
 Notation G := {dffun forall i : 'I_n.+1, ('I_(fn i).+2)}.
 Variable (H : {group G}). (* provide a group *)
-Variable (X : finZmodType) (ff : G -> X) (y : vars X). (* auxiliary system, oracle *)
-Hypothesis (disy : [disjoint lb (pvars_dffun disx) & lb y]).
-Hypotheses (Hff_eq : forall (i j : G), (i \in (H :* j)%g) <-> ff i = ff j).
 
 Definition tau (t : {set G}) :=
   \sum_(i : G) [> ''(i + repr t) ; ''i <].
@@ -1228,7 +1244,7 @@ Qed.
 
 Lemma QFT_FG_apply : tentf_dffun (fun j=> QFT) = FG.
 Proof.
-apply /(intro_onb t2tv_onbasis)=>i; apply/(intro_onbl t2tv_onbasis)=>j.
+apply /(intro_onb t2tv)=>i; apply/(intro_onbl t2tv)=>j.
 rewrite/= ![in LHS]t2tv_dffun FG_apply tentf_dffun_apply tentv_dffun_dot.
 rewrite dotpZr dotp_sumr (bigD1 j)//= [in RHS]big1=>[k/negPf nk|];
 rewrite dotpZr ?ns_dot ?onb_dot 1?eq_sym ?nk ?mulr0// addr0 mulr1.
@@ -1238,14 +1254,16 @@ rewrite -natr_prod card_dffun; under [in RHS]eq_bigr do rewrite card_ord.
 by f_equal; apply eq_bigr=>k _; rewrite runityE mulnC natrM mulrA.
 Qed.
 
-Let FG_unitary : FG \is unitarylf.
-Proof. by rewrite -QFT_FG_apply unitaryf_unitary. Qed.
-Local Canonical FG_unitaryfType := UnitaryfType FG_unitary.
+Lemma FG_unitary : FG \is unitarylf.
+Proof. by rewrite -QFT_FG_apply is_unitarylf. Qed.
+HB.instance Definition _ := isUnitaryLf.Build _ FG FG_unitary.
 
-Let cardH : #|H|%:R != 0 :> C.
+Lemma cardH : #|H|%:R != 0 :> C.
 Proof. by rewrite pnatr_eq0 lt0n_neq0// cardG_gt0. Qed.
-Let cardZZ : #|G|%:R != 0 :> C.
-Proof. rewrite pnatr_eq0 lt0n_neq0//; by move: (cardg_gt0 [finGroupType of G]). Qed.
+Let cardH := cardH.
+Lemma cardZZ : #|G|%:R != 0 :> C.
+Proof. rewrite pnatr_eq0 lt0n_neq0//; by move: (cardg_gt0 G). Qed.
+Let cardZZ := cardZZ.
 
 Lemma FG_H_state : FG H_state = HC_state.
 Proof.
@@ -1258,15 +1276,15 @@ rewrite -scaler_suml charZZ_sum_eq0 ?scale0r//; move: Pi.
 rewrite inE not_existsP=>/negP; apply contra_not=>P; apply/HC_inP=>j Pj.
 by move: (P j); rewrite -implyNE=>/(_ Pj)/negP; rewrite negbK=>/eqP.
 rewrite addr0 -linear_sum/= !scalerA /HC_state; f_equal. 
-rewrite -{2}(sqrtCK #|H|%:R) expr2 mulrACA mulVf ?sqrtC_eq0//
+rewrite -{2}(sqrtCK #|H|%:R) expr2 mulrA mulrACA mulVf ?sqrtC_eq0//
   mul1r sqrtCM// 1?mulrC// ?sqrtC_inv// nnegrE invr_ge0//.
 Qed.
 
-Lemma FG_tauC (t : {set G}) : FG \o (tau t) = (phi t) \o FG.
+Lemma FG_tauC (t : {set G}) : (FG \o (tau t) = (phi t) \o FG)%VF.
 Proof.
 rewrite /FG linearZl linearZr/=; f_equal.
 rewrite /tau {1}exchange_big/= linear_sumr/= [LHS](eq_bigr (fun i=>
-phi t \o (\sum_j charZZ j i *: [> ''j ; ''i <]) ))=>[i _|]; last first.
+(phi t \o (\sum_j charZZ j i *: [> ''j ; ''i <]) )%VF))=>[i _|]; last first.
 by rewrite -linear_sumr [in LHS]exchange_big/=.
 rewrite exchange_big linear_suml [RHS]linear_sumr/=; apply eq_bigr=>j _.
 rewrite [LHS]linear_suml (bigD1 (i + repr t))//= big1=>[k/negPf nk|];
@@ -1284,37 +1302,52 @@ rewrite /phi/= sum_lfunE (bigD1 i)//= big1=>[j/negPf nj|];
 by rewrite lfunE/= outpE ?ns_dot ?onb_dot ?nj ?scale0r ?scaler0// scale1r addr0.
 Qed.
 
-Notation t0 := (witness X : X).
+
+Variable (m : nat) (ff : G -> 'I_m.+1). (* auxiliary system, oracle *)
+Hypotheses (Hff_eq : forall (i j : G), (i \in (H :* j)%g) <-> ff i = ff j).
+
+Variable (xy : 'QReg[{qffun forall i, 'I_(fn i).+1} * 'I_m]).
+Notation x := <{xy.1}>.
+Notation y := <{xy.2}>.
+Notation X := 'I_m.+1.
+(* Check 'I_m.+1 : finZmodType.
+Variable (x : forall i, vars ('I_(fn i).+2)).
+Notation px := (pvars_dffun disx).
+Hypothesis (disx : forall i j, i != j -> [disjoint lb (x i) & lb (x j)]).
+Variable (y : vars X).
+Hypothesis (disy : [disjoint lb (pvars_dffun disx) & lb y]). *)
+(* Notation t0 := (ord0 : X). *)
 
 Definition HSP :=
-  [for i do [it x i := ''ord0 ]];;
-  [it y := ''t0 ];;
-  [for i do [ut x i := QFT ]];;
-  [ut [px, y] := Oracle ff ];;
-  [for i do [ut x i := QFT ]].
+  [for i do [it x.-[i] := ''ord0 ]];;
+  [it y := ''ord0 ];;
+  [for i do [ut x.-[i] := QFT ]];;
+  [ut (x,y) := Oracle ff ];;
+  [for i do [ut x.-[i] := QFT ]].
 
 Lemma inr i : i \in [set rcoset H x0 | x0 : G] -> (i = H :* (repr i))%g.
-Proof. by move/imsetP=>[z Pz Pi]; rewrite Pi rcosetE rcoset_repr . Qed.
+Proof. by move/imsetP=>[z Pz Pi]; rewrite Pi rcosetE rcoset_repr. Qed.
 
 Let i0 := [ ffun i : 'I_n.+1 => ord0] : {dffun forall i : 'I_n.+1, 'I_(fn i).+2}.
-Let Di0 i : charZZ i i0 = 1.
+Lemma Di0 i : charZZ i i0 = 1.
 Proof. by rewrite/charZZ big1// =>k _; rewrite ffunE mulr0 mul0r expip0. Qed.
 
-Let vf := (#|H|%:R / #|G|%:R) *: (\sum_(j in HC) (''j ⊗t 
+Let vf : 'Ht ({qffun forall i, 'I_(fn i).+1} * 'I_m) := 
+  (#|H|%:R / #|G|%:R) *: (\sum_(j in HC) (''j ⊗t 
     \sum_(i in [set rcoset H x0 | x0 : {dffun forall i1 : 'I_n.+1, 'I_(fn i1).+2}]) 
-       (charZZ j (repr i) *: ''(t0 + ff (repr i))))).
+       (charZZ j (repr i) *: ''(ord0 + ff (repr i))))).
 
-Lemma test : (FG ⊗f \1) (Oracle ff ((FG ⊗f \1) (''i0 ⊗t ''t0))) = vf.
+Lemma vfE : (FG ⊗f \1) (Oracle ff ((FG ⊗f \1) (''i0 ⊗t ''ord0))) = vf.
 Proof.
 rewrite tentf_apply FG_apply lfunE/= tentvZl tentv_suml !linearZ/= linear_sum/=.
 rewrite (big_rcoset_partition H)/= /vf (eq_bigr (fun j=> (sqrtC #|H|%:R) *: 
-  ((tau j H_state) ⊗t ''(t0 + ff (repr j))) )).
+  ((tau j H_state) ⊗t ''(ord0 + ff (repr j))) )).
 move=>i /inr P1; rewrite /H_state linearZ/= tentvZl scalerA mulfV ?sqrtC_eq0//
  scale1r linear_sum/= tentv_suml; apply eq_bigr=>k inK.
 rewrite Di0 scale1r OracleEt; do 3 f_equal.
 by rewrite /tau sum_lfunE (bigD1 k)//= big1=>[j/negPf nj|]; 
   rewrite outpE ?ns_dot ?onb_dot ?nj ?scale0r// scale1r addr0.
-by apply/Hff_eq/rcoset_eqP; rewrite rcosetM rcoset_id.
+by apply/Hff_eq/rcoset_eqP; rewrite rcosetM [(H :* k)%g]rcoset_id.
 under [in RHS]eq_bigr do rewrite tentv_sumr.
 rewrite exchange_big/= !linear_sum; apply eq_bigr=>i _/=.
 rewrite linearZ/= tentf_apply -comp_lfunE FG_tauC !lfunE/= FG_H_state.
@@ -1326,8 +1359,8 @@ Qed.
 Lemma unitaryf_norm (U : chsType) (f : 'FU(U)) (v : U) :
   `|f v| = `|v|.
 Proof.
-by move: (unitaryf_unitary f)=>/unitarylf_dotP/(_ v)/eqP;
-rewrite !dotp_norm eqr_expn2// =>/eqP.
+by move: (is_unitarylf f)=>/unitarylf_dotP/(_ v)/eqP;
+rewrite !dotp_norm eqrXn2// =>/eqP.
 Qed.
 
 Lemma ortho_norm (U : chsType) (I : finType) (P : pred I) (F : I -> U):
@@ -1358,53 +1391,64 @@ by rewrite -Pj -Pk=>P1; move: njk; rewrite P1 eqxx.
 Qed.
 
 Lemma vf_norm1 : `|vf| = 1.
-Proof. by rewrite -test !unitaryf_norm tentv_t2tv ns_norm. Qed.
+Proof. by rewrite -vfE !unitaryf_norm tentv_t2tv ns_norm. Qed.
 
 Lemma cardHC : #|HC|%:R = #|G|%:R / #|H|%:R :> C.
 Proof.
 move: vf_norm1=>/(f_equal (fun x=>x^+2)).
-rewrite expr1n normrZ exprMn ortho_norm=>[i j _ _ /negPf ni|].
+rewrite expr1n hnormZ exprMn ortho_norm=>[i j _ _ /negPf ni|].
 by rewrite tentv_dot onb_dot ni mul0r.
 rewrite (eq_bigr (fun=>#|G|%:R / #|H|%:R))=>[i Pi|].
 rewrite tentv_norm ns_norm mul1r ortho_norm=>[j k/inr Pj/inr Pk njk|].
-by rewrite dotpZl dotpZr onb_dot (can_eq (addKr t0)) Hff_neq// !mulr0.
-under eq_bigr do rewrite normrZ charZZ_norm mul1r ns_norm expr1n.
+by rewrite dotpZl dotpZr onb_dot (can_eq (addKr ord0)) Hff_neq// !mulr0.
+under eq_bigr do rewrite hnormZ charZZ_norm mul1r ns_norm expr1n.
 by rewrite sumr_const H_rcoset_card.
 rewrite sumr_const -[_ *+ #|HC|]mulr_natl ger0_norm ?divr_ge0// mulrC expr2.
 rewrite !mulrA mulfVK// mulfK// -[X in _ -> _ = X]mulr1=>P1.
 rewrite -{4}P1 [RHS]mulrC !mulrA mulfVK// mulfK//.
 Qed.
 
-Lemma RS_HSP pt st : ⊨s [pt,st] { |1 } HSP { ｜vf ; (px, y)〉}.
+Lemma RS_HSP pt st : ⊨s [pt,st] { :1 } HSP { '|vf ; (x,y)>}.
 Proof.
-have: true by []. rewrite /HSP -!fsem_seqA=>_.
-apply: (RS_SC _ (tAxV_InFP_seq _ _ _))=>[++ _ _|//||]; rewrite ?disjoint0X//=.
-apply: (RS_SC _ (tAxV_InF _))=>/=.
-by rewrite setU0 disjoint_sym disy.
-apply: (RS_SC _ (AxV_UTFP _))=>//=.
-rewrite tenq1 -pvarsEt_cst -pvarsEf -/i0 tenqC QFT_FG_apply (tketT px) tketGl//.
+rewrite /HSP -!fsem_seqA.
+apply: (RS_SC _ (tAxV_InFP_seq _ _ _))=>/=[|//|? _|]; 
+  rewrite ?disjoint0X//=; try tac_qwhile_auto.
+apply: (RS_SC _ (tAxV_InF _))=>/=;
+  first by rewrite setU0; tac_qwhile_auto.
+apply: (RS_SC _ (AxV_UTFP_ffun _ _ _))=>//=.
+rewrite tend1 -tlinTV -tketTV/= tketGTr/=; first by tac_qwhile_auto.
+  rewrite QFT_FG_apply tendC tketT.
 apply: (RS_SC _ (AxV_UTF _))=>//=.
-rewrite tf2f2cE// ?(t2lin_ketG (x1 := px))//.
-apply: (RS_forward _ (AxV_UTFP _))=>//=.
-by rewrite -pvarsEf QFT_FG_apply tketGl ?test.
+rewrite tlin_ket.
+apply: (RS_forward _ (AxV_UTFP_ffun _ _ _))=>/=.
+rewrite -tlinTV QFT_FG_apply tketGl; first by tac_qwhile_auto.
+rewrite -vfE tentf_apply [\1 _]lfunE/= t2tv_dffun/=.
+by under [in RHS]eq_tentv_dffun do rewrite ffunE.
 Qed.
 
-Let HSP_no_while : no_while HSP.
+Lemma HSP_no_while : no_while HSP.
 Proof. by rewrite/= !no_while_for. Qed.
+Let HSP_no_while := HSP_no_while.
+Lemma HSP_is_valid : cmd_valid HSP.
+Proof. by rewrite /HSP; tac_qwhile_auto. Qed.
+Canonical HSP_valid := WF_CMD HSP_is_valid.
+(* Let HSP_valid := HSP_valid. *)
+
+Lemma disy : [disjoint mset x & mset y]. Proof. by tac_qwhile_auto. Qed.
 
 Lemma R_HSP_notin pt st i : 
-  i \notin HC -> ⊨ [pt,st] { 0 } HSP { ⌈ [> ''i ; ''i <] ; px ⌉ }.
+  i \notin HC -> ⊨ [pt,st] { 0 } HSP { '[ [> ''i ; ''i <] ; x ] }.
 Proof.
-move=>Pi; apply/no_while_enough=>//.
-move: (RS_HSP true true); rewrite stateE cplx_adj cplxM conjC1 mulr1 ket_adj touterM=>IH.
+move=>Pi; apply/no_while_enough=>//=.
+move: (RS_HSP true true); rewrite stateE numd_adj numdM conjC1 mulr1 tket_adj touterM=>IH.
 apply: (R_back _ (tR_PInnerl disy ''i _ IH)); last by rewrite vf_norm1.
-rewrite big1 ?cplx0// =>j _; rewrite /vf linearZ/= linear_sumr/= big1=>[k nk|].
+rewrite big1 ?numd0// =>j _; rewrite /vf linearZ/= linear_sumr/= big1=>[k nk|].
 by rewrite tentv_dot onb_dot; move: Pi=>/memPnC/(_ _ nk)/negPf->; rewrite mul0r.
 by rewrite mulr0 normr0 expr0n.
 Qed.
 
-Definition PX (i : X) := 
-  [exists j, (j \in [set rcoset H x0 | x0 : G]) && (i == (witness X + ff (repr j)))].
+Definition PX (i : 'I_m.+1) := 
+  [exists j, (j \in [set rcoset H x0 | x0 : G]) && (i == (ord0 + ff (repr j)))].
 
 Lemma cardPX : #|PX| = #|[set rcoset H x0 | x0 : G]|.
 Proof.
@@ -1415,15 +1459,15 @@ have H2 (j : {i : X | PX i}) : projT1 (H1 j) \in [set rcoset H x0 | x0 : G].
 by move: (projT2 (H1 j))=>/andP[].
 pose fb (j : {i : X | PX i}) : {i | i \in [set rcoset H x0 | x0 : G]} 
   := exist _ (projT1 (H1 j)) (H2 j).
-have Ef j : val j = witness X + ff (repr (val (fb j))).
+have Ef j : val j = ord0 + ff (repr (val (fb j))).
 by move: (projT2 (H1 j))=>/andP[] _/eqP.
 have Ff j : val (fb j) = (projT1 (H1 j)). by [].
-have H3 (j : {i | i \in [set rcoset H x0 | x0 : G]}) : PX (witness X + ff (repr (projT1 j))).
+have H3 (j : {i | i \in [set rcoset H x0 | x0 : G]}) : PX (ord0 + ff (repr (projT1 j))).
 by rewrite/PX; apply/existsP; exists (projT1 j); rewrite eqxx; move: (projT2 j)=>->.
 pose gb (j : {i | i \in [set rcoset H x0 | x0 : G]}) : {i : X | PX i}
-  := exist _ (witness X + ff (repr (projT1 j))) (H3 j).
-have Eg j : val (gb j) = witness X + ff (repr (val j)). by [].
-have Fg j : projT1 (gb j) = (witness X + ff (repr (projT1 j))). by [].
+  := exist _ (ord0 + ff (repr (projT1 j))) (H3 j).
+have Eg j : val (gb j) = ord0 + ff (repr (val j)). by [].
+have Fg j : projT1 (gb j) = (ord0 + ff (repr (projT1 j))). by [].
 apply: (@bij_eq_card _ _ fb).
 exists gb. move=>i. apply/val_inj. by rewrite Eg -Ef.
 move=>i. apply/val_inj. rewrite Ff.
@@ -1433,15 +1477,15 @@ by move: (projT2 i)=>/inr<-.
 Qed.
 
 Lemma R_HSP_in pt st i : 
-  i \in HC -> ⊨ [pt,st] { ((#|HC|%:R)^-1)%R%:QE } HSP { ⌈ [> ''i ; ''i <] ; px ⌉ }.
+  i \in HC -> ⊨ [pt,st] { ((#|HC|%:R)^-1)%R%:D } HSP { '[ [> ''i ; ''i <] ; x ] }.
 Proof.
 move=>Pi; apply/no_while_enough=>//.
-move: (RS_HSP true true); rewrite stateE cplx_adj cplxM conjC1 mulr1 ket_adj touterM=>IH.
+move: (RS_HSP true true); rewrite stateE numd_adj numdM conjC1 mulr1 tket_adj touterM=>IH.
 apply: (R_back _ (tR_PInnerl disy ''i _ IH)); last by rewrite vf_norm1.
 f_equal. rewrite /vf.
 rewrite (eq_bigr (fun i1=> `|#|H|%:R / #|G|%:R *
   (\sum_(v in [set rcoset H x0 | x0 : G]) charZZ i (repr v) * 
-    (i1 == (witness X + ff (repr v)))%:R) | ^+ 2)).
+    (i1 == (ord0 + ff (repr v)))%:R) | ^+ 2)).
 move=>j _; rewrite linear_sum/= dotp_sumr (bigD1 i)//= [X in _ + X]big1
   =>[k/andP[] _/negPf nk|]; rewrite dotpZr tentv_dot ?ns_dot ?onb_dot 
   1?eq_sym ?nk ?mul0r ?mulr0// mul1r addr0 dotp_sumr; 
@@ -1461,11 +1505,11 @@ by rewrite invfM invrK expr2 mulrACA mulfVK// mulrAC mulfV// mul1r mulrC.
 Qed.
 
 Lemma RS_HSP_notin pt st i t : 
-  i \notin HC -> ⊨s [pt,st] { 0 } HSP { ｜''i ⊗t ''t; (px, y)〉}.
+  i \notin HC -> ⊨s [pt,st] { 0 } HSP { '|''i ⊗t ''t; (x,y) >}.
 Proof.
 move=>Pi. apply/no_while_enoughS=>//.
-apply: (RS_back _ (t2RV_Inner disy _ _ (RS_HSP true true))).
-rewrite /vf dotpZl dotp_suml big1 ?mulr0 ?normr0 ?zero0//  =>j Pj.
+apply: (RS_back _ (tRV_Inner _ _ (RS_HSP true true))).
+rewrite /vf dotpZl dotp_suml big1 ?mulr0 ?normr0 ?numd0//  =>j Pj.
 rewrite tentv_dot onb_dot eq_sym.
 by move: Pi=>/memPnC/(_ _ Pj)/negPf->; rewrite mul0r.
 by rewrite vf_norm1.
@@ -1473,11 +1517,11 @@ Qed.
 
 Lemma RS_HSP_in pt st i (t : {set G}): 
   i \in HC -> t \in [set rcoset H x0 | x0 : G] ->
-   ⊨s [pt,st] { (#|H|%:R / #|G|%:R)%:QE } HSP { ｜''i ⊗t ''(t0 + ff (repr t)); (px, y)〉}.
+   ⊨s [pt,st] { (#|H|%:R / #|G|%:R)%:D } HSP { '|''i ⊗t ''(ord0 + ff (repr t)); (x,y) >}.
 Proof.
 move=>Pi /inr Pt. apply/no_while_enoughS=>//.
-apply: (RS_back _ (t2RV_Inner disy _ _ (RS_HSP true true))).
-f_equal. rewrite /vf dotpZl dotp_suml normrM norm_conjC [`|_ / _|]ger0_norm
+apply: (RS_back _ (tRV_Inner _ _ (RS_HSP true true))).
+f_equal. rewrite /vf dotpZl dotp_suml normrM norm_conjC [ `|_ / _|]ger0_norm
   ?divr_ge0// -[RHS]mulr1; f_equal.
 rewrite (bigD1 i)//= [X in _ + X]big1=>[j/andP[_ /negPf nj]|].
 by rewrite tentv_dot onb_dot nj mul0r.
@@ -1485,10 +1529,10 @@ rewrite tentv_dot ns_dot mul1r (bigD1 (rcoset H (repr t)))/=.
 by apply/imsetP; exists (repr t).
 rewrite dotpDl dotp_suml ?big1=>[j/andP[/inr Pj]|].
 rewrite rcosetE -Pt=>nj.
-by rewrite dotpZl onb_dot (can_eq (addKr t0)) Hff_neq// !mulr0.
+by rewrite dotpZl onb_dot (can_eq (addKr ord0)) Hff_neq// !mulr0.
 by rewrite rcosetE -Pt dotpZl ns_dot mulr1 !addr0 norm_conjC charZZ_norm.
 by rewrite vf_norm1.
 Qed.
 
 End HSP.
-End CaseStudy.
+End HSP.

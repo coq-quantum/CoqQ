@@ -1,9 +1,16 @@
-From mathcomp Require Import all_ssreflect all_algebra perm complex.
-From mathcomp.analysis Require Import reals.
-From mathcomp.real_closed Require Import complex.
+From HB Require Import structures.
+From mathcomp Require Import all_ssreflect all_algebra.
+(* From mathcomp.analysis Require Import reals. *)
+(* From mathcomp.real_closed Require Import complex. *)
+From quantum.external Require Import complex.
+Require Import Eqdep_dec.
 
 Import Order.TTheory GRing.Theory Num.Theory ComplexField Num.Def complex.
-Import Vector.InternalTheory.
+Import VectorInternalTheory.
+
+(*****************************************************************************)
+(*                      Extra theories for Mathcomp                          *)
+(*****************************************************************************)
 
 Set   Implicit Arguments.
 Unset Strict Implicit.
@@ -17,13 +24,26 @@ Notation "x %:C" := (real_complex _ x)
 Notation "x %:VF" := (x : 'Hom(_,_)) 
   (at level 2, left associativity, format "x %:VF") : lfun_scope.
 Notation "t ~_ i" := (tnth t i) (at level 3, i at level 2).
-
+Notation nlift := (fintype.lift).
+Notation "A :<=: B" := (A \subset B) (at level 70, no associativity) : set_scope.
 
 Section VecterInternalTheoryExtra.
 Local Open Scope lfun_scope.
 
-Lemma linearlfE (R : ringType) (U V : lmodType R) (f : U -> V) (lf: linear f) :
-  f = Linear lf. Proof. by []. Qed.
+Lemma comp_lfunACA (R : ringType) (U1 U2 U3 U4 U5 : vectType R) (A: 'Hom(U4,U5)) (B: 'Hom(U3,U4))
+(C: 'Hom(U2,U3)) (D: 'Hom(U1,U2)) :
+  A \o B \o C \o D = A \o (B \o C) \o D.
+Proof. by rewrite !comp_lfunA. Qed.
+
+Lemma linearlfE (R : ringType) (U V : lmodType R) 
+  (f : U -> V) (lf: linear f) : f =
+  (HB.pack f (GRing.isLinear.Build _ _ _ _ f lf) : GRing.Linear.type _ _).
+Proof. by []. Qed.
+
+Lemma scalarlfE (R : ringType) (U : lmodType R) 
+  (f : U -> R) (lf: scalar f) : f =
+  (HB.pack f (GRing.isLinear.Build _ _ _ _ f lf) : GRing.Linear.type _ _).
+Proof. by []. Qed.
 
 Lemma can2_linearP (R : ringType) (U V : lmodType R) (f : U -> V) (f' : V -> U) :
   linear f -> cancel f f' -> cancel f' f -> linear f'.
@@ -38,7 +58,6 @@ Proof. exists (@r2v _ V). exact: v2rK. exact: r2vK. Qed.
 
 Lemma r2v_bij (R : ringType) (V : vectType R) : bijective (@r2v _ V).
 Proof. exists (@v2r _ V). exact: r2vK. exact: v2rK. Qed.
-
 Lemma f2mxP (R : fieldType) (U V: vectType R) : linear (@f2mx _ U V).
 Proof.
 move=> a f g; have E: forall u, (a *: f + g) (r2v u) = a *: f (r2v u) + g (r2v u).
@@ -47,22 +66,29 @@ apply/eqP/mulmxP => u; move: (E u).
 rewrite /fun_of_lfun unlock /= /fun_of_lfun_def /= !r2vK -linearP /=.
 by rewrite -linearZ /= -mulmxDr; apply r2v_inj.
 Qed.
-Canonical f2mx_linear (R : fieldType) (U V: vectType R) := Linear (@f2mxP R U V).
+(* #[export] *)
+HB.instance Definition _ (R : fieldType) (U V: vectType R) := 
+  GRing.isLinear.Build R _ _ _ (@f2mx R U V) (@f2mxP R U V).
 
-Lemma vecthomP (R : fieldType) (U V: vectType R) : linear (@Vector.Hom _ U V).
+(* Canonical h2mx_linear (R : fieldType) (U V: vectType R) := 
+  (HB.pack (@f2mx R U V) (GRing.isLinear.Build _ _ _ _ (@f2mx R U V)
+    (@f2mxP R U V)) : GRing.Linear.type _ _). *)
+
+Lemma vecthomP (R : fieldType) (U V: vectType R) : linear (@Hom _ U V).
 Proof. by move=>c x y; apply/lfunP=>z; rewrite unlock/= !linearP. Qed.
-Canonical vecthom_linear (R : fieldType) (U V: vectType R) := Linear (@vecthomP R U V).
+HB.instance Definition _ (R : fieldType) (U V: vectType R) := 
+  GRing.isLinear.Build R _ _ _ (@Hom _ U V) (@vecthomP R U V).
 
-Lemma f2mxK (R : fieldType) (U V : vectType R) : cancel (@f2mx _ U V) (Vector.Hom).
+Lemma f2mxK (R : fieldType) (U V : vectType R) : cancel (@f2mx _ U V) (Hom).
 Proof. move=>x; by apply/val_inj. Qed.
 
-Lemma vecthomK (R : fieldType) (U V : vectType R) : cancel (Vector.Hom) (@f2mx _ U V).
+Lemma vecthomK (R : fieldType) (U V : vectType R) : cancel (Hom) (@f2mx _ U V).
 Proof. by move=>x. Qed.
 
 Lemma f2mx_inj (R : fieldType) (U V: vectType R) : injective (@f2mx _ U V).
 Proof. exact: (can_inj (@f2mxK _ _ _)). Qed.
 
-Lemma vecthom_inj (R : fieldType) (U V: vectType R) : injective (@Vector.Hom _ U V).
+Lemma vecthom_inj (R : fieldType) (U V: vectType R) : injective (@Hom _ U V).
 Proof. exact: (can_inj (@vecthomK _ _ _)). Qed.
 
 Lemma comp_f2mx (R : ringType) (H G K: vectType R) (f: 'Hom(H,G)) (g: 'Hom(K,H)) :
@@ -77,7 +103,7 @@ Qed.
 
 Lemma f2mx1 (R : ringType) (G: vectType R) : f2mx (\1%VF : 'End(G)) = 1%:M.
 Proof. 
-suff: (\1%VF : 'End(G)) = Vector.Hom 1%:M. by move/(f_equal f2mx).
+suff: (\1%VF : 'End(G)) = Hom 1%:M. by move/(f_equal f2mx).
 apply/lfunP=>u; rewrite !lfunE/= /fun_of_lfun unlock /=.
 by rewrite /fun_of_lfun_def /= mulmx1 v2rK.
 Qed.
@@ -95,9 +121,9 @@ by rewrite mxE !eqxx mul1r addr0.
 Qed.
 
 Lemma f2mx_bij (R : fieldType) (U V : vectType R) : bijective (@f2mx _ U V).
-Proof. exists (@Vector.Hom _ U V). exact: f2mxK. exact: vecthomK. Qed.
+Proof. exists (@Hom _ U V). exact: f2mxK. exact: vecthomK. Qed.
 
-Lemma vecthom_bij (R : fieldType) (U V : vectType R) : bijective (@Vector.Hom _ U V).
+Lemma vecthom_bij (R : fieldType) (U V : vectType R) : bijective (@Hom _ U V).
 Proof. exists (@f2mx _ U V). exact: vecthomK. exact: f2mxK. Qed.
 
 End VecterInternalTheoryExtra.
@@ -132,15 +158,75 @@ Proof.
 by case: eqpq=>eqp eqq; case: p' / eqp; case: q' / eqq=>x y; rewrite !castmx_id.
 Qed.
 
-Lemma castrv_qualifier T p p' (eqp : p = p') (P : forall p, qualifier 0 'rV[T]_p) 
-  (A : 'rV[T]_p) : A \is P p <-> castmx (erefl _, eqp) A \is P p'.
+Lemma castmx_cst_diag T1 T2 (f : forall m, 'M[T1]_m -> T2) m n 
+  (eqmn : (m = n)) (A : 'M[T1]_m) :
+  f _ (castmx (eqmn,eqmn) A) = f _ A.
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_cst_rv T1 T2 (f : forall m, 'rV[T1]_m -> T2) m n 
+  (eqmn : (m = n)) (A : 'rV[T1]_m) :
+  f _ (castmx (erefl _,eqmn) A) = f _ A.
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_cst_cv T1 T2 (f : forall m, 'cV[T1]_m -> T2) m n 
+  (eqmn : (m = n)) (A : 'cV[T1]_m) :
+  f _ (castmx (eqmn,erefl _) A) = f _ A.
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_cst_mx T1 T2 (f : forall m n, 'M[T1]_(m,n) -> T2) m n p q 
+  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
+  f _ _ (castmx eqmn A) = f _ _ A.
+Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_diag T1 T2 (f : forall m, 'M[T1]_m -> 'M[T2]_m) m n 
+  (eqmn : (m = n)) (A : 'M[T1]_m) :
+  f _ (castmx (eqmn,eqmn) A) = castmx (eqmn,eqmn) (f _ A).
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_mx T1 T2 (f : forall m n, 'M[T1]_(m,n) -> 'M[T2]_(m,n)) m n p q 
+  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
+  f _ _ (castmx eqmn A) = castmx eqmn (f _ _ A).
+Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_rv T1 T2 (f : forall m, 'rV[T1]_m -> 'rV[T2]_m) m n 
+  (eqmn : (m = n)) (A : 'rV[T1]_m) :
+  f _ (castmx (erefl _,eqmn) A) = castmx (erefl _,eqmn) (f _ A).
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_cv T1 T2 (f : forall m, 'cV[T1]_m -> 'cV[T2]_m) m n 
+  (eqmn : (m = n)) (A : 'cV[T1]_m) :
+  f _ (castmx (eqmn,erefl _) A) = castmx (eqmn,erefl _) (f _ A).
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_mxT T1 T2 (f : forall m n, 'M[T1]_(m,n) -> 'M[T2]_(n,m)) m n p q 
+  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
+  f _ _ (castmx eqmn A) = castmx (eqmn.2,eqmn.1) (f _ _ A).
+Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
+
+Lemma cast_qualifier_diag T p p' (eqp : p = p') (P : forall p, qualifier 0 'M[T]_p) 
+  (A : 'M[T]_p) : ((castmx (eqp,  eqp) A) \is P p') = (A \is P p).
 Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
 
-Lemma castmx_qualifier T p q p' q' (eqpq : (p = p') * (q = q')) 
+Lemma cast_qualifier_rv T p p' (eqp : p = p') (P : forall p, qualifier 0 'rV[T]_p) 
+  (A : 'rV[T]_p) : ((castmx (erefl _, eqp) A) \is P p') = (A \is P p).
+Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
+
+Lemma cast_qualifier_cv T p p' (eqp : p = p') (P : forall p, qualifier 0 'cV[T]_p) 
+  (A : 'cV[T]_p) : ((castmx (eqp, erefl _) A) \is P p') = (A \is P p).
+Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
+
+Lemma cast_qualifier_mx T p q p' q' (eqpq : (p = p') * (q = q')) 
   (P : forall p q, qualifier 0 'M[T]_(p,q)) (A : 'M[T]_(p,q)) :
-  A \is P p q <-> castmx eqpq A \is P p' q'.
-Proof. by case: eqpq=>eqp eqq; case : p' / eqp P A; 
-case: q' / eqq=>P A; rewrite castmx_id. Qed.
+  (castmx eqpq A \is P p' q') = (A \is P p q).
+Proof.
+by case: eqpq=>eqp eqq; case : p' / eqp P A; 
+case: q' / eqq=>P A; rewrite castmx_id.
+Qed.
+
+Definition castmx_funE := (castmx_cst_diag, castmx_cst_rv, castmx_cst_cv, 
+  castmx_cst_mx, castmx_mx_diag, castmx_mx_mx, castmx_mx_rv, castmx_mx_cv,
+  castmx_mx_mxT,cast_qualifier_diag,cast_qualifier_rv,cast_qualifier_cv,
+  cast_qualifier_mx).
 
 Lemma diagmx_cast p p' (eqp : p = p') (A : 'rV[R]_p) :
   diag_mx (castmx (erefl _, eqp) A) = castmx (eqp, eqp) (diag_mx A).
@@ -148,11 +234,13 @@ Proof. by case: p' / eqp A =>A; rewrite castmx_id. Qed.
 
 Lemma castmx_is_linear p q p' q' (eqpq : (p = p') * (q = q')) :
   linear (@castmx R p q p' q' eqpq).
-Proof. by case: eqpq=>eqp eqq; case: p' / eqp; 
-case: q' / eqq => a A B; rewrite !castmx_id. Qed.
+Proof.
+by case: eqpq=>eqp eqq; case: p' / eqp; 
+case: q' / eqq => a A B; rewrite !castmx_id.
+Qed.
 
-Canonical castmx_linear p q p' q' (eqpq : (p = p') * (q = q')) :=
-  Linear (@castmx_is_linear p q p' q' eqpq).
+HB.instance Definition _ p q p' q' (eqpq : (p = p') * (q = q')) := 
+  GRing.isLinear.Build R _ _ _ (@castmx R p q p' q' eqpq) (@castmx_is_linear p q p' q' eqpq).
 
 Lemma scalemx0 n : (0%:M : 'M[R]_n) = 0.
 Proof. by apply/matrixP=>i j; rewrite !mxE mul0rn. Qed.
@@ -218,6 +306,14 @@ Lemma nth_tnth (R: ringType) n (t: n.-tuple R) i (ltin : (i < n)%N) :
   t`_i = t~_(Ordinal ltin).
 Proof. by rewrite (tnth_nth 0). Qed.
 
+Notation "[ 'tuple' i => F ]" := [tuple F | i < _]
+  (at level 0, format "[ '[hv' 'tuple'  i  '=>'  F ] ']'") : form_scope.
+Notation eq_tnth := eq_mktuple.
+
+Lemma tnthE n (T : Type) (f : 'I_n -> T) i :
+  [tuple f i | i < n] ~_ i = f i.
+Proof. by rewrite tnth_map tnth_ord_tuple. Qed.
+
 Lemma tnth_bigE (R: Type) (idx: R) (op: R->R->R) (I: ringType) (n : nat) 
   (X : n.-tuple I) P (F: 'I_n -> I -> R) :
   \big[op/idx]_(i < n | P i) F i (X`_i) = \big[op/idx]_(i | P i) F i X~_i.
@@ -265,8 +361,10 @@ Notation "x %:Ci" := (im_complex _ x)
   (at level 2, left associativity, format "x %:Ci")  : ring_scope.
 Lemma im_complex_is_additive (R: ringType) : additive (im_complex R).
 Proof. by move=>a b; simpc. Qed.
+
 Definition im_complex_additive (R: ringType) := 
-  Additive (@im_complex_is_additive R).
+  (HB.pack (im_complex R) (GRing.isAdditive.Build _ _ (im_complex R)
+  (@im_complex_is_additive R)) : GRing.Additive.type _ _).
 Lemma complex_split (R: ringType) (x : R[i]) : (Re x)%:C + (Im x)%:Ci = x.
 Proof. by simpc; destruct x. Qed.
 
@@ -298,137 +396,32 @@ Qed.
 Lemma normc_ge_Im R (x : R[i]): `|Im x|%:C <= `|x|.
 Proof.
 by case: x => a b; simpc=>/=; rewrite -Num.Theory.sqrtr_sqr 
-  Num.Theory.ler_wsqrtr // Num.Theory.ler_addr Num.Theory.sqr_ge0.
+  Num.Theory.ler_wsqrtr // Num.Theory.lerDr Num.Theory.sqr_ge0.
 Qed.
 End complex_extra.
 
-Section RealC.
-Variable (R : realType).
-Implicit Type (x y : R).
-Notation C := R[i].
-
-(* for convert conjc and conjC *)
-Lemma conjcC : (@conjc R) = conjC. Proof. by []. Qed.
-Lemma conjCc : (@conjC _ : R[i] -> R[i]) = (@conjc R). Proof. by []. Qed.
-Lemma conjC_inj (x y : R[i]) : x^* = y^* -> x = y.
-Proof. by move=> P; rewrite -(conjcK x) P conjcK. Qed.
-
-Lemma natrC n : n%:R%:C = n%:R :> C. Proof. exact: raddfMn. Qed.
-Lemma realcN x : (- x)%:C = - x%:C. Proof. exact: raddfN. Qed.
-Lemma realcD x y : (x + y)%:C = x%:C + y%:C. Proof. exact: raddfD. Qed.
-Lemma realcM x y : (x * y)%:C = x%:C * y%:C. Proof. exact: rmorphM. Qed.
-Lemma realcB x y : (x - y)%:C = x%:C - y%:C. Proof. exact: raddfB. Qed.
-Lemma realcMn x n : (x *+ n)%:C = x%:C *+ n. Proof. exact: raddfMn. Qed.
-Lemma realcMNn x n : (x *- n)%:C = x%:C *- n. Proof. exact: raddfMNn. Qed.
-Lemma realcI x : ((x^-1)%:C = x%:C^-1)%R.
+Lemma ler_sum_const (T: numDomainType) m (f : 'I_m -> T) c :
+  (forall i, f i <= c) ->
+  \sum_i f i <= m%:R * c.
 Proof.
-rewrite {2}/GRing.inv/= expr0n/= mul0r addr0 expr2 invfM mulrA.
-case E: (x == 0). by move: E=>/eqP->; rewrite invr0 mulr0 oppr0.
-by rewrite mulfV ?E// mul1r; simpc.
-Qed.
-Lemma realcX x n : (x^+n)%:C = x%:C^+n. Proof. exact: rmorphX. Qed.
-Lemma realcXN x n : (x^-n)%:C = x%:C^-n. Proof. by rewrite realcI realcX. Qed.
-Lemma realc_sum (I : Type) (r : seq I) (P : pred I) (F : I -> R) :
-  (\sum_(i <- r | P i) F i)%:C = \sum_(i <- r | P i) (F i)%:C.
-Proof. exact: rmorph_sum. Qed.
-Lemma realc_prod (I : Type) (r : seq I) (P : pred I) (F : I -> R) :
-  (\prod_(i <- r | P i) F i)%:C = \prod_(i <- r | P i) (F i)%:C.
-Proof. exact: rmorph_prod. Qed.
-Lemma realc_norm (r : R) : `|r|%:C = `|r%:C|.
-Proof. by rewrite {2}/Num.norm/= expr0n/= addr0 sqrtr_sqr. Qed.
-Lemma eqcR x y : (x%:C == y%:C) = (x == y).
-Proof. by rewrite (inj_eq (@complexI _)). Qed.
-Lemma realc_eq1 x : (x%:C == 1) = (x == 1). Proof. exact: eqcR. Qed.
-Lemma realc_eq0 x : (x%:C == 0) = (x == 0). Proof. exact: eqcR. Qed.
-Lemma lecR0 x : (x%:C <= 0) = (x <= 0). Proof. exact: lecR. Qed.
-Lemma lec0R x : (0 <= x%:C) = (0 <= x). Proof. exact: lecR. Qed.
-Lemma lecR1 x : (x%:C <= 1) = (x <= 1). Proof. exact: lecR. Qed.
-Lemma lec1R x : (1 <= x%:C) = (1 <= x). Proof. exact: lecR. Qed.
-Lemma ltcR0 x : (x%:C < 0) = (x < 0). Proof. exact: ltcR. Qed.
-Lemma ltc0R x : (0 < x%:C) = (0 < x). Proof. exact: ltcR. Qed.
-Lemma ltcR1 x : (x%:C < 1) = (x < 1). Proof. exact: ltcR. Qed.
-Lemma ltc1R x : (1 < x%:C) = (1 < x). Proof. exact: ltcR. Qed.
-Lemma natc_inj (a b : nat) : ((a%:R : C) = b%:R) -> a = b.
-Proof. by move=>/eqP; rewrite eqr_nat=>/eqP. Qed.
-Lemma eqc_nat (a b : nat) : ((a%:R : C) == b%:R) = (a == b).
-Proof. exact: eqr_nat. Qed.
-
-Lemma conjcM (x y : C) : (x * y)^* = x^* * y^*.
-Proof. exact: rmorphM. Qed.
-Lemma invcM (x y : C) : x^-1 * y^-1 = (x * y)^-1.
-Proof. by rewrite invfM. Qed.
-Lemma divcM1 (x y z : C) : x / y / z = x / (y * z).
-Proof. by rewrite -mulrA invfM. Qed.
-Lemma divcM2 (x y z : C) : x / y * z = x * z / y.
-Proof. by rewrite -mulrA [_ * z]mulrC mulrA. Qed.
-Lemma divcM3 (x y : C) : x^-1 * y = y * x^-1.
-Proof. by rewrite mulrC. Qed.
-Lemma divcM4 (x y z : C) : x * (y / z) = x * y / z.
-Proof. by rewrite mulrA. Qed.
-Lemma conjc_inv_ (x : C) : (x^-1)^* = x^*^-1.
-Proof. exact: conjc_inv. Qed.
-Lemma conjc_sqrt (x : nat) : (sqrtC (x%:R : C))^* = sqrtC x%:R.
-Proof. by rewrite conj_Creal// ger0_real// sqrtC_ge0 ler0n. Qed.
-
-Lemma sqrtcMK (x : nat) : sqrtC (x%:R : C) * sqrtC x%:R = x%:R.
-Proof. by rewrite -expr2 sqrtCK. Qed.
-
-Definition divc_simp := (invcM, divcM1, divcM2, divcM3, divcM4, 
-  conjcM, conjc_inv_, conjc_sqrt, sqrtcMK).
-
-Lemma conjCN1 : (-1 : C)^* = -1. Proof. by rewrite rmorphN conjC1. Qed.
-Lemma oppcK (x : C) : - (- x) = x. Proof. exact: opprK. Qed.
-Definition sign_simp := (conjC0, conjC1, conjCN1, mulN1r, mulrN1, 
-  mulNr, mulrN, mulr1, mul1r, invrN, oppcK, addNr, addrN).
-Lemma split2c (x : C) : x / 2%:R + x / 2%:R = x.
-Proof. by rewrite -mulr2n -mulr_natr mulfVK// pnatr_eq0. Qed.
-Lemma split21 : (2%:R : C)^-1 + (2%:R : C)^-1 = 1.
-Proof. by rewrite -[RHS]split2c mul1r. Qed.
-Definition split2 := (split21, split2c).
-
-Lemma sqrtCV_nat (x : nat) n :
-  (sqrtC ((x%:R : C) ^+ n)) ^-1 = sqrtC (x%:R ^-n).
-Proof. by case: n=>[|n]; rewrite rootCV// exprn_ge0// ler0n. Qed.
-
-Lemma sqrtCNV_nat (x : nat) n :
-  (sqrtC ((x%:R : C) ^- n)) ^-1 = sqrtC (x%:R ^+n).
-Proof. by rewrite -sqrtCV_nat invrK. Qed.
-
-Lemma sqrtCX_nat (x : nat) n :
-  sqrtC ((x%:R : C) ^+ n) = sqrtC x%:R ^+ n.
-Proof. by case: n=>[|n]; rewrite ?expr0 ?sqrtC1// rootCX// ler0n. Qed.
-
-Lemma sqrtCNX_nat (x : nat) n :
-  sqrtC ((x%:R : C) ^- n) = sqrtC x%:R ^- n.
-Proof. by rewrite rootCV// ?sqrtCX_nat// exprn_ge0// ler0n. Qed.
-
-Lemma invf_prod (F : fieldType) I (r : seq I) (P : pred I) (f : I -> F) :
-  ((\prod_(i <- r | P i) (f i))^-1 = \prod_(i <- r | P i) (f i)^-1)%R.
-Proof. by elim/big_rec2: _=>[|i x y _ <-]; rewrite ?invr1// invfM. Qed.
-
-Lemma normr_prod (F : numDomainType) I (r : seq I) (P : pred I) (f : I -> F) :
-  `|(\prod_(i <- r | P i) (f i))| = \prod_(i <- r | P i) `|(f i)|.
-Proof. by elim/big_rec2: _=>[|i x y _ <-]; rewrite ?normr1// normrM. Qed.
-
-Lemma sqrt_prod (F : numClosedFieldType) I (r : seq I) (P : pred I) (f : I -> F) :
-  (forall i, P i -> f i >= 0) ->
-  sqrtC (\prod_(i <- r | P i) (f i)) = \prod_(i <- r | P i) sqrtC (f i).
-Proof.
-move=>P1; rewrite (eq_bigr (fun i=> `|f i|)) -?normr_prod.
-by move=>i /P1 P2; rewrite ger0_norm.
-elim/big_rec2: _=>[|i x y Pi <-]; rewrite ?normr1 ?sqrtC1//; apply/eqP.
-by rewrite -(@eqr_expn2 _ 2%N)// ?mulr_ge0// ?sqrtC_ge0// ?P1// 
-  exprMn !sqrtCK normrM ger0_norm// P1.
+move=>P1; have P2: \sum_i f i <= \sum_(i<m) c. by apply ler_sum.
+apply: (le_trans P2); by rewrite sumr_const card_ord mulr_natl.
 Qed.
 
-Lemma sqrtC_inv (F : numClosedFieldType) (x : F) : 
-  0 <= x -> ((sqrtC x)^-1 = sqrtC (x^-1))%R.
-Proof.
-by move=>Px; apply/eqP; rewrite -(@eqr_expn2 _ 2%N)// ?invr_ge0 
-  ?sqrtC_ge0// ?invr_ge0// exprVn !sqrtCK.
-Qed.
+Lemma ler1Sn (T : numDomainType) i : 1 <= i.+1%:R :> T.
+Proof. by rewrite -addn1 natrD lerDr. Qed.
 
-End RealC.
+(* Lemma ltr_sum n (F G : 'I_n.+1 -> C) :
+    (forall i, F i < G i) ->
+  \sum_(i < n.+1) F i < \sum_(i < n.+1) G i.
+Proof.
+move: F G. elim: n.
+by move=>F G IH; rewrite !big_ord1 IH.
+move=>m IH F G IH1.
+rewrite big_ord_recl [\sum_(i < m.+2) G i]big_ord_recl.
+apply ltrD. by apply IH1.
+apply IH=>i. apply IH1.
+Qed. *)
 
 Section EnumOrd.
 Variable (n : nat) (F : finType).
@@ -469,6 +462,18 @@ Local Notation "x * y" := (times x y).
 Variable plus : Monoid.add_law 0 *%M.
 Local Notation "+%M" := plus (at level 0).
 Local Notation "x + y" := (plus x y).
+
+Lemma bigA_distr_tuple n (J : finType) F :
+  \big[*%M/1]_(i < n) \big[+%M/0]_(j : J) F i j
+    = \big[+%M/0]_(f : n.-tuple J) \big[*%M/1]_i F i (f ~_ i).
+Proof.
+rewrite bigA_distr_bigA.
+rewrite (reindex (fun f : {ffun _}=> [tuple i => f i])).
+exists (fun f : n.-tuple J => [ffun i => f ~_ i]).
+by move=>a _; apply/ffunP=>i; rewrite ffunE tnthE.
+by move=>a _; apply/eq_from_tnth=>i; rewrite tnthE ffunE.
+by do 2 apply eq_bigr=>? _; rewrite tnthE.
+Qed.
 
 Lemma big_mlaw_absord_seq (I : eqType) (r : seq I) (P : pred I) (i : I) (F : I -> R) :
   P i -> F i = 0 -> i \in r -> \big[*%M/1]_(i <- r | P i) F i = 0.
@@ -590,6 +595,41 @@ rewrite -[RHS]negbK big_negb_all; f_equal.
 by apply eq_bigr=>i _; rewrite negbK.
 Qed.
 
+
+Lemma big_sig_cond (T : Type) (idm : T) (op : Monoid.com_law idm) 
+  (I : finType) (P Q : pred I) (f : I -> T) :
+  \big[op/idm]_(i : {x : I | P x} | Q (val i)) f (val i) = \big[op/idm]_(i | P i && Q i) f i.
+Proof.
+case E: (pred0b P); [move: E=>/pred0P P1 | move: E=>/pred0Pn[x Px]].
+rewrite big_seq_cond !big_pred0//= =>x; last by move: (P1 x)=>->.
+by destruct x; move: (P1 x); rewrite !inE/=/in_mem/= i.
+rewrite (reindex (fun x: {x : I | P x}=> projT1 x));
+  last by apply eq_big =>[y|y P2]; destruct y=>//=; rewrite i.
+exists (fun t=> match P t =P true with | ReflectT px => exist _ t px
+  | ReflectF _ => exist _ x Px end)=>y Py; case: eqP=>P1//.
+by destruct y=>/=; move: P1=>/= P1; rewrite (eq_irrelevance i P1).
+all: by move: Py; rewrite inE=>/andP[].
+Qed.
+
+Lemma big_sig (T : Type) (idm : T) (op : Monoid.com_law idm) 
+  (I : finType) (P : pred I) (f : I -> T) :
+  \big[op/idm]_(i : {x : I | P x}) f (val i) = \big[op/idm]_(i | P i) f i.
+Proof.
+move: (@big_sig_cond T idm op I P (fun=>true) f)=>->.
+by apply eq_bigl=>i; rewrite andbT.
+Qed.
+
+Lemma big_sig_set_cond (R : Type) (idm : R) (op : Monoid.com_law idm) (L: finType) 
+  (P: pred L) (W: {set L}) (F: L -> R) :
+  \big[op/idm]_(i : {i:L|i \in W} | P (val i)) F (val i) = \big[op/idm]_(i in W | P i) F i.
+Proof. exact: big_sig_cond. Qed.
+
+Lemma big_sig_set (T : Type) (idm : T) (op : Monoid.com_law idm) (L: finType)
+  (W: {set L}) (F: L -> T) :
+  \big[op/idm]_(i : {i:L|i \in W}) F (val i) = \big[op/idm]_(i in W ) F i.
+Proof. exact: big_sig. Qed.
+
+
 Lemma leq_ord n (i : 'I_n.+1) : (i <= n)%N.
 Proof. by destruct i. Qed.
 
@@ -600,7 +640,7 @@ Section WidenOrd.
 Variable (n : nat).
 
 Lemma widen_lift (i : 'I_n) : 
-  widen_ord (leqnSn n) i = fintype.lift ord_max i.
+  widen_ord (leqnSn n) i = nlift ord_max i.
 Proof. by apply/ord_inj; rewrite lift_max/=. Qed.
 
 Lemma widen_ord_neq (i : 'I_n) : 
@@ -608,7 +648,7 @@ Lemma widen_ord_neq (i : 'I_n) :
 Proof. by rewrite -(inj_eq val_inj); case: i=>/= m/ltn_neq. Qed.
 
 Lemma lift_max_neq (i : 'I_n) : 
-  (fintype.lift ord_max i) != ord_max.
+  (nlift ord_max i) != ord_max.
 Proof. by rewrite -widen_lift widen_ord_neq. Qed.
 
 Lemma widen_ord_inj : injective (widen_ord (leqnSn n)).
@@ -627,7 +667,7 @@ Qed.
 
 Variant lift_ord0_spec : 'I_n.+1 -> Type :=
   | liftord0L : lift_ord0_spec ord0
-  | liftord0R (x : 'I_n) : lift_ord0_spec (fintype.lift ord0 x).
+  | liftord0R (x : 'I_n) : lift_ord0_spec (nlift ord0 x).
 
 Lemma lift0P i : lift_ord0_spec i.
 Proof.
@@ -670,7 +710,7 @@ rewrite !(tnth_nth x)/= nth_rcons size_tuple.
 by case: i=>i /= Pi; rewrite Pi.
 Qed.
 
-Lemma tnthNS_lift x t i : tnth [tuple of rcons t x] (fintype.lift ord_max i) = tnth t i.
+Lemma tnthNS_lift x t i : tnth [tuple of rcons t x] (nlift ord_max i) = tnth t i.
 Proof. by rewrite -widen_lift tnthNS. Qed.
 
 Variant tupleN_spec : n.+1.-tuple T -> Type :=
@@ -691,7 +731,31 @@ Qed.
 
 End SeqTuple.
 
-Lemma uphalfE m : uphalf m = (m.+1)./2. Proof. by []. Qed.
+Require Import autonat.
+
+Lemma bump0 i : bump 0%N i = i.+1.
+Proof. by rewrite /bump leq0n add1n. Qed.
+
+Lemma rev_ord_lift n (h : 'I_n) (i : 'I_n.-1) :
+  rev_ord (nlift h i) = nlift (rev_ord h) (rev_ord i).
+Proof. mc_nat. Qed.
+(* case: n h i=>//=[|n h i]; first by case.
+apply/val_inj=>/=; rewrite /bump.
+have -> : ((n.+1 - h.+1 <= n - i.+1) = ~~ (h <= i))%N.
+by rewrite [in RHS]leqNgt negbK subSS leq_sub2lE.
+by case: (h <= i)%N=>/=; rewrite add0n add1n subSS// subnSK. *)
+
+Lemma rev_ord0 n : rev_ord (ord0 : 'I_n.+1) = ord_max.
+Proof. by apply/val_inj=>/=; rewrite subn1. Qed.
+Lemma rev_ord_max n : rev_ord (ord_max : 'I_n.+1) = ord0.
+Proof. by apply/val_inj=>/=; rewrite subnn. Qed.
+Lemma rev_ord_lift0 n (i : 'I_n) : rev_ord (nlift ord0 i) = nlift ord_max (rev_ord i).
+Proof. by rewrite rev_ord_lift rev_ord0. Qed.
+Lemma rev_ord_lift_max n (i : 'I_n) : rev_ord (nlift ord_max i) = nlift ord0 (rev_ord i).
+Proof. by rewrite rev_ord_lift rev_ord_max. Qed.
+
+(* Import mathcomp_nat_ord_convert. *)
+
 Lemma uphalf_half_split m : (uphalf m + half m = m)%N.
 Proof. by rewrite uphalf_half -[RHS]odd_double_half -addnA addnn. Qed.
 Lemma sub_uphalf m : (m - uphalf m = half m)%N.
@@ -707,23 +771,32 @@ Proof. by move=>P; rewrite uphalf_half P add1n. Qed.
 Lemma eq_uphalf_half_even m : ~~ odd m -> uphalf m = half m.
 Proof. by move=>/negPf P; rewrite uphalf_half P add0n. Qed.
 
-Lemma uphalf_ord_subproof (m : nat) : (uphalf m < m.+1)%N.
-Proof. by rewrite ltnS uphalf_leqn. Qed.
-Definition uphalf_ord (m : nat) := Ordinal (uphalf_ord_subproof m).
+Definition half_ord m (i : 'I_m./2) := widen_ord (half_leqn _) i.
+Lemma half_ord_rev_neq m (i j : 'I_m./2) : half_ord i != rev_ord (half_ord j).
+Proof. mc_nat. Qed.
+(* case: m i j; last case. 1,2: by move=>i; case: i.
+move=>n i j; apply/ltn_neq=>/=; rewrite leq_subRL.
+by case: j=>/= m P; apply/(leq_trans P)/ltnW; rewrite !ltnS half_leqn.
+case: i; case: j=>i Pi j Pj/=; apply/(leq_trans (leq_add Pi Pj)).
+by rewrite addnn halfK leq_subr. *)
+
+Lemma ord_half_subproof (m : nat) : (half (m.+1) < m.+1)%N.
+Proof. by rewrite -uphalfE ltnS uphalf_leqn. Qed.
+Definition ord_half (m : nat) := Ordinal (ord_half_subproof m).
+
+Lemma ord_uphalf_subproof (m : nat) : (uphalf (m.+2) < m.+2)%N.
+Proof. by rewrite -{2}[m.+2]uphalf_half_split -ltn_subLR// subnn. Qed.
+Definition ord_uphalf (m : nat) := Ordinal (ord_uphalf_subproof m).
+
 Lemma uphalf_ord_odd_rev (m : nat) :
-  ~~(odd m) -> rev_ord (uphalf_ord m) = uphalf_ord m.
+  ~~(odd m) -> rev_ord (ord_half m) = ord_half m.
 Proof.
 by move=>/negPf P; apply/val_inj=>/=; rewrite subSS uphalf_half 
   -{1}(odd_double_half m) P/= !add0n -addnn addnK.
 Qed.
-Lemma uphalf_ord_neq m (i : 'I_m.+1) : (i < uphalf m)%N -> uphalf_ord m != i.
-Proof. by move=>P1; apply/eqP=>P2; move: P1; rewrite -P2/= ltnn. Qed.
-Lemma rev_ord_neq m (i : 'I_m.+1) : (i < uphalf m)%N -> rev_ord i != i.
-Proof.
-move=>P1; apply/eqP=>P2; move: P2=>/(f_equal val)/=/(f_equal (addn i)).
-rewrite subSS addnC subnK ?leq_ord// =>P2; move: P1.
-by rewrite {2}P2 addnn uphalf_double ltnn.
-Qed.
+
+Lemma ord_half_neq m j : ord_half m != half_ord j.
+Proof. by rewrite -(inj_eq val_inj)/= eq_sym ltn_neq. Qed.
 
 Lemma big_ord_rev (T : Type) (idx : T) (op : Monoid.com_law idx)
   n P (F : 'I_n -> T) :
@@ -731,23 +804,39 @@ Lemma big_ord_rev (T : Type) (idx : T) (op : Monoid.com_law idx)
      = \big[op/idx]_(i < n | P (rev_ord i)) F (rev_ord i).
 Proof. by apply: reindex; exists (@rev_ord n)=>i _; rewrite rev_ordK. Qed.
 
+Lemma big_ord_half (T : Type) (idx : T) (op : Monoid.com_law idx)
+  n (F : 'I_n.+1 -> T) :
+  \big[op/idx]_(i : 'I_(n.+1./2)) F (half_ord i)
+     = \big[op/idx]_(i < n.+1 | (i < n.+1./2)%N) F i.
+Proof.
+pose G := fun i : nat => match (i < n.+1)%N =P true with
+          | ReflectT E => F (Ordinal E)
+          | ReflectF E => idx
+          end.
+have PG i : F i = G i.
+  by rewrite/G; case: eqP; case: i=>//= m P1 P2; f_equal; apply/val_inj.
+under eq_bigr do rewrite PG/=. under [RHS]eq_bigr do rewrite PG/=.
+by rewrite (big_ord_widen_cond _ xpredT _ (half_leqn _))/=.
+Qed.
+
 Lemma big_half_split (T : Type) (idx : T) (op : Monoid.com_law idx)
   n (F : 'I_n.+1 -> T) :
   \big[op/idx]_(i < n.+1) F i = 
-  op (\big[op/idx]_(i : 'I_n.+1 | (i < uphalf n)%N) (op (F i) (F (rev_ord i))))
-  (if odd n then idx else F (uphalf_ord n)).
+  op (\big[op/idx]_(i : 'I_(n.+1./2)) (op (F (half_ord i)) (F (rev_ord (half_ord i)))))
+  (if odd n then idx else F (ord_half n)).
 Proof.
+rewrite (big_ord_half _ (fun i => op (F i) (F (rev_ord i)))).
 case E: (odd n).
 rewrite (bigID (fun i : 'I_n.+1=> i < uphalf n)%N)/= big_split Monoid.mulm1; f_equal.
 by rewrite big_ord_rev; apply eq_bigl=>i/=; rewrite subSS -leqNgt leq_subCr 
   ?leq_ord// ?uphalf_leqn// sub_uphalf eq_uphalf_half_odd.
-rewrite (bigD1 (uphalf_ord n))// Monoid.mulmC/=; f_equal.
+rewrite (bigD1 (ord_half n))// Monoid.mulmC/=; f_equal.
 rewrite (bigID (fun i : 'I_n.+1=> i < uphalf n)%N)/= big_split; f_equal.
-apply eq_bigl=>i; symmetry; rewrite eq_sym; case: eqP=>//=; 
-by apply contraPF=>/uphalf_ord_neq/eqP.
-move: E=>/negbT E; rewrite big_ord_rev; apply eq_bigl=>i/=.
-by rewrite subSS -leqNgt leq_subCr ?leq_ord// ?uphalf_leqn// sub_uphalf eq_uphalf_half_even// 
-  ltn_neqAle (inv_eq rev_ordK) uphalf_ord_odd_rev// -(inj_eq val_inj)/= eq_uphalf_half_even.
+by apply eq_bigl=>i; symmetry; rewrite eq_sym; case: eqP=>//<-/=; rewrite ltnn.
+rewrite big_ord_rev; apply eq_bigl=>i/=.
+rewrite subSS -leqNgt leq_subCr ?leq_ord// ?uphalf_leqn// 
+  sub_uphalf eq_uphalf_half_even ?E// ltn_neqAle (inv_eq rev_ordK) 
+  uphalf_ord_odd_rev ?E// -(inj_eq val_inj)/= eq_uphalf_half_even ?E//.
 Qed.
 
 Lemma tnth_rev T n (t : n.-tuple T) i :
@@ -790,3 +879,540 @@ by rewrite big_nil/= unlock/= Monoid.mulm1 Monoid.mul1m.
 move=>a r IH. rewrite rcons_cons !big_cons; case: (P a)=>//.
 by rewrite IH; case: (P i)=>//; rewrite Monoid.mulmA.
 Qed.
+
+Coercion tuple_of_finfun : finfun_of >-> tuple_of.
+Coercion finfun_of_tuple : tuple_of >-> finfun_of.
+Lemma tnth_ffun_tuple (K : Type) (m : nat) (f : {ffun 'I_m -> K}) i :
+  f ~_ i = f i.
+Proof. by rewrite -{2}(tuple_of_finfunK f) ffunE. Qed.
+Lemma tuple_ffunE (K : Type) (m : nat) (f : m.-tuple K) (i : 'I_m) :
+  f i = f ~_ i.
+Proof. by rewrite -tnth_ffun_tuple finfun_of_tupleK. Qed.
+
+Lemma eqb_iff (b1 b2 : bool): (b1 <-> b2) <-> b1 = b2.
+Proof. by split=>[/Bool.eq_iff_eq_true|->]. Qed.
+Lemma eq_iff (T : eqType) (t1 t2 : T) : t1 == t2 <-> t1 = t2.
+Proof. by split=>[/eqP|->]. Qed.
+
+(* use for dependent inversion*)
+Lemma inj_existT (A : eqType) (P : A -> Type) (p : A) (x y : P p):
+  existT P p x = existT P p y -> x = y.
+Proof. by apply/inj_pair2_eq_dec=>a b; case: (@eqP _ a b); [left|right]. Qed.
+Global Arguments inj_existT {A P p x y}.
+
+(* bigmax *)
+Lemma le_max2l (disp : unit) (T : porderType disp) (a : T) :
+  {homo (@Order.max _ T a) : x y / (x <= y)%O >-> (x <= y)%O }.
+Proof.
+move=>x y Pxy; rewrite/Order.max; case E: (a < x)%O.
+  by move: (lt_le_trans E Pxy)=>->.
+case F: (a < y)%O=>//; by move: F; rewrite lt_neqAle=>/andP[].
+Qed.
+Definition ler_max2l := (@le_max2l ring_display).
+
+Lemma ler_max2r (T : numDomainType) (a : T) :
+  {homo (@Order.max _ T ^~ a) : x y / (x <= y) >-> (x <= y) }.
+Proof.
+move=>x y Pxy; rewrite/Order.max; case E: (x < a).
+  case: comparable_leP=>//; apply: (comparabler_trans (y := x)).
+  by apply/gt_comparable. by apply/le_comparable.
+by case F: (y < a)%O=>//; move: (le_lt_trans Pxy F); rewrite E.
+Qed.
+
+Lemma lt_min2r (disp : unit) (T : porderType disp) (a : T) :
+  {homo (@Order.min _ T ^~ a) : x y / (x <= y)%O >-> (x <= y)%O }.
+Proof.
+move=>x y Pxy; rewrite/Order.min; case E: (x < a)%O.
+  by case: (y < a)%O=>//; apply/ltW.
+by case F: (y < a)%O=>//; move: (le_lt_trans Pxy F); rewrite E.
+Qed.
+Definition ltr_min2r := (@lt_min2r ring_display).
+
+Lemma ltr_min2l (T : numDomainType) (a : T) :
+  {homo (@Order.min _ T a) : x y / (x <= y)%O >-> (x <= y)%O }.
+Proof.
+move=>x y Pxy; rewrite/Order.min; case E: (a < x).
+  by case: (a < y)=>//; apply/ltW/(lt_le_trans E Pxy).
+case F: (a < y)=>//; move: E; case: comparable_leP=>//.
+apply: (comparabler_trans (y := y)).
+by apply/le_comparable. by apply/gt_comparable.
+Qed.
+
+Variant bigmax_x0_or_in (disp : unit) (T : porderType disp) (x0 : T) 
+  (I : eqType) (r : seq I) (P : pred I) (F : I -> T) : T -> Type :=
+  | bigmax_eq_x0 : @bigmax_x0_or_in disp T x0 I r P F x0
+  | bigmax_in_seq (i : I) of (i \in r) & P i: @bigmax_x0_or_in disp T x0 I r P F (F i).
+
+Lemma bigmax_eq_elemP (disp : unit) (T : porderType disp) (x0 : T) 
+  (I : eqType) (r : seq I) (P : pred I) (F : I -> T) :  
+    @bigmax_x0_or_in disp T x0 I r P F (\big[Order.max/x0]_(i <- r | P i) F i).
+Proof.
+rewrite big_seq_cond; elim/big_rec: _; first by left.
+move=>i x /andP[] Ini Pi [|j Inj Pj]; rewrite/Order.max;
+by case: (F i < _)%O; try do [left | right].
+Qed.
+
+(* finset *)
+(* ==================================================================== *)
+Section SetExtra.
+Variable (I: finType).
+Implicit Type (A B C : {set I}).
+
+Lemma disjointP A B : reflect (forall a, a \in A -> a \notin B) [disjoint A & B].
+Proof. rewrite disjoint_subset; apply (iffP subsetP); by move=>+ a; move=>/(_ a). Qed.
+
+Lemma disj_inf A B : [disjoint A & B] -> forall x, (x \in A) && (x \in B) = false.
+Proof.
+by move/disjointP=> dis x; case E1: (x \in A) => //=; apply negbTE; apply: dis.
+Qed.
+
+Lemma disjoint0X A : [disjoint set0 & A].
+Proof. by rewrite -setI_eq0 set0I. Qed.
+
+Lemma disjointX0 A : [disjoint A & set0].
+Proof. by rewrite -setI_eq0 setI0. Qed.
+
+Lemma disjointXXP A : reflect (A = set0) [disjoint A & A].
+Proof. by apply (iffP setDidPl); rewrite setDv=>->. Qed.
+
+Lemma disjointXD A B : [disjoint A & (B :\: A)].
+Proof. by apply/disjointP => x; apply contraTT; move/negbNE/setDP=>[_ H2]. Qed.
+
+Lemma disjointDX A B : [disjoint (B :\: A) & A].
+Proof. by apply/disjointP => x; move/setDP=>[_ H2]. Qed.
+
+Lemma disjointXC A : [disjoint A & ~: A].
+Proof. by rewrite -setI_eq0 setICr. Qed.
+
+Lemma disjointCX A : [disjoint ~: A & A].
+Proof. by rewrite disjoint_sym disjointXC. Qed.
+
+Lemma disjointXDg A B C: [disjoint A & B] -> [disjoint A & B :\: C].
+Proof. by rewrite -!setI_eq0 setIDA => /eqP ->; rewrite set0D. Qed.
+
+Lemma disjointDXg A B C: [disjoint A & B] -> [disjoint A :\: C & B].
+Proof. by rewrite ![[disjoint _ & B]]disjoint_sym; apply disjointXDg. Qed.
+
+Lemma disjoint1X x A : [disjoint [set x] & A] = (x \notin A).
+Proof. exact: disjoints1. Qed.
+
+Lemma disjointX1 x A : [disjoint A & [set x]] = (x \notin A).
+Proof. by rewrite disjoint_sym disjoint1X. Qed.
+
+Lemma disjointUX A B C :
+   [disjoint A :|: B & C] = [disjoint A & C] && [disjoint B & C].
+Proof. by rewrite -!setI_eq0 setIUl setU_eq0. Qed.
+
+Lemma disjointXU A B C :
+   [disjoint A & B :|: C] = [disjoint A & B] && [disjoint A & C].
+Proof. by rewrite -!setI_eq0 setIUr setU_eq0. Qed.
+
+Lemma disjointU1X x A B :
+   [disjoint x |: A & B] = (x \notin B) && [disjoint A & B].
+Proof. by rewrite disjointUX disjoint1X. Qed.
+
+Lemma disjointP_sym A B :
+  reflect (forall a, a \in A -> a \notin B) [disjoint B & A].
+Proof. by rewrite disjoint_sym; apply: disjointP. Qed.
+
+Lemma setUD A B : A :|: B :\: A = A :|: B.
+Proof. by rewrite setDE setUIr setUCr setIT. Qed.
+
+Lemma setUDV A B : A :|: B :\: A = B :|: A.
+Proof. by rewrite setUD setUC. Qed.
+
+Lemma setUDS A B : A :|: B :\: A = B :|: A :\: B.
+Proof. by rewrite !setUD setUC. Qed.
+
+Lemma setUDSV A B : A :\: B :|: B = B :\: A :|: A.
+Proof. by rewrite setUC setUDS setUC. Qed.
+
+Definition set0_simp := (set0D,setD0,set0U,setU0,setI0,set0I,disjointX0,
+  disjoint0X,setDv,disjointXD,disjointDX).
+
+Lemma disjointDI A B : [disjoint A :\: B & A :&: B].
+Proof.
+move: (disjointDX B A).
+rewrite -!setI_eq0 [A :&: B]setIC setIA=>/eqP->. by rewrite set0I.
+Qed.
+Lemma disjointID A B : [disjoint A :&: B & A :\: B].
+Proof. by rewrite disjoint_sym disjointDI. Qed.
+
+Lemma setUD_sub A B : A :<=: B -> A :|: B :\: A = B.
+Proof. by rewrite setUD; apply/setUidPr. Qed.
+
+Lemma subUsetPP A B C : A :<=: C -> B :<=: C -> A :|: B :<=: C.
+Proof. by rewrite subUset=>->->. Qed.
+
+Section BigCupType.
+Variables (J : Type).
+Implicit Types  (r : seq J) (P : pred J) (F :  J -> {set I}).
+
+(* replace of bigcupsP *)
+Lemma bigcupsP_seqT (U : {set I}) r P F :
+  (forall i : J, P i -> F i :<=: U) ->
+          (\bigcup_(i <- r | P i) F i :<=: U).
+Proof. 
+move=>Pi; elim: r=>[|x r IH]; first by rewrite big_nil sub0set.
+by rewrite big_cons; case E: (P x)=>//; rewrite subUset IH Pi.
+Qed.
+
+Lemma bigcup_disjointP_seqT  (U: {set I}) r P F :
+  (forall i, P i -> [disjoint U & F i]) ->
+    ([disjoint U & \bigcup_(i <- r | P i) F i ]).
+Proof.
+move=>Pi; elim: r=>[|x r IH]; first by rewrite big_nil disjointX0.
+by rewrite big_cons; case E: (P x)=>//; rewrite disjointXU IH Pi.
+Qed.
+
+End BigCupType.
+
+Section BigCupSeq.
+
+Variables (J : eqType) (r : seq J).
+Implicit Types (P : pred J) (F :  J -> {set I}).
+
+Lemma bigcup_sup_seq j P F : j \in r -> P j -> F j :<=: \bigcup_(i <- r | P i) F i.
+Proof.
+move=> jr Pj; rewrite big_mkcond -(big_undup _ _ _ (@setUid _)).
+by rewrite (bigD1_seq j) ?mem_undup ?undup_uniq ?Pj //= subsetUl.
+Qed.
+
+Lemma bigcup_seqP x F P :
+  reflect (exists2 i : J, (i \in r) && P i & x \in F i)
+          (x \in \bigcup_(i <- r | P i) F i).
+Proof.
+apply: (iffP idP) => [|[i /andP[ri Pi]]]; last first.
+  by apply: subsetP x; rewrite bigcup_sup_seq.
+rewrite big_seq_cond; elim/big_rec: _ => [|i _ /andP[ri Pi] _ /setUP[|//]];
+  by [rewrite in_set0 | exists i; rewrite ?ri].
+Qed.
+
+Lemma bigcups_seqP A P F :
+  reflect (forall i : J, i \in r -> P i -> F i :<=: A)
+          (\bigcup_(i <- r | P i) F i :<=: A).
+Proof.
+apply: (iffP idP) => [sFU i ri Pi| sFU].
+  by apply: subset_trans sFU; apply: bigcup_sup_seq.
+by apply/subsetP=> x /bigcup_seqP[i /andP[ri Pi]]; apply/subsetP/sFU.
+Qed.
+
+Lemma bigcup_disjoint_seqP A P F :
+  reflect (forall i, (i \in r) && P i -> [disjoint A & F i])
+    ([disjoint A & \bigcup_(i <- r | P i) F i ]).
+Proof.
+rewrite -setI_eq0 -subset0 big_distrr/=.
+apply (iffP (bigcups_seqP _ _ _)) =>[IH i /andP[P1 P2] | IH i P1 P2].
+move: (IH i P1 P2). all: rewrite subset0 setI_eq0//.
+by apply IH; rewrite P1 P2.
+Qed.
+
+End BigCupSeq.
+
+(* wait for update *)
+
+Lemma big_setU (R : Type) (idx : R) (op : Monoid.com_law idx)
+  A B (F : I -> R) : [disjoint A & B] ->
+  \big[op/idx]_(i in (A :|: B)) F i = 
+    op (\big[op/idx]_(i in A) F i) (\big[op/idx]_(i in B) F i).
+Proof.
+move=>dis; rewrite (big_setID A) ; f_equal; apply eq_bigl=>x;
+by rewrite !inE/= ?orbK// andb_orr andNb/=; apply/andb_idl/disjointP; rewrite disjoint_sym.
+Qed.
+
+Lemma big_setD (R : zmodType) A B (F : I -> R) :
+  \sum_(i in (A :\: B)) F i = 
+    (\sum_(i in A :|: B) F i) - (\sum_(i in B) F i).
+Proof. by rewrite -setUDV big_setU/= ?disjointXD// addrC addKr. Qed.
+
+Lemma subsetX_disjoint A B : (A :<=: B) = [disjoint A & ~: B].
+Proof. by rewrite subset_disjoint; apply/eq_disjoint_r=>i; rewrite !inE. Qed.
+
+Lemma disjointX_subset A B : [disjoint A & B] = (A :<=: ~: B).
+Proof. by rewrite subsetX_disjoint setCK. Qed.
+
+End SetExtra.
+
+(* -------------------------------------------------------------------- *)
+(* Import Order.TTheory GRing.Theory Num.Theory ComplexField Num.Def complex. *)
+
+From mathcomp Require Import finmap.
+
+Local Open Scope fset_scope.
+
+Notation "\bigcup_ ( m <= i < n | P ) F" :=
+  (\big[@fsetU _/fset0]_(m <= i < n | P%B) F%fset) : fset_scope.
+Notation "\bigcup_ ( m <= i < n ) F" :=
+  (\big[@fsetU _/fset0]_(m <= i < n) F%fset) : fset_scope.
+Notation "\bigcup_ ( i | P ) F" :=
+  (\big[@fsetU _/fset0]_(i | P%B) F%fset) : fset_scope.
+Notation "\bigcup_ i F" :=
+  (\big[@fsetU _/fset0]_i F%fset) : fset_scope.
+Notation "\bigcup_ ( i : t | P ) F" :=
+  (\big[@fsetU _/fset0]_(i : t | P%B) F%fset) (only parsing): fset_scope.
+Notation "\bigcup_ ( i : t ) F" :=
+  (\big[@fsetU _/fset0]_(i : t) F%fset) (only parsing) : fset_scope.
+Notation "\bigcup_ ( i < n | P ) F" :=
+  (\big[@fsetU _/fset0]_(i < n | P%B) F%fset) : fset_scope.
+Notation "\bigcup_ ( i < n ) F" :=
+  (\big[@fsetU _/fset0]_ (i < n) F%fset) : fset_scope.
+
+(* -------------------------------------------------------------------- *)
+Section FSetMonoids.
+Import Monoid.
+Variable (I : choiceType).
+HB.instance Definition _ := 
+  isMulLaw.Build {fset I} fset0 _ (@fset0I I) (@fsetI0 I).
+HB.instance Definition _ := 
+  isAddLaw.Build {fset I} _ _ (@fsetIUl I) (@fsetIUr I).
+End FSetMonoids.
+
+(* ==================================================================== *)
+Section FSetExtra.
+Variable (I: choiceType).
+Implicit Type (A B C : {fset I}).
+
+Lemma fdisj_inf A B : [disjoint A & B] -> forall x, (x \in A) && (x \in B) = false.
+Proof.
+by move/fdisjointP=> dis x; case E1: (x \in A) => //=; apply negbTE; apply: dis.
+Qed.
+
+Lemma fdisjointXXP A : reflect (A = fset0) [disjoint A & A]%fset.
+Proof. by apply (iffP (fsetDidPl _ _)); rewrite fsetDv=>->. Qed.
+
+Lemma fdisjointXD A B : [disjoint A & (B `\` A)].
+Proof. by apply/fdisjointP => x; apply contraTT; move/negbNE/fsetDP=>[_ H2]. Qed.
+
+Lemma fdisjointDX A B : [disjoint (B `\` A) & A].
+Proof. by apply/fdisjointP => x; move/fsetDP=>[_ H2]. Qed.
+
+Lemma fdisjointXDg A B C: [disjoint A & B] -> [disjoint A & B `\` C].
+Proof. by rewrite -!fsetI_eq0 fsetIDA => /eqP ->; rewrite fset0D. Qed.
+
+Lemma fdisjointDXg A B C: [disjoint A & B] -> [disjoint A `\` C & B].
+Proof. by rewrite ![[disjoint _ & B]]fdisjoint_sym; apply fdisjointXDg. Qed.
+
+Lemma fsetUD A B : A `|` (B `\` A) = A `|` B.
+Proof. by rewrite fsetUDl fsetDv fsetD0. Qed.
+
+Lemma fsetUDV A B : A `|` B `\` A = B `|` A.
+Proof. by rewrite fsetUD fsetUC. Qed.
+
+Lemma fsetUDS A B : (A `|` (B `\` A)) = (B `|` (A `\` B)).
+Proof. by rewrite !fsetUD fsetUC. Qed.
+
+Lemma fsetUDSV A B : ((A `\` B) `|` B) = ((B `\` A) `|` A).
+Proof. by rewrite fsetUC fsetUDS fsetUC. Qed.
+
+Definition fset0_simp := (fset0D,fsetD0,fset0U,fsetU0,fsetI0,fset0I,fdisjointX0,
+  fdisjoint0X,fsetDv,fdisjointXD,fdisjointDX).
+
+Lemma fdisjointDI A B : [disjoint A `\` B & A `&` B].
+Proof.
+move: (fdisjointDX B A).
+rewrite -!fsetI_eq0 [A `&` B]fsetIC fsetIA=>/eqP->. by rewrite fset0I.
+Qed.
+
+Lemma fdisjointID A B : [disjoint A `&` B & A `\` B].
+Proof. by rewrite fdisjoint_sym fdisjointDI. Qed.
+
+Lemma fsetUD_sub A B : A `<=` B -> A `|` B `\` A = B.
+Proof. by rewrite fsetUD; apply/fsetUidPr. Qed.
+
+Lemma fsubUsetPP A B C : A `<=` C -> B `<=` C -> A `|` B `<=` C.
+Proof. by rewrite fsubUset=>->->. Qed.
+
+(* wait for update *)
+Lemma bigfcup_disjointP  (A: {fset I}) (J : eqType) (r: seq J) (P: pred J) (F: J -> {fset I}) :
+  reflect (forall i, (i \in r) && P i -> [disjoint A & F i])
+    ([disjoint A & \bigcup_(i <- r | P i) F i ]%fset).
+Proof.
+rewrite -fsetI_eq0 -fsubset0 big_distrr/=.
+apply (iffP (bigfcupsP _ _ _ _)) =>[IH i /andP[P1 P2] | IH i P1 P2].
+move: (IH i P1 P2). all: rewrite fsubset0 fsetI_eq0//.
+apply IH. by rewrite P1 P2.
+Qed.
+
+End FSetExtra.
+
+Lemma big_fsetU (R : Type) (idx : R) (op : Monoid.com_law idx) (I : choiceType) 
+  A B (F : I -> R) : [disjoint A & B] ->
+  \big[op/idx]_(i <- (A `|` B)) F i = 
+    op (\big[op/idx]_(i <- A) F i) (\big[op/idx]_(i <- B) F i).
+Proof.
+move=>dis; rewrite (big_fsetID _ (mem A)); congr (op _ _); apply eq_fbigl=>x; 
+by rewrite !inE/= ?orbK// andb_orl andbN/=; apply/andb_idr/fdisjointP; rewrite fdisjoint_sym.
+Qed.
+
+Lemma big_fsetD (R : zmodType) (I : choiceType) 
+  A B (F : I -> R) :
+  \sum_(i <- (A `\` B)) F i = 
+    (\sum_(i <- A `|` B) F i) - (\sum_(i <- B) F i).
+Proof.
+by apply/eqP; rewrite eq_sym subr_eq -big_fsetU ?fdisjointDX//= fsetUDr fsetDv fsetD0.
+Qed.
+
+Lemma index_enum_fset (I : choiceType) (A : {fset I}) :
+  perm_eq (map val (index_enum (@fset_sub_type I A)))
+    (@enum_fset I A).
+Proof.
+have /perm_undup: map val (index_enum (@fset_sub_type I A)) =i @enum_fset I A.
+  move=>i; apply eqb_iff; split; first by move=>/mapP/=[x _ ->]; case: x.
+  by move=>Pi; apply/mapP=>/=; exists [` Pi] =>//; rewrite mem_index_enum.
+by rewrite !undup_id// map_inj_uniq ?index_enum_uniq//; apply/val_inj.
+Qed.
+
+Lemma big_in_fsetE (T : Type) (idm : T) (op : Monoid.com_law idm) 
+ (I : choiceType) A (g : I -> T):
+ \big[op/idm]_(i <- (index_enum (@fset_sub_type I A))) g (fsval i) = \big[op/idm]_(i <- A) g i.
+Proof. by rewrite -(big_map (@fsval _ _) predT)/=  (perm_big _ (index_enum_fset A)). Qed.
+Arguments big_in_fsetE [T idm op I A].
+
+Lemma big_fsetU_idem (R : Type) (idx : R) (op : Monoid.com_law idx)
+  (I : choiceType) (A B : {fset I}) (F : I -> R) :
+  idempotent op ->
+   \big[op/idx]_(i <- A `|` B) F i =
+   op (\big[op/idx]_(i <- A) F i) (\big[op/idx]_(i <- B) F i).
+Proof.
+move=>Pop.
+rewrite -{1}(fsetID A B) -{1}(fsetID B A) fsetUACA fsetIC fsetUid !big_fsetU; last first.
+rewrite -[X in op X _]Pop {1}fsetIC Monoid.mulmACA 
+  -{5}(fsetID A B) -{5}(fsetID B A) !big_fsetU//.
+1,2 : by rewrite fdisjointID.
+apply/(fdisjointWl (fsubsetDl _ _))/fdisjointXD.
+by rewrite fdisjointXU {1}fsetIC !fdisjointID.
+Qed.
+
+Lemma big_fsetUs_idem (R : Type) (idx : R) (op : Monoid.com_law idx)
+  (I J : choiceType) (r : seq I) (P : pred I) (s : I -> {fset J}) (F : J -> R) :
+  idempotent op ->
+   \big[op/idx]_(i <- r | P i) (\big[op/idx]_(j <- s i) F j) =
+   \big[op/idx]_(j <- \bigcup_(i <- r | P i) s i) F j.
+Proof.
+move=>Pop.
+elim/big_rec2 : _; first by rewrite big_seq_fsetE big_fset0.
+by move=>i y1 y2 Pi ->; rewrite big_fsetU_idem.
+Qed.
+
+(* theory of fsetT, fsetC ... *)
+Section FSetFinType.
+Context {I : finType}.
+Implicit Type (A B C : {fset I}).
+
+Definition fsetT := [fset x | x : I].
+Lemma in_fsetT (x : I) : x \in fsetT. 
+Proof. by rewrite inE. Qed.
+
+Lemma enum_fsetT_perm :
+  perm_eq (enum (Finite.clone [fset x | x : I]%type _))
+    (map (fun x => [` in_fsetT x]) (enum I)).
+Proof.
+have: (enum (Finite.clone [fset x | x : I]%type _)) =i (map (fun x => [` in_fsetT x]) (enum I)).
+move=>/=i; rewrite mem_enum/= inE; symmetry; apply/mapP.
+destruct i=>/=; exists fsval. by rewrite mem_enum.
+by rewrite (eq_irrelevance fsvalP (in_fsetT fsval)).
+move=>/perm_undup; rewrite !undup_id// ?enum_uniq// map_inj_uniq ?enum_uniq//.
+by move=>i j /(f_equal val).
+Qed.
+
+Definition fsetC A := (nosimpl fsetT `\` A).
+Notation "~` A" := (fsetC A) (at level 35, A at level 35, right associativity) : fset_scope.
+
+Lemma fsubsetT A : A `<=` fsetT.
+Proof. by apply/fsubsetP=>i; rewrite in_fsetT. Qed.
+
+Lemma fsubTset A : (fsetT `<=` A) = (A == fsetT).
+Proof. by rewrite eqEfsubset fsubsetT. Qed.
+
+Lemma fproperT A : (A `<` fsetT) = (A != fsetT).
+Proof. by rewrite fproperEneq fsubsetT andbT. Qed.
+
+Lemma fsetTU A : fsetT `|` A = fsetT.
+Proof. by apply/fsetP => x; rewrite !inE orTb. Qed.
+
+Lemma fsetUT A : A `|` fsetT = fsetT.
+Proof. by rewrite fsetUC fsetTU. Qed.
+
+Lemma fsetTI A : fsetT `&` A = A.
+Proof. by apply/fsetP => x; rewrite !inE andTb. Qed.
+
+Lemma fsetIT A : A `&` fsetT = A.
+Proof. by rewrite fsetIC fsetTI. Qed.
+
+Lemma fsetDT A : A `\` fsetT = fset0.
+Proof. by apply/fsetP=> x; rewrite !inE. Qed.
+
+Lemma fsetTD A : fsetT `\` A = ~` A.
+Proof. by apply/fsetP=> x; rewrite !inE andbT. Qed.
+
+Lemma in_fsetC x A : (x \in ~` A) = (x \notin A).
+Proof. by rewrite inE in_fsetT andbT. Qed.
+
+Definition in_fset := (in_fset, in_fsetC, in_fsetT).
+
+Lemma fsetCP x A : reflect (~ x \in A) (x \in ~` A).
+Proof. by rewrite !in_fset; apply: negP. Qed.
+
+Lemma fsetCK : involutive fsetC.
+Proof. by move=> A; apply/fsetP=> x; rewrite !in_fset negbK. Qed.
+
+Lemma fsetC_inj : injective fsetC.
+Proof. exact: can_inj fsetCK. Qed.
+
+Lemma fsubsetX_disjoint A B : (A `<=` B) = [disjoint A & ~` B].
+Proof. by rewrite -fsetI_eq0 fsetIDA fsetIT fsetD_eq0. Qed.
+
+Lemma fdisjointX_subset A B : [disjoint A & B] = (A `<=` ~` B).
+Proof. by rewrite fsubsetX_disjoint fsetCK. Qed.
+
+Lemma fpowersetCE A B : (A \in fpowerset (~` B)) = [disjoint A & B].
+Proof. by rewrite fpowersetE fdisjointX_subset. Qed.
+
+Lemma fsetCS A B : (~` A `<=` ~` B) = (B `<=` A).
+Proof. by rewrite !fsubsetX_disjoint fsetCK fdisjoint_sym. Qed.
+
+Lemma fsetCU A B : ~` (A `|` B) = ~` A `&` ~` B.
+Proof. by apply/fsetP=> x; rewrite !inE !andbT negb_or. Qed.
+
+Lemma fsetCI A B : ~` (A `&` B) = ~` A `|` ~` B.
+Proof. by apply/fsetP=> x; rewrite !inE !andbT negb_and. Qed.
+
+Lemma fsetUCr A : A `|` ~` A = fsetT.
+Proof. by apply/fsetP=> x; rewrite !inE andbT orbN. Qed.
+
+Lemma fsetICr A : A `&` ~` A = fset0.
+Proof. by apply/fsetP=> x; rewrite !inE andbT andbN. Qed.
+
+Lemma fsetC0 : ~` fset0 = fsetT.
+Proof. by apply/fsetP=> x; rewrite !inE. Qed.
+
+Lemma fsetCT : ~` fsetT = fset0.
+Proof. by rewrite -fsetC0 fsetCK. Qed.
+
+Lemma fproperC A B : (~` B `<` ~` A) = (A `<` B).
+Proof. by rewrite !fproperE !fsetCS. Qed.
+
+Lemma fdisjointXC A : [disjoint A & ~` A].
+Proof. by rewrite -fsetI_eq0 fsetICr. Qed.
+
+Lemma fdisjointCX A : [disjoint ~` A & A].
+Proof. by rewrite fdisjoint_sym fdisjointXC. Qed.
+
+End FSetFinType.
+
+Notation "~` A" := (fsetC A) (at level 35, A at level 35, right associativity) : fset_scope.
+
+Lemma big_fsetT (R : Type) (idx : R) (op : Monoid.com_law idx) 
+  (I : finType) (F : I -> R) :
+  \big[op/idx]_i F i = \big[op/idx]_(i : @fsetT I) F (val i).
+Proof.
+by rewrite /index_enum /enum_fset/= -!enumT/= 
+  (perm_big _ (enum_fsetT_perm)) [RHS]big_map/=.
+Qed.
+Arguments big_fsetT [R idx op I].
+
+Lemma big_seq_fsetT (R : Type) (idx : R) (op : Monoid.com_law idx) 
+  (I : finType) (F : I -> R) :
+  \big[op/idx]_i F i = \big[op/idx]_(i <- @fsetT I) F i.
+Proof. by rewrite big_fsetT big_seq_fsetE. Qed.
+Arguments big_seq_fsetT [R idx op I].

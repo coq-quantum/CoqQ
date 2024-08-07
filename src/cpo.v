@@ -1,9 +1,19 @@
-(*-------------------------------------------------------------------- *)
+(*--------------------------------------------------------------------- *)
+From HB Require Import structures.
 From mathcomp Require Import all_ssreflect.
-From mathcomp.analysis Require Import boolp.
+From mathcomp.classical Require Import boolp.
 
 (* -------------------------------------------------------------------- *)
 Import Order Order.Theory.
+
+(************************************************************************)
+(*                 CPO (complete partial order) Theory                  *)
+(* -------------------------------------------------------------------- *)
+(*            cpoType d == the type of complete partial ordered types   *)
+(*                         The HB class is Cpo                          *)
+(*     { scott U -> V } == the type of scott continuous function over   *)
+(*                         cpoType U and V                              *)
+(************************************************************************)
 
 Local Open Scope nat_scope.
 Local Open Scope order_scope.
@@ -36,122 +46,44 @@ Qed.
 End ChainTheory.
 
 (* -------------------------------------------------------------------- *)
-Module Cpo.
-Section ClassDef.
 
-Record mixin_of
-  (T0 : Type) (b : POrder.class_of T0) (T := POrder.Pack tt b) := Mixin 
-{
-  bot : T;
-  lub : (nat -> T) -> T;
-  _   : forall x, bot <= x;
-  _   : forall c : nat -> T, chain c -> forall i, c i <= lub c;
-  _   : forall c : nat -> T, chain c -> forall x, (forall i, c i <= x) -> lub c <= x;
+HB.mixin Record isCpo (d : unit) T of POrder d T := {
+  bot  : T;
+  lub  : (nat -> T) -> T;
+  le0c : forall x, bot <= x;
+  lub_ub :
+    forall c : nat -> T, chain c -> forall i, c i <= lub c;
+  lub_least :
+    forall c : nat -> T, chain c -> forall x, (forall i, c i <= x) -> lub c <= x;
 }.
 
-Set Primitive Projections.
-Record class_of (T : Type) := Class {
-  base  : POrder.class_of T;
-  mixin : mixin_of base;
-}.
-Unset Primitive Projections.
+#[short(type="cpoType")]
+HB.structure Definition Cpo (d : unit):=
+  { T of POrder d T & isCpo d T }.
 
-Local Coercion base : class_of >-> POrder.class_of.
-
-Structure type (disp : unit) := Pack { sort; _ : class_of sort }.
-
-Local Coercion sort : type >-> Sortclass.
-
-Variables (T : Type) (disp : unit) (cT : type disp).
-
-Definition class := let: Pack _ c as cT' := cT return class_of cT' in c.
-Definition clone c of phant_id class c := @Pack disp T c.
-Definition clone_with disp' c of phant_id class c := @Pack disp' T c.
-
-Definition pack :=
-  fun bT b & phant_id (@POrder.class disp bT) b =>
-  fun m => Pack disp (@Class T b m).
-
-Definition eqType := @Equality.Pack cT class.
-Definition choiceType := @Choice.Pack cT class.
-Definition porderType := @POrder.Pack disp cT class.
-End ClassDef.
-
-Module Exports.
-Coercion base : class_of >-> POrder.class_of.
-Coercion mixin : class_of >-> mixin_of.
-Coercion sort : type >-> Sortclass.
-Coercion eqType : type >-> Equality.type.
-Coercion choiceType : type >-> Choice.type.
-Coercion porderType : type >-> POrder.type.
-Canonical eqType.
-Canonical choiceType.
-Canonical porderType.
-Notation cpoType  := type.
-Notation CpoType T m := (@pack T _ _ _ id m).
-Notation "[ 'cpoType' 'of' T 'for' cT ]" := (@clone T _ cT _ id)
+Module CpoExports.
+#[deprecated(since="mathcomp 2.0.0", note="Use Cpo.clone instead.")]
+Notation "[ 'cpoType' 'of' T 'for' cT ]" := (Cpo.clone _ T%type cT)
   (at level 0, format "[ 'cpoType'  'of'  T  'for'  cT ]") : form_scope.
-Notation "[ 'cpoType' 'of' T 'for' cT 'with' disp ]" :=
-  (@clone_with T _ cT disp _ id)
-  (at level 0, format "[ 'cpoType'  'of'  T  'for'  cT  'with'  disp ]") :
-  form_scope.
-Notation "[ 'cpoType' 'of' T ]" := [cpoType of T for _]
+#[deprecated(since="mathcomp 2.0.0", note="Use Cpo.clone instead.")]
+Notation "[ 'cpoType' 'of' T 'for' cT 'with' disp ]" := (Cpo.clone disp T%type cT)
+  (at level 0, format "[ 'cpoType'  'of'  T  'for'  cT  'with'  disp ]") : form_scope.
+#[deprecated(since="mathcomp 2.0.0", note="Use Cpo.clone instead.")]
+Notation "[ 'cpoType' 'of' T ]" := (Cpo.clone _ T%type _)
   (at level 0, format "[ 'cpoType'  'of'  T ]") : form_scope.
-Notation "[ 'cpoType' 'of' T 'with' disp ]" :=
-  [cpoType of T for _ with disp]
+#[deprecated(since="mathcomp 2.0.0", note="Use Cpo.clone instead.")]
+Notation "[ 'cpoType' 'of' T 'with' disp ]" := (Cpo.clone disp T%type _)
   (at level 0, format "[ 'cpoType'  'of'  T  'with' disp ]") : form_scope.
-End Exports.
-End Cpo.
-
-Export Cpo.Exports.
-
-Definition bot {disp : unit} {T : cpoType disp} : T :=
-  Cpo.bot (Cpo.class T).
-
-Definition lub {disp : unit} {T : cpoType disp} (c : nat -> T) : T :=
-  Cpo.lub (Cpo.class T) c.
+End CpoExports.
+HB.export CpoExports.
 
 (* -------------------------------------------------------------------- *)
-Module CpoMixin.
-Section CpoMixin.
-Context {disp : unit} (T : porderType disp).
-
-Record of_ := Build {
-  bot       : T;
-  lub       : (nat -> T) -> T;
-  le0c      : forall x, bot <= x;
-  lub_ub    : forall c : nat -> T, chain c -> forall i, c i <= lub c;
-  lub_least : forall c : nat -> T, chain c -> forall x, (forall i, c i <= x) -> lub c <= x;
-}.
-
-Definition cpoMixin (m : of_) :=
-  @Cpo.Mixin _ _ (bot m) (lub m) (le0c m) (lub_ub m) (lub_least m).
-End CpoMixin.
-
-Module Exports.
-Coercion cpoMixin : of_ >-> Cpo.mixin_of.
-Notation cpoMixin := of_.
-Notation CpoMixin := Build.
-End Exports.
-End CpoMixin.
-
-Import CpoMixin.Exports.
-
-(* -------------------------------------------------------------------- *)
-Section CPOTheory.
+Section CpoTheory.
 Context {d : unit} {T : cpoType d}.
 
-Lemma le0c (x : T) : bot <= x.
-Proof. by case: T x => ? [? []]. Qed.
-
+(*
 Hint Extern 0 (is_true (bot <= _)) => (exact: le0c) : core.
-
-Lemma lub_ub (c : nat -> T): chain c -> forall i, c i <= lub c.
-Proof. by case: T c => ? [? []]. Qed.
-
-Lemma lub_least (c : nat -> T):
-  chain c -> forall x, (forall i, c i <= x) -> lub c <= x.
-Proof. by case: T c => ? [? []]. Qed.
+*)
 
 Lemma lub_shift (c : nat -> T): chain c -> lub (c \o succn) = lub c.
 Proof.
@@ -162,51 +94,52 @@ move=> sc_c; rewrite (rwP eqP) eq_le; apply/andP; split.
   - by apply/(le_trans (sc_c 0%N))/lub_ub/chain_shift.
   - by apply/lub_ub/chain_shift.
 Qed.
-End CPOTheory.
+End CpoTheory.
 
 (* -------------------------------------------------------------------- *)
-Module ScottContinuous.
-Section ClassDef.
-Context {dU dV : unit} (U : cpoType dU) (V : cpoType dV).
 
-Definition axiom (f : U -> V) :=
+Definition scott dU dV (U : cpoType dU) (V : cpoType dV) (f : U -> V) :=
   [/\ forall c, chain c -> chain (f \o c)
     & forall c, chain c -> f (lub c) = lub (f \o c)].
 
-Structure map (phUV : phant (U -> V)) := Pack {apply; _ : axiom apply}.
-Local Coercion apply : map >-> Funclass.
+HB.mixin Record isScottContinuous dU dV (U : cpoType dU) (V : cpoType dV) (apply : U -> V) := {
+  scott_subproof : scott apply;
+}.
 
-Variables (phUV : phant (U -> V)) (f g : U -> V) (cF : map phUV).
-Definition class := let: Pack _ c as cF' := cF return axiom cF' in c.
-Definition clone fA of phant_id g (apply cF) & phant_id fA class :=
-  @Pack phUV f fA.
+(* #[mathcomp(axiom="scott")] *)
+HB.structure Definition ScottContinuous dU dV (U : cpoType dU) (V : cpoType dV) :=
+  {f of isScottContinuous dU dV U V f}.
 
-End ClassDef.
-
-Module Exports.
-Notation scott f := (axiom f).
-Coercion apply : map >-> Funclass.
-Notation Scott fA := (Pack (Phant _) fA).
-Notation "{ 'scott' fUV }" := (map (Phant fUV))
-  (at level 0, format "{ 'scott'  fUV }") : order_scope.
-Notation "[ 'scott' 'of' f 'as' g ]" := (@clone _ _ _ f g _ _ idfun id)
-  (at level 0, format "[ 'scott'  'of'  f  'as'  g ]") : form_scope.
-Notation "[ 'scott' 'of' f ]" := (@clone _ _ _ f f _ _ id id)
-  (at level 0, format "[ 'scott'  'of'  f ]") : form_scope.
-End Exports.
+Module ScottContinuousExports.
+Module ScottContinuous.
+Definition apply_deprecated dU dV (U : cpoType dU) (V : cpoType dV) (phUV : phant (U -> V)) :=
+  @ScottContinuous.sort dU dV U V.
+#[deprecated(since="mathcomp 2.0", note="Use ScottContinuous.sort instead.")]
+Notation apply := apply_deprecated.
 End ScottContinuous.
-
-Include ScottContinuous.Exports.
+Notation "{ 'scott' U -> V }" := (ScottContinuous.type U%type V%type) (at level 0, U at level 98, V at level 99,
+format "{ 'scott'  U  ->  V }") : type_scope.
+#[deprecated(since="mathcomp 2.0.0", note="Use ScottContinuous.clone instead.")]
+Notation "[ 'scott' 'of' f 'as' g ]" := (ScottContinuous.clone _ _ _ _ f%function g)
+  (at level 0, format "[ 'scott'  'of'  f  'as'  g ]") : form_scope.
+  #[deprecated(since="mathcomp 2.0.0", note="Use ScottContinuous.clone instead.")]
+Notation "[ 'scott' 'of' f ]" := (ScottContinuous.clone _ _ _ _ f%function _)
+  (at level 0, format "[ 'scott'  'of'  f ]") : form_scope.
+End ScottContinuousExports.
+HB.export ScottContinuousExports.
 
 (* -------------------------------------------------------------------- *)
 Section SCTheory.
 Context {dT dU : unit} {T : cpoType dT} {U : cpoType dU} (f : {scott T -> U}).
 
+Lemma sc_scott : scott f.
+Proof. exact: scott_subproof. Qed.
+
 Lemma sc_chain c : chain c -> chain (f \o c).
-Proof. by move: c; case: f => ? []. Qed.
+Proof. by move: c; case: sc_scott. Qed.
 
 Lemma sc_lub c : chain c -> f (lub c) = lub (f \o c).
-Proof. by move: c; case: f => ? []. Qed.
+Proof. by move: c; case: sc_scott. Qed.
 
 Lemma homo_sc : {homo f : x y / x <= y}.
 Proof.
@@ -241,15 +174,18 @@ Qed.
 End LFP.
 
 (* -------------------------------------------------------------------- *)
-Section PointedCPO.
+Module Pointed.
+Section Pointed.
+
 Definition pointed (T : Type) := option T.
 
-Canonical pointed_eqType     (T : eqType    ) := [eqType     of pointed T].
-Canonical pointed_choiceType (T : choiceType) := [choiceType of pointed T].
-Canonical pointed_countType  (T : countType ) := [countType  of pointed T].
+HB.instance Definition _ (T : eqType) := Equality.on (pointed T).
+HB.instance Definition _ (T : choiceType) := Choice.on (pointed T).
+HB.instance Definition _ (T : countType) := Countable.on (pointed T).
 
-Section Def.
-Context {T : choiceType}.
+Section POrder.
+
+Variable T : choiceType.
 
 Definition ple (x y : pointed T) : bool :=
   x \in [:: None; y].
@@ -257,33 +193,35 @@ Definition ple (x y : pointed T) : bool :=
 Definition plt (x y : pointed T) : bool :=
   ~~ x && y.
 
-Program Definition pointed_lePOrderMixin : lePOrderMixin _ :=
-  @LePOrderMixin _ ple plt _ _ _ _.
-
-Next Obligation.
+Lemma plt_def : forall (x y : pointed T), plt x y = (y != x) && (ple x y).
+Proof.
 move=> x y; rewrite /ple /plt mem_seq2.
 by case: x y => [x|] [y|] //=; rewrite eq_sym andNb.
 Qed.
 
-Next Obligation.
+Lemma ple_refl : reflexive ple.
+Proof.
 by case=> // x; rewrite /ple mem_seq2 eqxx orbT.
 Qed.
 
-Next Obligation.
+Lemma ple_anti : antisymmetric ple.
+Proof.
 by case=> [x|] [y|] //=; rewrite /ple !mem_seq2 !orFb => /andP [] /eqP.
 Qed.
 
-Next Obligation.
+Lemma ple_trans : transitive ple.
+Proof.
 case=> [y|] [x|] [z|] //=; rewrite /ple !mem_seq2.
 by rewrite !orFb => /eqP[->] /eqP[->].
 Qed.
 
-Canonical pointed_POrderType :=
-  POrderType NatOrder.nat_display (pointed T) pointed_lePOrderMixin.
+HB.instance Definition _ :=
+  isPOrder.Build NatOrder.nat_display (pointed T)
+    plt_def ple_refl ple_anti ple_trans.
 
 Lemma pleE (x y : pointed T) : (x <= y) = ple x y.
 Proof. by []. Qed.
-
+  
 Lemma pltE (x y : pointed T) : (x < y) = plt x y.
 Proof. by []. Qed.
 
@@ -292,6 +230,12 @@ Proof.
 apply/idP/eqP => [|->//]; rewrite pleE.
 by rewrite /ple mem_seq2 orFb => /eqP[].
 Qed.
+
+End POrder.
+
+Section Cpo.
+
+Variable T : choiceType.
 
 Definition pbot : pointed T := None.
 
@@ -324,13 +268,12 @@ move=> h; exists (ex_minn h) => j.
   - by rewrite -cmE; apply: chain_homo.
   by case: (c j) => //= y; rewrite ple_Some => /eqP->.
 Qed.
+(* 
+Lemma le0c : forall (x : pointed T), pbot <= x. *)
 
-Program Definition pointed_cpo : Cpo.mixin_of _ :=
-  @CpoMixin _ _ pbot plub _ _ _.
-
-Next Obligation. by []. Qed.
-
-Next Obligation.
+Lemma plub_ub :
+  forall c : nat -> pointed T, chain c -> forall i : nat, c i <= plub c.
+Proof.
 move=> c /[dup] cc /pchainP[i lti gei] j; case: (ltnP j i).
 - by move/lti=> ->; apply: pbot_bot.
 move/gei=> ->; case ciE: (c i) => [x|] //; rewrite /plub.
@@ -342,12 +285,17 @@ rewrite leqNgt; apply/negP=> /lti ckE.
 by move: (xchooseP h); rewrite ckE eqxx.
 Qed.
 
-Next Obligation.
+Lemma plub_least :
+  forall c : nat -> pointed T,
+    chain c -> forall x, (forall i, c i <= x) -> plub c <= x.
+Proof.
 move=> c /[dup] cc /pchainP[i lti gei] x ub_x.
 by rewrite /plub; case: pselect => //= _; case: pselect.
 Qed.
 
-Canonical pointed_cpoType := CpoType (pointed T) pointed_cpo.
+HB.instance Definition _ :=
+  isCpo.Build NatOrder.nat_display (pointed T)
+    pbot_bot plub_ub plub_least.
 
 Lemma plubE (c : nat -> pointed T) : chain c -> lub c =
   if pselect (exists i, c i != None) is left h then
@@ -360,5 +308,9 @@ have /hmin /(chain_homo cc) {hmin} := xchooseP h.
 case: (c m) cmE => // x _; case: (c _) => // y.
 by rewrite ple_Some => /eqP ->.
 Qed.
-End Def.
-End PointedCPO.
+
+End Cpo.
+
+End Pointed.
+
+End Pointed. 

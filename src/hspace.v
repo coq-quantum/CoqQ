@@ -1,16 +1,19 @@
 (* -------------------------------------------------------------------- *)
-From mathcomp Require Import all_ssreflect all_algebra complex.
-Require Import forms spectral.
-From mathcomp.analysis Require Import boolp reals.
-From mathcomp.real_closed Require Import complex.
+From HB Require Import structures.
+From mathcomp Require Import all_ssreflect all_algebra.
+From mathcomp.analysis Require Import -(notations)forms.
+From mathcomp.classical Require Import boolp.
+From mathcomp.analysis Require Import reals.
+(* From mathcomp.real_closed Require Import complex. *)
+From quantum.external Require Import complex spectral.
 
-Require Import mcextra prodvect hermitian tensor lfundef setdec.
-Require Import mxpred mxtopology mxnorm quantum orthomodular.
+Require Import mcextra mcaextra notation hermitian.
+Require Import mxpred ctopology quantum orthomodular.
 
 (************************************************************************)
 (* This file define subspace of Hilbert space and its theory            *)
 (*        {hspace H} == type of subspace ; coercion to linear function  *)
-(*			'End(H) : the projection of the subspace        *)
+(*			                'End(H) : the projection of the subspace        *)
 (*                      Canonical to pred : v \in U                     *)
 (*  operations :                                                        *)
 (*      A `&` B : join (cup)                                            *)
@@ -32,7 +35,7 @@ Require Import mxpred mxtopology mxnorm quantum orthomodular.
 (************************************************************************)
 
 (* -------------------------------------------------------------------- *)
-Import Order.LTheory GRing.Theory Num.Theory ComplexField Num.Def complex Vector.InternalTheory.
+Import Order.LTheory GRing.Theory Num.Theory ComplexField Num.Def complex VectorInternalTheory.
 
 (* -------------------------------------------------------------------- *)
 Set   Implicit Arguments.
@@ -149,7 +152,7 @@ Notation "x '`|`' y" := (@Order.join hspace_display _ x y) (at level 52, left as
 Notation "x '`&`' y" := (@Order.meet hspace_display _ x y) (at level 48, left associativity) : hspace_scope.
 Notation "`0`" := (@Order.bottom hspace_display _) : hspace_scope.
 Notation "`1`" := (@Order.top hspace_display _) : hspace_scope.
-Notation "~` x" := (@orthomodular.compl hspace_display _ x) (at level 35, right associativity) : hspace_scope.
+Notation "~` x" := (@orthomodular.ocompl hspace_display _ x) (at level 35, right associativity) : hspace_scope.
 Reserved Notation "A `\` B" (at level 50, left associativity).
 Notation "\cup_ ( i <- r | P ) U" :=
   (\big[ @Order.join hspace_display _ /`0`]_(i <- r | P%B) U%HS) : hspace_scope.
@@ -205,65 +208,66 @@ Section HspaceType.
 Variable (V : chsType).
 (* projection as sub hilbert space *)
 
-Variant hspace_t := Hspace of 'FP(V).
-Coercion hspace_proj (M : hspace_t) := let: Hspace M := M in M.
-Canonical hspace_t_subType := Eval hnf in [newType for hspace_proj].
+Variant hspace := Hspace of 'FP(V).
+#[reversible]
+Coercion hspace_proj (M : hspace) := let: Hspace M := M in M.
 
-Definition hspace_t_eqMixin := Eval hnf in [eqMixin of hspace_t by <:].
-Canonical  hspace_t_eqType  := Eval hnf in EqType hspace_t hspace_t_eqMixin.
-Definition hspace_t_choiceMixin := [choiceMixin of hspace_t by <:].
-Canonical  hspace_t_choiceType  := Eval hnf in ChoiceType hspace_t hspace_t_choiceMixin.
+HB.instance Definition _ := Eval hnf in [isNew for hspace_proj].
+HB.instance Definition _ := Eval hnf in [Choice of hspace by <:].
 
-Definition projlf_lporderMixin := [porderMixin of 'FP(V) by <:].
-Canonical projlf_lporderType :=
-  Eval hnf in POrderType vorder_display 'FP(V) projlf_lporderMixin.
-Definition hspace_t_porderMixin := [porderMixin of hspace_t by <:].
-Canonical hspace_t_porderType :=
-  Eval hnf in POrderType hspace_display hspace_t hspace_t_porderMixin.
+Implicit Type (f g h : hspace).
 
-Lemma hspace_inj : injective hspace_proj. Proof. exact: val_inj. Qed.
+Definition leh_def f g := ((f:'End(V)) <= g).
+Definition lth_def f g := (g != f) && (leh_def f g).
 
-Definition hspace_of of phant V := hspace_t.
-Identity Coercion type_hspace_of : hspace_of >-> hspace_t.
+Lemma lth_def_def : forall f g, lth_def f g = (g != f) && (leh_def f g).
+Proof. by rewrite /leh_def. Qed.
+
+Lemma leh_def_anti : antisymmetric leh_def.
+Proof. by move=>x y; rewrite /leh_def -eq_le =>/eqP H; apply /val_inj /val_inj. Qed.
+
+Lemma leh_def_refl : reflexive leh_def.
+Proof. by move=>x; rewrite /leh_def lexx. Qed.
+
+Lemma leh_def_trans : transitive leh_def.
+Proof. by move=>x y z; rewrite /leh_def; apply le_trans. Qed.
+
+HB.instance Definition _ := Order.isPOrder.Build hspace_display hspace
+  lth_def_def leh_def_refl leh_def_anti leh_def_trans.
+
+Lemma hspace_inj : injective hspace_proj. Proof. by exact: val_inj. Qed.
+
+Lemma leh_lef (U W: hspace) : (U `<=` W) = (U%:VF ⊑ W).
+Proof. by []. Qed.
+
 End HspaceType.
 
-Bind Scope ring_scope with hspace_of.
-Bind Scope ring_scope with hspace_t.
+Bind Scope ring_scope with hspace.
 
-Notation "{ 'hspace' V }" := (@hspace_of _ (Phant V)).
+Notation "{ 'hspace' V }" := (hspace V).
 
-Section HspaceOf.
-Variable (V : chsType).
-Canonical hspace_subType    := Eval hnf in [subType    of {hspace V}].
-Canonical hspace_eqType     := Eval hnf in [eqType     of {hspace V}].
-Canonical hspace_choiceType := Eval hnf in [choiceType of {hspace V}].
-Canonical hspace_porderType := Eval hnf in [porderType of {hspace V}].
-End HspaceOf.
+HB.lock Definition hspace_of_proj (H : chsType) (P : 'FP(H)) : {hspace H}
+  := Hspace P.
+Canonical hspace_of_unlockable := Unlockable hspace_of_proj.unlock.
 
 Section HspaceOfProj.
 Variable (H : chsType).
 
-Fact hspace_key : unit. Proof. by []. Qed.
-Definition hspace_of_proj_def (P : 'FP(H)) : {hspace H} := Hspace P.
-Definition hspace_of_proj := locked_with hspace_key hspace_of_proj_def.
-Canonical hspace_of_unlockable := [unlockable of hspace_of_proj].
-
-Lemma hsE F : (hspace_of_proj F)%:VF = F.
+Lemma hsE F : (@hspace_of_proj H F)%:VF = F.
 Proof. by rewrite unlock/=. Qed.
 
 Lemma hspaceP (A B : {hspace H}) : A =1 B <-> A = B.
 Proof. by split=>[eqAB|->//]; apply/val_inj/val_inj=>/=; apply/lfunP. Qed.
 
 Lemma eq_hs (F1 F2 : 'FP(H)) : 
-  (F1 =1 F2) -> hspace_of_proj F1 = hspace_of_proj F2.
+  (F1 =1 F2) -> @hspace_of_proj H F1 = @hspace_of_proj H F2.
 Proof. by move=> eq_F; apply/hspaceP => v; rewrite !hsE eq_F. Qed.
 
 End HspaceOfProj.
 
-
 Notation HSType P := (hspace_of_proj P).
 
-Import Vector.InternalTheory.
+Import VectorInternalTheory.
 
 Section HspacePred.
 Variable (H : chsType).
@@ -375,77 +379,69 @@ rewrite !rank_cdiagmx !rank_diagmx; apply eq_bigr=>i _.
 by rewrite mxE invr_eq0.
 Qed.
 
-Lemma mxrank_conj m n (A : 'M[T]_(m,n)) :
-  \rank (A^*m) = \rank A.
-Proof. by rewrite conjmxE mxrank_map. Qed.
-
-Lemma mxrank_trmxC m n (A : 'M[T]_(m,n)) :
-  \rank (A^*t) = \rank A.
-Proof. by rewrite adjmxEr mxrank_conj mxrank_tr. Qed.
-
-Definition suppmx m n (A : 'M[T]_(m,n)) :=
+Definition cosuppmx m n (A : 'M[T]_(m,n)) :=
   A *m (pinvmx_ A)^*t.
 
-Definition cosuppmx m n (A : 'M[T]_(m,n)) :=
+Definition suppmx m n (A : 'M[T]_(m,n)) :=
   (pinvmx_ A)^*t *m A.
-
-Lemma suppmx_herm m n (A : 'M[T]_(m,n)) :
-  suppmx A \is hermmx.
-Proof.
-apply/hermmxP; rewrite /suppmx {1 3}(svdE A) /pinvmx_ !adjmxM !adjmxK !mulmxA.
-rewrite !mulmxKtV ?svd_pE//; f_equal; rewrite -!mulmxA; f_equal.
-by rewrite !cdiag_mx_mull svd_d_invC svd_d_conj dmulmxC.
-Qed.
 
 Lemma cosuppmx_herm m n (A : 'M[T]_(m,n)) :
   cosuppmx A \is hermmx.
 Proof.
-apply/hermmxP; rewrite /cosuppmx {2 4}(svdE A) /pinvmx_ !adjmxM !adjmxK !mulmxA.
-rewrite !mulmxKtV ?svd_pE//; f_equal; rewrite -!mulmxA; f_equal.
+apply/hermmxP; rewrite /cosuppmx {1 3}(svdE A) /pinvmx_ !adjmxM !adjmxK !mulmxA.
+rewrite !mulmxKtV ?svd_pE =>[//|//|//|//|]; f_equal; rewrite -!mulmxA; f_equal.
+by rewrite !cdiag_mx_mull svd_d_invC svd_d_conj dmulmxC.
+Qed.
+
+Lemma suppmx_herm m n (A : 'M[T]_(m,n)) :
+  suppmx A \is hermmx.
+Proof.
+apply/hermmxP; rewrite /suppmx {2 4}(svdE A) /pinvmx_ !adjmxM !adjmxK !mulmxA.
+rewrite !mulmxKtV ?svd_pE=>[//|//|//|//|]; f_equal; rewrite -!mulmxA; f_equal.
 by rewrite !cdiag_mx_mulr svd_d_invC svd_d_conj dmulmxC.
 Qed.
 
-Lemma suppmx_id m n (A : 'M[T]_(m,n)) :
-  suppmx A *m A = A.
+Lemma cosuppmx_id m n (A : 'M[T]_(m,n)) :
+  cosuppmx A *m A = A.
 Proof.
-rewrite /suppmx {1 3 4}(svdE A) /pinvmx_ !adjmxM !adjmxK !mulmxA.
-rewrite !mulmxKtV ?svd_pE//; f_equal; rewrite -!mulmxA; f_equal.
+rewrite /cosuppmx {1 3 4}(svdE A) /pinvmx_ !adjmxM !adjmxK !mulmxA.
+rewrite !mulmxKtV ?svd_pE=>[//|//|//|//|]; f_equal; rewrite -!mulmxA; f_equal.
 by rewrite cdiag_mx_mulr svd_d_invC svd_d_exdr_mul -boolmx_of_inv 
   cdiag_diag_mul dmulmxC boolmx_of_mulid.
 Qed.
 
-Lemma cosuppmx_id m n (A : 'M[T]_(m,n)) :
-  A *m cosuppmx A = A.
-Proof. by move: (suppmx_id A); rewrite /cosuppmx mulmxA. Qed.
-
-Lemma suppmx_rank m n (A : 'M[T]_(m,n)) :
-  \rank (suppmx A) = \rank A.
-Proof.
-apply/eqP; rewrite eq_le; apply/andP; split.
-rewrite /suppmx; exact: mxrankM_maxl.
-rewrite -{1}(suppmx_id A); exact: mxrankM_maxl.
-Qed.
+Lemma suppmx_id m n (A : 'M[T]_(m,n)) :
+  A *m suppmx A = A.
+Proof. by move: (cosuppmx_id A); rewrite /suppmx mulmxA. Qed.
 
 Lemma cosuppmx_rank m n (A : 'M[T]_(m,n)) :
   \rank (cosuppmx A) = \rank A.
 Proof.
 apply/eqP; rewrite eq_le; apply/andP; split.
-rewrite /cosuppmx; exact: mxrankM_maxr.
-rewrite -{1}(cosuppmx_id A); exact: mxrankM_maxr.
+rewrite /cosuppmx; exact: mxrankM_maxl.
+rewrite -{1}(cosuppmx_id A); exact: mxrankM_maxl.
 Qed.
 
-Lemma suppmx_proj m n (A : 'M[T]_(m,n)) :
-  suppmx A \is projmx.
+Lemma suppmx_rank m n (A : 'M[T]_(m,n)) :
+  \rank (suppmx A) = \rank A.
 Proof.
-apply/projmxP_id; split; first by apply suppmx_herm.
-by rewrite {2}/suppmx mulmxA suppmx_id.
+apply/eqP; rewrite eq_le; apply/andP; split.
+rewrite /suppmx; exact: mxrankM_maxr.
+rewrite -{1}(suppmx_id A); exact: mxrankM_maxr.
 Qed.
 
 Lemma cosuppmx_proj m n (A : 'M[T]_(m,n)) :
   cosuppmx A \is projmx.
 Proof.
 apply/projmxP_id; split; first by apply cosuppmx_herm.
-by rewrite {1}/cosuppmx -mulmxA cosuppmx_id.
+by rewrite {2}/cosuppmx mulmxA cosuppmx_id.
+Qed.
+
+Lemma suppmx_proj m n (A : 'M[T]_(m,n)) :
+  suppmx A \is projmx.
+Proof.
+apply/projmxP_id; split; first by apply suppmx_herm.
+by rewrite {1}/suppmx -mulmxA suppmx_id.
 Qed.
 
 End HspaceSupport.
@@ -454,46 +450,36 @@ Section HspaceSupportLf.
 Variable (H : chsType).
 Implicit Type (G : chsType).
 
-Definition pinvlf G (A : 'Hom(H,G)) := Vector.Hom (pinvmx_ (f2mx A)).
+Definition pinvlf G (A : 'Hom(H,G)) := mx2h (pinvmx_ (h2mx A)).
 
 Definition supplf G (A : 'Hom(H,G)) := (pinvlf A)^A \o A.
 
 Definition cosupplf G (A : 'Hom(H,G)) := A \o (pinvlf A)^A.
 
 Lemma pinvlf_rank G (A : 'Hom(H,G)) : \Rank (pinvlf A) = \Rank A.
-Proof. exact: pinvmx_rank. Qed.
+Proof. rewrite/lfrank mx2hK; exact: pinvmx_rank. Qed.
 
 Lemma supplf_rank G (A : 'Hom(H,G)) : \Rank (supplf A) = \Rank A.
-Proof. by rewrite /lfrank/supplf f2mx_comp/= -[RHS]suppmx_rank. Qed.
+Proof. by rewrite /lfrank/supplf h2mx_comp/= -[RHS]suppmx_rank adj_lfun.unlock !mx2hK. Qed.
 
 Lemma cosupplf_rank G (A : 'Hom(H,G)) : \Rank (cosupplf A) = \Rank A.
-Proof. by rewrite /lfrank/cosupplf f2mx_comp/= -[RHS]cosuppmx_rank. Qed.
+Proof. by rewrite /lfrank/cosupplf h2mx_comp/= -[RHS]cosuppmx_rank adj_lfun.unlock !mx2hK. Qed.
 
 Lemma suppvlf G (A : 'Hom(H,G)) : A \o supplf A = A.
-Proof. apply/f2mx_inj; rewrite /supplf !f2mx_comp/=; exact: suppmx_id. Qed.
+Proof. apply/h2mx_inj; rewrite/supplf !h2mx_comp adj_lfun.unlock !mx2hK; exact: suppmx_id. Qed.
 
 Lemma cosupplfv G (A : 'Hom(H,G)) : cosupplf A \o A = A.
-Proof. apply/f2mx_inj; rewrite /cosupplf !f2mx_comp/=; exact: cosuppmx_id. Qed.
+Proof. apply/h2mx_inj; rewrite/cosupplf !h2mx_comp adj_lfun.unlock !mx2hK; exact: cosuppmx_id. Qed.
 
 Lemma supplf_proj G (A : 'Hom(H,G)) : supplf A \is projlf.
-Proof. rewrite qualifE /supplf f2mx_comp/=; exact: suppmx_proj. Qed.
-Canonical supplf_projfType G A := ProjfType (@supplf_proj G A).
-Canonical supplf_obsfType G (A : 'Hom(H,G)) := Eval hnf in 
-  [obs of supplf A as [obs of [proj of supplf A]]].
-Canonical supplf_psdfType G (A : 'Hom(H,G)) := Eval hnf in 
-  [psd of supplf A as [psd of [proj of supplf A]]].
-Canonical supplf_hermfType G (A : 'Hom(H,G)) := Eval hnf in 
-  [herm of supplf A as [herm of [proj of supplf A]]].
+Proof. rewrite qualifE /supplf h2mx_comp/= adj_lfun.unlock !mx2hK; exact: suppmx_proj. Qed.
+
+HB.instance Definition _ G A := @isProjLf.Build H (supplf A) (@supplf_proj G A).
 
 Lemma cosupplf_proj G (A : 'Hom(H,G)) : cosupplf A \is projlf.
-Proof. rewrite qualifE /cosupplf f2mx_comp/=; exact: cosuppmx_proj. Qed.
-Canonical cosupplf_projfType G A := ProjfType (@cosupplf_proj G A).
-Canonical cosupplf_obsfType G (A : 'Hom(H,G)) := Eval hnf in 
-  [obs of cosupplf A as [obs of [proj of cosupplf A]]].
-Canonical cosupplf_psdfType G (A : 'Hom(H,G)) := Eval hnf in 
-  [psd of cosupplf A as [psd of [proj of cosupplf A]]].
-Canonical cosupplf_hermfType G (A : 'Hom(H,G)) := Eval hnf in 
-  [herm of cosupplf A as [herm of [proj of cosupplf A]]].
+Proof. rewrite qualifE /cosupplf h2mx_comp/= adj_lfun.unlock !mx2hK; exact: cosuppmx_proj. Qed.
+
+HB.instance Definition _ G A := @isProjLf.Build G (cosupplf A) (@cosupplf_proj G A).
 
 End HspaceSupportLf.
 
@@ -510,15 +496,15 @@ Qed.
 
 Lemma obsmx_idem_obs A : A \is obsmx -> A *m A \is obsmx.
 Proof.
-move=>/obsmxP[Ah sA]; move: {+}Ah {+}Ah=>/hermmx_normal/unitarymx_spectralP Ad/hermmxP Aa.
+move=>/obsmxP[Ah sA]; move: {+}Ah {+}Ah=>/hermmx_normal/eigen_dec Ad/hermmxP Aa.
 apply/obsmxP; split. by apply/hermmxP; rewrite adjmxM -Aa.
-rewrite {1}Aa.
-have /esym: A^*t *m A = (spectralmx A)^*t *m diag_mx ((spectral_diag A).^+2) *m spectralmx A.
-rewrite {1 2}Ad !adjmxM adjmxK !mulmxA  mulmxtVK ?spectral_unitarymx// diag_mx_adj mulmxACA diag_mx_dmul.
+have /esym: A^*t *m A = (eigenmx A)^*t^*t *m diag_mx ((spectral_diag A).^+2) *m (eigenmx A)^*t.
+rewrite {1 2}Ad !adjmxM adjmxK !mulmxA mulmxKtV// mulmxACA diag_mx_adj diag_mx_dmul.
 do ? f_equal; apply/matrixP=>i j; rewrite !mxE -normCKC ger0_norm//.
 by apply/nnegmxP/uintmx_nneg.
-move=>/(spectral_unique (spectral_unitarymx _))[s Ps].
-by apply/uintmxP=>i j; rewrite -Ps mxE; apply/uintmxP/uintmx_dexp.
+have P1 : (eigenmx A)^*t \is unitarymx by rewrite trmxC_unitary.
+move=>/(spectral_unique P1)[s Ps].
+by apply/uintmxP=>i j; rewrite {1 3}Aa -Ps mxE; apply/uintmxP/uintmx_dexp.
 Qed.
 End MatrixExtra.
 
@@ -526,38 +512,38 @@ Section Projlf.
 Variable (H : chsType).
 Implicit Type (U V W : {hspace H}).
 
-Lemma ranklf_le_dom (G : chsType) (U : 'Hom(H,G)) : (\Rank U <= Vector.dim H)%N.
-Proof. by rewrite /lfrank rank_leq_row. Qed.
-Lemma ranklf_le_codom (G : chsType) (U : 'Hom(H,G)) : (\Rank U <= Vector.dim G)%N.
+Lemma ranklf_le_dom (G : chsType) (U : 'Hom(H,G)) : (\Rank U <= dim H)%N.
 Proof. by rewrite /lfrank rank_leq_col. Qed.
+Lemma ranklf_le_codom (G : chsType) (U : 'Hom(H,G)) : (\Rank U <= dim G)%N.
+Proof. by rewrite /lfrank rank_leq_row. Qed.
 
 Definition dimh U := \Rank U.
 Notation "\Dim U" := (dimh U) (at level 10, U at level 8, format "\Dim  U").
 
 Lemma dimh_rank U : \Dim U = \Rank U. Proof. by []. Qed.
 Lemma dimh_trlf U : (\Dim U)%:R = \Tr U. 
-Proof. by rewrite dimh_rank projlf_trlf// projf_proj. Qed.
+Proof. by rewrite dimh_rank projlf_trlf// is_projlf. Qed.
 
 Lemma obslf_idem_obs (P : 'End(H)) : P \is obslf -> P \o P \is obslf.
-Proof. by rewrite qualifE=>/obsmx_idem_obs; rewrite [_ \is obslf]qualifE f2mx_comp. Qed.
+Proof. by rewrite qualifE=>/obsmx_idem_obs; rewrite [_ \is obslf]qualifE h2mx_comp. Qed.
 
 Lemma obslf_idem_obsV (P : 'End(H)) : P \is psdlf -> P \o P \is obslf -> P \is obslf.
 Proof.
 move=>P1/obslfP[_ P2]; apply/obslfP; split=>// u.
-rewrite -(@ler_pexpn2r _ 2%N)// ?nnegrE// ?ge0_dotp//.
+rewrite -(@ler_pXn2r _ 2%N)// ?nnegrE// ?ge0_dotp//.
 2: rewrite -[[< u; P u >]]ger0_norm. 1,2: by apply/psdlfP.
-apply: (le_trans (CauchySchwartz _ _)); rewrite expr2 ler_pmul// ?ge0_dotp//.
+apply: (le_trans (CauchySchwartz _ _)); rewrite expr2 ler_pM// ?ge0_dotp//.
 by rewrite hermlf_dotE ?psdlf_herm// -comp_lfunE.
 Qed.
 
 Lemma obslf_norm (P : 'End(H)) x : P \is obslf -> `|P x| <= `|x|.
 Proof.
-move=>P1; rewrite -(@ler_pexpn2r _ 2%N)// ?nnegrE// -!dotp_norm.
+move=>P1; rewrite -(@ler_pXn2r _ 2%N)// ?nnegrE// -!dotp_norm.
 rewrite hermlf_dotE ?obslf_herm// -comp_lfunE.
 by move: P1=>/obslf_idem_obs/obslfP[].
 Qed.
 Lemma obsf_norm (P : 'FO(H)) x : `|P x| <= `|x|.
-Proof. apply/obslf_norm/obsf_obs. Qed.
+Proof. apply/obslf_norm/is_obslf. Qed.
 
 (* we focus on projlf *)
 Lemma projlf_norm (P : 'End(H)) x : P \is projlf -> `|P x| <= `|x|.
@@ -570,13 +556,13 @@ Lemma cplmt_dec (U : 'End(H)) x : x = U x + (cplmt U) x.
 Proof. by rewrite /cplmt lfunE/= !lfunE/= addrC addrNK. Qed.
 
 Lemma projf_cplmtMr (P : 'FP(H)) : P \o P^⟂ = 0.
-Proof. by rewrite /cplmt linearBr/= projf_idem comp_lfun1r subrr. Qed.
+Proof. by rewrite /cplmt comp_lfunDr comp_lfunNr projf_idem comp_lfun1r subrr. Qed.
 Lemma projf_cplmtMl (P : 'FP(H)) : P^⟂ \o P = 0.
-Proof. by rewrite /cplmt linearBl/= projf_idem comp_lfun1l subrr. Qed.
+Proof. by rewrite /cplmt comp_lfunDl comp_lfunNl projf_idem comp_lfun1l subrr. Qed.
 
 Lemma projf_lefCP (P1 P2 : 'FP(H)) : (forall x, P2 x == 0 -> (P1 x == 0)) -> P1%:VF ⊑ P2.
 Proof.
-move=>H1. apply/lef_dot=>v. rewrite !projf_dot/= ler_pexpn2r// ?nnegrE//.
+move=>H1. apply/lef_dot=>v. rewrite !projf_dot/= ler_pXn2r// ?nnegrE//.
 rewrite {1}(cplmt_dec P2 v) linearD/=.
 have /H1/eqP-> : (P2 (P2^⟂ v) == 0) by rewrite -comp_lfunE projf_cplmtMr lfunE.
 by rewrite addr0 projf_norm.
@@ -604,49 +590,63 @@ Variable (H : chsType).
 Let memvK v (U : {vspace H}) : (v \in U) = (v2r v <= vs2mx U)%MS.
 Proof. by rewrite -genmxE. Qed.
 
-Lemma vs2hs_proj (U : {vspace H}) : Vector.Hom (cosuppmx (vs2mx U)) \is projlf.
-Proof. by rewrite qualifE/= cosuppmx_proj. Qed.
+Lemma vs2hs_proj (U : {vspace H}) : mx2h (cosuppmx (h2vU *m (vs2mx U)^T)) \is projlf.
+Proof. by rewrite qualifE/= mx2hK cosuppmx_proj. Qed.
 
-Definition vs2hs (U : {vspace H}) := HSType (ProjfType (vs2hs_proj U)).
+Definition vs2hs (U : {vspace H}) := HSType (ProjLf_Build (vs2hs_proj U)).
+
+Lemma unitmx_mulmxI (T : comUnitRingType) (n : nat) (A : 'M[T]_n) :
+  A \in unitmx -> forall m (B C : 'M_(n,m)), A *m B = A *m C -> B = C.
+Proof.
+move=>Ua m B C /(f_equal (fun x=> invmx A *m x)).
+by rewrite !mulmxA mulVmx// !mul1mx.
+Qed.
 
 Lemma memv2h (U : {vspace H}) x : x \in U = (x \in vs2hs U).
 Proof. 
-rewrite memhE hsE -(can_eq v2rK) unlock/= r2vK memvK; apply/eqb_iff; split.
-rewrite /vs2hs; move=>/submxP[D]. set A := vs2mx U.
-move=>->. rewrite -mulmxA cosuppmx_id//.
-move=>/eqP; rewrite /cosuppmx mulmxA=>P.
-apply/submxP; exists (v2r x *m (pinvmx_ (vs2mx U))^*t).
+rewrite memhE hsE -(can_eq h2cK)/= applyfh mx2hK c2hK memvK; apply/eqb_iff; split.
+rewrite /vs2hs; move=>/submxP[D].
+rewrite h2cE=>->; rewrite trmx_mul (mulmxA h2vU).
+set A := h2vU *m (vs2mx U)^T. by rewrite mulmxA cosuppmx_id.
+move=>/eqP; rewrite /cosuppmx h2cE -!mulmxA=>/(unitmx_mulmxI h2vU_unitmx);
+move=>/(f_equal trmx); rewrite !trmx_mul !trmxK=>P.
+apply/submxP; exists (v2r x *m h2vU^T *m ((pinvmx_ (h2vU *m (vs2mx U)^T))^*t)^T).
 by rewrite P.
 Qed.
 
-Definition hs2vs (P : {hspace H}) := mx2vs (f2mx P).
+Definition hs2vs (P : {hspace H}) := mx2vs (((invmx h2vU) *m h2mx P)^T).
 Lemma vs2hsK : cancel vs2hs hs2vs.
 Proof.
-move=>U. rewrite /hs2vs/= hsE/=.
-apply/vspaceP=>x. rewrite [RHS]memv2h/vs2hs/= memhE hsE -(can_eq v2rK) unlock/= r2vK.
-move: (cosuppmx_proj (vs2mx U))=>/projmxP_id[_] P.
+move=>U; rewrite /hs2vs/= hsE/=; apply/vspaceP=>x.
+rewrite [RHS]memv2h/vs2hs/= memhE hsE mx2hK/= -(can_eq h2cK) applyfh mx2hK c2hK h2cE.
+move: (cosuppmx_proj (h2vU *m (vs2mx U)^T))=>/projmxP_id[_] P.
 rewrite memvK mx2vsK; apply/eqb_iff; split.
-by move=>/submxP[D] ->; rewrite -mulmxA P.
-by move=>/eqP P1; apply/submxP; exists (v2r x); rewrite P1.
+by move=>/submxP[D]->; rewrite !trmx_mul !trmxK !(mulmxA h2vU) mulmxV
+  ?h2vU_unitmx =>[//|]; rewrite mul1mx -/(cosuppmx _) mulmxA P.
+move=>/eqP P1; apply/submxP; exists (h2vU *m (v2r x)^T)^T.
+apply/trmx_inj/(unitmx_mulmxI h2vU_unitmx).
+by rewrite -{1}P1 !trmx_mul !trmxK !(mulmxA h2vU) mulmxV ?h2vU_unitmx ?mul1mx.
 Qed.
 
 Lemma vs2hs_inj : injective vs2hs.
 Proof. exact: (can_inj vs2hsK). Qed.
 
 Lemma memh2v (U : {hspace H}) x : (x \in U) = (x \in hs2vs U).
-Proof. 
-rewrite memhE -(can_eq v2rK) unlock/= /hs2vs r2vK memvK; apply/eqb_iff.
-move: (mx2vsK (f2mx U))=>/eqmxP/andP[P1 P2].
-move: (projf_idem U)=>/(f_equal f2mx); rewrite f2mx_comp=>P3.
+Proof.
+rewrite memhE -(can_eq h2cK) applyfh c2hK /hs2vs memvK h2cE; apply/eqb_iff.
+move: (mx2vsK ((invmx h2vU *m h2mx U)^T))=>/eqmxP/andP[P1 P2].
+move: (projf_idem U)=>/(f_equal h2mx); rewrite h2mx_comp=>P3.
 split=>[/eqP P4|P4].
-by apply: (submx_trans _ P2); apply/submxP; exists (v2r x); rewrite P4.
-by move: (submx_trans P4 P1)=>/submxP[D]->; rewrite -mulmxA P3.
+apply/(submx_trans _ P2)/submxP; exists (h2vU *m (v2r x)^T)^T.
+by rewrite -trmx_mul -mulmxA P4 mulmxA mulVmx ?h2vU_unitmx// mul1mx trmxK.
+move: (submx_trans P4 P1)=>/submxP[D]->.
+by rewrite !trmx_mul !trmxK ![h2vU *m _]mulmxA !mulmxV ?h2vU_unitmx// !mul1mx mulmxA P3.
 Qed.
 
 Lemma hs2vs_inj : injective hs2vs.
 Proof.
-move=>U1 U2 /vspaceP=>P. apply/val_inj/projf_eqP=>x.
-by move: (P x); rewrite -!memh2v.
+move=>U1 U2 /vspaceP=>P. apply/hspace_inj /projf_eqP=>x.
+by move: (P x); rewrite -[X in X = _ -> _]memh2v -[X in _ = X -> _]memh2v.
 Qed.
 
 Lemma hs2vsK : cancel hs2vs vs2hs.
@@ -662,13 +662,13 @@ Module Import BasicConstruct.
 (* this construct will be hide after Orthomodular lattices *)
 Section BasicConstruct.
 Variable (H : chsType).
-Implicit Type (U : {hspace H}).
+Implicit Type (U V: {hspace H}).
 
-Definition hspace0 := HSType (zero_projfType H).
-Definition hspace1 := HSType (one_projfType H).
-Definition hscmplt U := HSType (cplmt_projfType U).
-Definition supph G A := HSType (@supplf_projfType H G A).
-Definition cosupph G A := HSType (@cosupplf_projfType H G A).
+Definition hspace0 := HSType (0: 'End(H)).
+Definition hspace1 := HSType (\1: 'End(H)).
+Definition hscmplt U := HSType (U^⟂).
+Definition supph G A := HSType (@supplf H G A).
+Definition cosupph G A := HSType (@cosupplf H G A).
 
 Definition cuph U V := supph (U%:VF + V).
 Definition caph U V := (hscmplt (cuph (hscmplt U) (hscmplt V))).
@@ -693,16 +693,7 @@ Section HspacePredTheory.
 Variable (H : chsType).
 Implicit Type (U V : {hspace H}) (x y : H).
 
-Lemma hs_sub_t U V : (U `<=` V) = ((U : (hspace_t _)) `<=` V).
-Proof. by []. Qed.
-
-Lemma hs_sub_proj U V : (U `<=` V) = ((U : 'FP) ⊑ V).
-Proof. by []. Qed.
-
-Lemma leh_lef U V : (U `<=` V) = (U%:VF ⊑ V).
-Proof. by rewrite hs_sub_t hs_sub_proj leEsub. Qed.
-
-Lemma memhCE U x : x \in U = ((U^⟂)%HS x == 0).
+Lemma memhOE U x : x \in U = ((U^⟂)%HS x == 0).
 Proof. 
 by rewrite memhE eq_sym -subr_eq0 hsE/= /cplmt lfunE/= !lfunE/=.
 Qed.
@@ -710,17 +701,17 @@ Qed.
 Lemma memhP U x : reflect (U x = x) (x \in U).
 Proof. by rewrite memhE; exact: eqP. Qed.
 
-Lemma memhCP U x : reflect ((U^⟂)%HS x = 0) (x \in U).
-Proof. by rewrite memhCE; exact: eqP. Qed.
+Lemma memhOP U x : reflect ((U^⟂)%HS x = 0) (x \in U).
+Proof. by rewrite memhOE; exact: eqP. Qed.
 
-Lemma memh_dotCE U x : x \in U = ([< x ; (U^⟂)%HS x >] == 0).
-Proof. by rewrite memhCE projf_dot expf_eq0/= normr_eq0. Qed.
+Lemma memh_dotOE U x : x \in U = ([< x ; (U^⟂)%HS x >] == 0).
+Proof. by rewrite memhOE projf_dot expf_eq0/= normr_eq0. Qed.
 
 Lemma memh_dotE U x : x \in U = ([< x ; U x >] == [< x ; x >]).
-Proof. by rewrite memh_dotCE hsE/= /cplmt/= lfunE/= !lfunE/= linearBr/= subr_eq0 eq_sym. Qed.  
+Proof. by rewrite memh_dotOE hsE/= /cplmt/= lfunE/= !lfunE/= linearBr/= subr_eq0 eq_sym. Qed.  
 
-Lemma memh_dotCP U x : reflect ([< x ; (U^⟂)%HS x >] = 0) (x \in U).
-Proof. rewrite memh_dotCE; exact: eqP. Qed.
+Lemma memh_dotOP U x : reflect ([< x ; (U^⟂)%HS x >] = 0) (x \in U).
+Proof. rewrite memh_dotOE; exact: eqP. Qed.
 
 Lemma memh_dotP U x : reflect ([< x ; U x >] = [< x ; x >]) (x \in U).
 Proof. rewrite memh_dotE; exact: eqP. Qed. 
@@ -728,35 +719,35 @@ Proof. rewrite memh_dotE; exact: eqP. Qed.
 Lemma memh_proj U x : U x \in U.
 Proof. by rewrite memhE -comp_lfunE projf_idem. Qed.
 
-Lemma memh_projC U x : (U^⟂)%HS (U x) = 0.
-Proof. by apply/memhCP/memh_proj. Qed.
+Lemma memh_projO U x : (U^⟂)%HS (U x) = 0.
+Proof. by apply/memhOP/memh_proj. Qed.
 
 Lemma memh_normE U x : x \in U = (`|U x| == `|x|).
-Proof. by rewrite memh_dotE projf_dot dotp_norm eqr_expn2//. Qed.
+Proof. by rewrite memh_dotE projf_dot dotp_norm eqrXn2//. Qed.
 
-Lemma memh_normCE U x : x \in U = (`|(U^⟂)%HS x| == 0).
-Proof. by rewrite memh_dotCE projf_dot expf_eq0/=. Qed.
+Lemma memh_normOE U x : x \in U = (`|(U^⟂)%HS x| == 0).
+Proof. by rewrite memh_dotOE projf_dot expf_eq0/=. Qed.
 
 Lemma memh_normP U x : reflect (`|U x| = `|x|) (x \in U).
 Proof. rewrite memh_normE; exact: eqP. Qed.
 
-Lemma memh_normCP U x : reflect (`|(U^⟂)%HS x| = 0) (x \in U).
-Proof. rewrite memh_normCE; exact: eqP. Qed.
+Lemma memh_normOP U x : reflect (`|(U^⟂)%HS x| = 0) (x \in U).
+Proof. rewrite memh_normOE; exact: eqP. Qed.
 
 Lemma lehP U V : 
   reflect (forall x, (x \in U) -> (x \in V)) (U `<=` V).
 Proof.
 rewrite leh_lef; apply/(iffP idP).
-rewrite cplmt_lef=>/lef_dot P x; rewrite !memh_normCE !hsE/==>/eqP P1; move: (P x).
-by rewrite !projf_dot/= ler_pexpn2r// ?nnegrE// P1 normr_le0=>/eqP->; rewrite normr0.
+rewrite cplmt_lef=>/lef_dot P x; rewrite !memh_normOE !hsE/==>/eqP P1; move: (P x).
+by rewrite !projf_dot/= ler_pXn2r// ?nnegrE// P1 normr_le0=>/eqP->; rewrite normr0.
 move=>P. rewrite cplmt_lef; apply/lef_dot=>x.
-rewrite -!hscmpltE !projf_dot ler_pexpn2r// ?nnegrE// (hs_vec_dec U x).
-rewrite !linearD/= memh_projC projlf_idemE.
-move: (P _ (memh_proj U x))=>/memhCP->.
+rewrite -!hscmpltE !projf_dot ler_pXn2r// ?nnegrE// (hs_vec_dec U x).
+rewrite !linearD/= memh_projO projf_idemE.
+move: (P _ (memh_proj U x))=>/memhOP->.
 by rewrite ?add0r projf_norm.
 Qed.
 
-Lemma lehCP U V : 
+Lemma lehOP U V : 
   reflect (forall x, (x \in (V^⟂)%HS) -> (x \in (U^⟂)%HS)) (U `<=` V).
 Proof. rewrite leh_lef cplmt_lef -!hscmpltE -leh_lef; exact: lehP. Qed.
 
@@ -778,35 +769,35 @@ Proof. by apply/lehP=>x; rewrite memh0=>/eqP->; apply/mem0h. Qed.
 Lemma leh1 U : U `<=` hs1.
 Proof. apply/lehP=>x _; apply/memh1. Qed.
 
-Lemma hsC0 : (hs0^⟂)%HS = hs1 :> {hspace H}.
+Lemma hsO0 : (hs0^⟂)%HS = hs1 :> {hspace H}.
 Proof. by apply/hspaceP=>x; rewrite hsE/=/cplmt !hsE/= subr0. Qed.
 
-Lemma hsC1 : (hs1^⟂)%HS = hs0 :> {hspace H}.
+Lemma hsO1 : (hs1^⟂)%HS = hs0 :> {hspace H}.
 Proof. by apply/hspaceP=>x; rewrite hsE/= /cplmt!hsE/= subrr. Qed.
 
-Lemma hsCK U : ((U^⟂)%HS^⟂)%HS = U.
+Lemma hsOK U : ((U^⟂)%HS^⟂)%HS = U.
 Proof. by apply/hspaceP=>v; rewrite hsE/= hsE/= cplmtK. Qed.
 
-Lemma hsC_inj : injective (@hscmplt H).
-Proof. exact: (can_inj hsCK). Qed.
+Lemma hsO_inj : injective (@hscmplt H).
+Proof. exact: (can_inj hsOK). Qed.
 
-Lemma hsC_eq U V : (U^⟂)%HS == (V^⟂)%HS = (U == V).
-Proof. by rewrite (can_eq hsCK). Qed.
+Lemma hsO_eq U V : (U^⟂)%HS == (V^⟂)%HS = (U == V).
+Proof. by rewrite (can_eq hsOK). Qed.
 
-Lemma hsC_eq_sym U V : (U^⟂)%HS == V = (U == (V^⟂)%HS).
-Proof. by rewrite -hsC_eq hsCK. Qed.
+Lemma hsO_eq_sym U V : (U^⟂)%HS == V = (U == (V^⟂)%HS).
+Proof. by rewrite -hsO_eq hsOK. Qed.
 
-Lemma lehC U V : (U^⟂)%HS `<=` (V^⟂)%HS = (V `<=` U).
-Proof. by apply/eqb_iff; split=>/lehCP; rewrite ?hsCK=>/lehP. Qed.
+Lemma lehO U V : (U^⟂)%HS `<=` (V^⟂)%HS = (V `<=` U).
+Proof. by apply/eqb_iff; split=>/lehOP; rewrite ?hsOK=>/lehP. Qed.
 
-Lemma lehC_sym U V : (U^⟂)%HS `<=` V = ((V^⟂)%HS `<=` U).
-Proof. by rewrite -lehC hsCK. Qed.
+Lemma lehO_sym U V : (U^⟂)%HS `<=` V = ((V^⟂)%HS `<=` U).
+Proof. by rewrite -lehO hsOK. Qed.
 
-Lemma lehC_symV U V : U `<=` (V^⟂)%HS = (V `<=` (U^⟂)%HS).
-Proof. by rewrite -lehC hsCK. Qed.
+Lemma lehO_symV U V : U `<=` (V^⟂)%HS = (V `<=` (U^⟂)%HS).
+Proof. by rewrite -lehO hsOK. Qed.
 
 Lemma hs_ortho U x y : x \in U -> y \in (U^⟂)%HS -> [< x ; y >] = 0.
-Proof. by move=>/memhP<-/memhP<-; rewrite -hermf_dotE/= memh_projC dot0p. Qed.   
+Proof. by move=>/memhP<-/memhP<-; rewrite -hermf_dotE/= memh_projO dot0p. Qed.   
 
 Lemma memhN U v : (- v \in U) = (v \in U). 
 Proof. by rewrite !memhE linearN/= eqr_opp. Qed.
@@ -855,18 +846,18 @@ apply/eqb_iff; rewrite !eq_iff hsE/=; split;
 by rewrite comp_lfunA=>->; rewrite comp_lfun0l.
 Qed.
 
-Lemma memh_suppCE (G : chsType) (A : 'Hom(H,G)) x : 
+Lemma memh_suppOE (G : chsType) (A : 'Hom(H,G)) x : 
   x \in ((supph A)^⟂)%HS = (A x == 0).
-Proof. by rewrite memhCE hsCK supphP. Qed.
+Proof. by rewrite memhOE hsOK supphP. Qed.
 
 Lemma supph_projK (E : 'FP(H)) : supph E = HSType E.
-Proof. by apply/hsC_inj/eqhP=>x; rewrite memh_suppCE memhCE hsCK hsE. Qed.
+Proof. by apply/hsO_inj/eqhP=>x; rewrite memh_suppOE memhOE hsOK hsE. Qed.
 
 Lemma supph_Pid (E : 'FP(H)) : (supph E)%:VF = E.
 Proof. by apply/lfunP=>v; move: (supph_projK E)=>/hspaceP/(_ v); rewrite hsE. Qed.
 
 Lemma supph_id U : supph U = U.
-Proof. by apply/hsC_inj/eqhP=>x; rewrite memh_suppCE memhCE hsCK. Qed.
+Proof. by apply/hsO_inj/eqhP=>x; rewrite memh_suppOE memhOE hsOK. Qed.
 
 Lemma supplfK (A : 'FP(H)) : supplf A = A.
 Proof.
@@ -892,11 +883,12 @@ move=>P1 P2; apply/lfunP=>v; rewrite (hs_vec_dec U v) !linearD/=.
 by move: (memh_proj U v) (memh_proj U^⟂ v)=>/P1->/P2->.
 Qed.
 
-
 Lemma leh2v (U V : {hspace H}) : U `<=` V = (hs2vs U <= hs2vs V)%VS.
 Proof.
-apply/eqb_iff; split. move=>/lehP P; apply/subvP=>i; rewrite -!memh2v; apply P.
-by move/subvP=>P; apply/lehP=>i; move: (P i); rewrite -!memh2v.
+apply/eqb_iff; split. move=>/lehP P; apply/subvP=>i;
+rewrite -[in X in X -> _]memh2v -[in X in _ -> X]memh2v; apply P.
+move/subvP=>P; apply/lehP=>i;
+rewrite [in X in X -> _]memh2v [in X in _ -> X]memh2v; apply P.
 Qed.
 Lemma subv2h (U V : {vspace H}) : (U <= V)%VS = (vs2hs U `<=` vs2hs V).
 Proof. by rewrite leh2v !vs2hsK. Qed.
@@ -915,19 +907,21 @@ Lemma cuphP U V W : (cuph U V `<=` W) = (U `<=` W) && (V `<=` W).
 Proof.
 apply/eqb_iff; split.
 - by move=>P1; apply/andP; split; apply: (le_trans _ P1);
-  apply/lehCP=>x; rewrite/= memh_suppCE memhCE hsCK projlfD_eq0=>/andP[].
-move=>/andP[]/lehCP P1/lehCP P2; apply/lehCP=>x Px; rewrite /cuph memh_suppCE.
-by move: (P1 _ Px) (P2 _ Px); rewrite !memhCE !hsCK lfunE/==>/eqP->/eqP->; rewrite addr0.
+  apply/lehOP=>x; rewrite/= memh_suppOE memhOE hsOK projlfD_eq0=>/andP[].
+move=>/andP[]/lehOP P1/lehOP P2; apply/lehOP=>x Px; rewrite /cuph memh_suppOE.
+by move: (P1 _ Px) (P2 _ Px); rewrite !memhOE !hsOK lfunE/==>/eqP->/eqP->; rewrite addr0.
 Qed.
 
 Lemma caphP U V W : (U `<=` caph V W) = (U `<=` V) && (U `<=` W).
-Proof. by rewrite /caph lehC_symV cuphP !lehC. Qed.
+Proof. by rewrite /caph lehO_symV cuphP !lehO. Qed.
 
 Lemma cuph2v (U V : {hspace H}) : (cuph U V) = vs2hs (hs2vs U + hs2vs V)%VS.
 Proof.
 apply/hs2vs_inj/eqP; rewrite eqEsubv vs2hsK; apply/andP; split.
 by rewrite subv2h hs2vsK cuphP !leh2v vs2hsK -subv_add.
-by rewrite subv_add !subv2h !hs2vsK -cuphP.
+by rewrite subv_add [X in X && _]subv2h [X in _ && X]subv2h
+  [X in (X `<=` _) && _]hs2vsK [X in (_ `<=` X) && _]hs2vsK
+  [X in _ && (X `<=` _)]hs2vsK [X in _ && (_ `<=` X)]hs2vsK -cuphP.
 Qed.
 
 Lemma addv2h (U V : {vspace H}) : (U + V)%VS = hs2vs (cuph (vs2hs U) (vs2hs V)).
@@ -936,8 +930,8 @@ Proof. by rewrite cuph2v !vs2hsK. Qed.
 Lemma caph2v (U V : {hspace H}) : (caph U V) = vs2hs (hs2vs U :&: hs2vs V)%VS.
 Proof.
 apply/hs2vs_inj/eqP; rewrite eqEsubv vs2hsK; apply/andP; split.
-by rewrite subv_cap -!leh2v -caphP.
-by rewrite subv2h hs2vsK caphP !leh2v vs2hsK -subv_cap.
+by rewrite subv_cap -[X in X && _]leh2v -[X in _ && X]leh2v -caphP.
+by rewrite subv2h hs2vsK caphP [X in X && _]leh2v [X in _ && X]leh2v vs2hsK -subv_cap.
 Qed.
 
 Lemma capv2h (U V : {vspace H}) : (U :&: V)%VS = hs2vs (caph (vs2hs U) (vs2hs V)).
@@ -958,7 +952,7 @@ apply/eqb_iff; rewrite eq_iff; split.
 - move=>/lehP P; apply: (@eq_from_hs _ _ U)=>x Px; rewrite lfunE/=.
   move: {+}Px; rewrite memhE=>/eqP->. 
   by move/P: Px; rewrite memhE=>/eqP->.
-  by move: Px; rewrite memhCE hsCK=>/eqP->; rewrite linear0.
+  by move: Px; rewrite memhOE hsOK=>/eqP->; rewrite linear0.
 move=>P; apply/lehP=>x; rewrite !memhE=>/eqP<-.
 by rewrite -comp_lfunE P.
 Qed.
@@ -968,27 +962,27 @@ Proof. by rewrite leh_compr -[LHS](can_eq (@adjfK _ _)) adjf_comp !hermf_adjE/=.
 Lemma aux14 U V : U `<=` V -> (V%:VF - U%:VF \is projlf).
 Proof.
 move=>P; apply/projlfP; split; first by rewrite hermf_adjE.
-rewrite linearBl/= !linearBr/=.
+rewrite comp_lfunDl !comp_lfunDr !comp_lfunNr !comp_lfunNl opprK addrA.
 move: P {+}P; rewrite {1}leh_compr leh_compl=>/eqP->/eqP->; 
-by rewrite !projf_idem subrr subr0.
+by rewrite !projf_idem addrNK.
 Qed.
 
 Lemma aux45 U V : (V%:VF - U%:VF \is projlf) -> (forall x, [< x ; (V%:VF - U%:VF) x >] >= 0).
 Proof.
-move=>P x; move: (ge0_dotp ((Projlfun P) x)).
-by rewrite -adj_dotEV hermf_adjE/= -comp_lfunE projf_idem projfE.
+move=>P x; move: (ge0_dotp ((ProjLf_Build P) x)).
+by rewrite -adj_dotEr hermf_adjE/= -comp_lfunE (projf_idem (ProjLf_Build P)).
 Qed.
 
 Lemma aux56 U V : (forall x, [< x ; (V%:VF - U%:VF) x >] >= 0) -> (forall x, `|V x| >= `|U x|).
 Proof.
 by move=>+x; move=>/(_ x); rewrite lfunE/= lfunE/= linearBr/= 
-  !projf_dot subr_ge0 ler_pexpn2r ?nnegrE// .
+  !projf_dot subr_ge0 ler_pXn2r ?nnegrE// .
 Qed.
 
 Lemma aux61 U V : (forall x, `|V x| >= `|U x|) -> U `<=` V.
 Proof. 
-rewrite -lehC=>P; apply/lehP=>x.
-rewrite !memhCE !hsCK -normr_eq0=>/eqP P1.
+rewrite -lehO=>P; apply/lehP=>x.
+rewrite !memhOE !hsOK -normr_eq0=>/eqP P1.
 by move: (P x); rewrite P1 normr_le0.
 Qed.
 
@@ -1003,7 +997,7 @@ Proof. by split=>[/aux14/aux45/aux56|/aux61]. Qed.
 
 Lemma supph_sub U V : U `<=` V -> 
   (supph (V%:VF - U%:VF))%:VF = V%:VF - U%:VF.
-Proof. by move=>/aux14 P; rewrite -{1}(projfE tt P) supph_projK hsE projfE. Qed.
+Proof. by move=>/aux14 P; rewrite (supph_projK (ProjLf_Build P)) hsE. Qed.
 
 End Lehs_Alternative.
 
@@ -1017,9 +1011,9 @@ Proof. by move=>U V; rewrite /cuph addrC. Qed.
 Lemma caphC : commutative (@caph H).
 Proof. by move=>U V; rewrite /caph cuphC. Qed.
 Lemma cuphA : associative (@cuph H).
-Proof. by move=>U V W; rewrite !cuph2v !vs2hsK addvA. Qed.
+Proof. by move=>U V W; rewrite !cuph2v [in LHS]vs2hsK [in RHS]vs2hsK addvA. Qed.
 Lemma caphA : associative (@caph H).
-Proof. by move=>U V W; rewrite !caph2v !vs2hsK capvA. Qed.
+Proof. by move=>U V W; rewrite !caph2v [in LHS]vs2hsK [in RHS]vs2hsK capvA. Qed.
 Lemma cuphKI V U : caph U (cuph U V) = U.
 Proof.
 apply/hs2vs_inj/eqP; rewrite caph2v cuph2v !vs2hsK eqEsubv; apply/andP;
@@ -1038,55 +1032,62 @@ rewrite leh2v -(can_eq (@hs2vsK _)) caph2v vs2hsK.
 by apply/eqb_iff; rewrite eq_iff; split=>/capv_idPl.
 Qed.
 
-Definition hspace_latticeMixin :=
-  LatticeMixin caphC cuphC caphA cuphA cuphKI caphKU lehEmeet.
-Canonical hspace_latticeType := LatticeType {hspace H} hspace_latticeMixin.
-Definition hspace_bottomMixin := BottomMixin (@le0h H).
-Canonical hspace_bLatticeType := BLatticeType {hspace H} hspace_bottomMixin.
-Definition hspace_topMixin := TopMixin  (@leh1 H).
-Canonical hspace_tbLatticeType := TBLatticeType {hspace H} hspace_topMixin.
+#[export]
+HB.instance Definition _ :=
+  @Order.POrder_isLattice.Build hspace_display {hspace H}
+  (@caph H) (@cuph H) caphC cuphC caphA cuphA cuphKI caphKU lehEmeet.
+#[export]
+HB.instance Definition _ := @Order.hasBottom.Build hspace_display {hspace H} _ (@le0h H).
+#[export]
+HB.instance Definition _ := @Order.hasTop.Build hspace_display {hspace H} _ (@leh1 H).
 
-Lemma cupCh U : cuph (U^⟂)%HS U = hs1.
+Lemma cupOh U : cuph (U^⟂)%HS U = hs1.
 Proof.
-apply/eqhP=>x; rewrite !memhCE !hsE/=/cplmt.
+apply/eqhP=>x; rewrite !memhOE !hsE/=/cplmt.
 by rewrite !hsE/= /cplmt addrNK supplfK/= !subrr.
 Qed.
 
-Lemma capCh U : caph (U^⟂)%HS U = hs0.
-Proof. by apply/hsC_inj; rewrite hsC0 /caph !hsCK cuphC cupCh. Qed.
+Lemma capOh U : caph (U^⟂)%HS U = hs0.
+Proof. by apply/hsO_inj; rewrite hsO0 /caph !hsOK cuphC cupOh. Qed.
 
-Lemma wlehC : {homo (@hscmplt H) : U V /~ U `<=` V}.
-Proof. by move=>U V; rewrite lehC. Qed.
+Lemma wlehO : {homo (@hscmplt H) : U V /~ U `<=` V}.
+Proof. by move=>U V; rewrite lehO. Qed.
 
-Definition hspace_complLatticeMixin := ComplLatticeMixin cupCh capCh.
-Canonical hspace_complLatticeType := ComplLatticeType {hspace H} hspace_complLatticeMixin.
-Definition hspace_oComplLatticeMixin := OComplLatticeMixin (@hsCK H) wlehC.
-Canonical hspace_oComplLatticeType := OComplLatticeType {hspace H} hspace_oComplLatticeMixin.
+#[export]
+HB.instance Definition _ := TBLattice_isOrthoLattice.Build hspace_display {hspace H} cupOh capOh (@hsOK H) wlehO.
 
 Lemma hs_orthomodular U V : 
   U `<=` V -> cuph U (caph (U^⟂)%HS V) = V.
 Proof.
-rewrite cuphC caphC -{3}[V]meetx1 -(joinCx U).
+rewrite cuphC caphC -{3}[V]meetx1 -(joinOx U).
 rewrite leh2v=>/(vspace_modr (hs2vs U^⟂))/(f_equal (@vs2hs _)).
-by rewrite !addv2h !capv2h !hs2vsK.
+rewrite addv2h addv2h [in X in X = _ -> _]capv2h [in X in _ = X -> _]capv2h.
+move: (@hs2vsK H); set f1 := (@hs2vs H); set f2 := (@vs2hs H).
+by move: f1 f2=>f1 f2 P; rewrite !P.
+(* unbelievablly slow: rewrite addv2h addv2h !(hs2vsK, capv2h) *)
 Qed.
 
-Definition hspace_oModularLatticeMixin := OModularLatticeMixin hs_orthomodular.
-Canonical hspace_oModularLatticeType := OModularLatticeType {hspace H} hspace_oModularLatticeMixin.
+#[export]
+HB.instance Definition _ := hasOrthoModular.Build hspace_display {hspace H} hs_orthomodular.
 
 End HspaceOrthoModularLattice.
+
+Module Exports. HB.reexport. End Exports.
+
 End HspaceOrthoModularLattice.
 
 Module Exports.
 
 Export BasicConstruct.
 Export HspaceSupport.
-Canonical hspace_latticeType.
+
+Export HspaceOrthoModularLattice.Exports.
+(* Canonical hspace_latticeType.
 Canonical hspace_bLatticeType.
-Canonical hspace_tbLatticeType.
+Canonical hspacebLatticeType.
 Canonical hspace_complLatticeType.
 Canonical hspace_oComplLatticeType.
-Canonical hspace_oModularLatticeType.
+Canonical hspace_oModularLatticeType. *)
 
 (* reformulate the theories in HspacePredTheory and HspaceOrthoModularLattice *)
 (* replacing the plain operator to lattice operator *)
@@ -1094,8 +1095,6 @@ Section Theory.
 Variable (H : chsType).
 Implicit Type (U V W: {hspace H}) (x y : H).
 
-Definition hs_sub_t := hs_sub_t.
-Definition hs_sub_proj := hs_sub_proj. 
 Definition leh_lef := leh_lef.
 Definition memhE := memhE.
 Definition memhP := memhP.
@@ -1120,31 +1119,31 @@ Definition supph_sub := supph_sub.
 
 Lemma hs_vec_dec U x : x = U x + (~` U) x.
 Proof. exact: hs_vec_dec. Qed.
-Lemma memhCE U x : x \in U = ((~` U) x == 0).
-Proof. exact: memhCE. Qed.
-Lemma memhCP U x : reflect ((~` U) x = 0) (x \in U).
-Proof. exact: memhCP. Qed.
-Lemma memh_dotCE U x : x \in U = ([< x ; (~` U) x >] == 0).
-Proof. exact: memh_dotCE. Qed.
-Lemma memh_dotCP U x : reflect ([< x ; (~` U) x >] = 0) (x \in U).
-Proof. exact: memh_dotCP. Qed.
-Lemma memh_projC U x : (~` U) (U x) = 0.
-Proof. exact: memh_projC. Qed.
-Lemma memh_normCE U x : x \in U = (`|(~` U) x| == 0).
-Proof. exact: memh_normCE. Qed.
-Lemma memh_normCP U x : reflect (`|(~` U) x| = 0) (x \in U).
-Proof. Set Printing All.  exact: memh_normCP. Qed.
-Lemma lehCP U V : reflect (forall x, (x \in (~` V)) -> (x \in (~` U))) (U `<=` V).
-Proof. exact: lehCP. Qed.
+Lemma memhOE U x : x \in U = ((~` U) x == 0).
+Proof. exact: memhOE. Qed.
+Lemma memhOP U x : reflect ((~` U) x = 0) (x \in U).
+Proof. exact: memhOP. Qed.
+Lemma memh_dotOE U x : x \in U = ([< x ; (~` U) x >] == 0).
+Proof. exact: memh_dotOE. Qed.
+Lemma memh_dotOP U x : reflect ([< x ; (~` U) x >] = 0) (x \in U).
+Proof. exact: memh_dotOP. Qed.
+Lemma memh_projO U x : (~` U) (U x) = 0.
+Proof. exact: memh_projO. Qed.
+Lemma memh_normOE U x : x \in U = (`|(~` U) x| == 0).
+Proof. exact: memh_normOE. Qed.
+Lemma memh_normOP U x : reflect (`|(~` U) x| = 0) (x \in U).
+Proof. exact: memh_normOP. Qed.
+Lemma lehOP U V : reflect (forall x, (x \in (~` V)) -> (x \in (~` U))) (U `<=` V).
+Proof. exact: lehOP. Qed.
 Lemma memh1 x : x \in (`1` : {hspace H}).
 Proof. exact: memh1. Qed.
 Lemma memh0 x : x \in (`0` : {hspace H}) = (x == 0).
 Proof. exact: memh0. Qed.
 
 (* here we rewrite the theory from lattice and others *)
-Local Notation cap := (@Order.meet _ (hspace_latticeType H)) (only parsing).
-Local Notation cup := (@Order.join _ (hspace_latticeType H)) (only parsing).
-Local Notation cpl := (@compl _ (hspace_complLatticeType H)) (only parsing).
+Local Notation cap := (@Order.meet _ {hspace H}) (only parsing).
+Local Notation cup := (@Order.join _ {hspace H}) (only parsing).
+Local Notation cpl := (@ocompl _ {hspace H}) (only parsing).
 Lemma lehh U : U `<=` U. Proof. exact: lexx. Qed.
 (* ??? why lexx not work for // *)
 (* Hint Extern 0 (_ `<=` _) => solve [apply: lehh] : core. *)
@@ -1243,8 +1242,7 @@ Lemma cuph0 : right_id   `0` cup.  Proof. exact: joinx0. Qed.
 Lemma cuph_eq0 U V : (U `|` V == `0`) = (U == `0`) && (V == `0`).
 Proof. exact: join_eq0. Qed.
 
-Canonical cuph_monoid := Monoid.Law cuphA cup0h cuph0.
-Canonical cuph_comoid := Monoid.ComLaw cuphC.
+HB.instance Definition _ := Monoid.isComLaw.Build {hspace H} `0` (@cuph H) cuphA cuphC cup0h.
 
 Lemma leh1 U : U `<=` `1`. Proof. exact: lex1. Qed.
 Hint Resolve leh1 : core.
@@ -1256,10 +1254,9 @@ Lemma le1h U : (`1` `<=` U) = (U == `1`). Proof. exact: le1x. Qed.
 Lemma caph_eq1 U V : (U `&` V == `1`) = (U == `1`) && (V == `1`).
 Proof. exact: meet_eq1. Qed.
 
-Canonical caph_monoid := Monoid.Law caphA cap1h caph1.
-Canonical caph_comoid := Monoid.ComLaw caphC.
-Canonical caph_muloid := Monoid.MulLaw cap0h caph0.
-Canonical cuph_muloid := Monoid.MulLaw cup1h cuph1.
+HB.instance Definition _ := Monoid.isComLaw.Build {hspace H} `1` (@caph H) caphA caphC cap1h.
+HB.instance Definition _ := Monoid.isMulLaw.Build {hspace H} `0` (@caph H) cap0h caph0.
+HB.instance Definition _ := Monoid.isMulLaw.Build {hspace H} `1` (@cuph H) cup1h cuph1.
 
 Section CuphsCaphs.
 Implicit Types (I : finType) (T : eqType).
@@ -1356,67 +1353,67 @@ Lemma lth_capl U : {homo (cap U) : x y / x `<` y >-> x `<=` y}.
 Proof. exact: lt_meetl. Qed.
 Lemma lth_capr U : {homo (cap^~ U) : x y / x `<` y >-> x `<=` y}.
 Proof. exact: lt_meetr. Qed.
-Lemma cuphCx U : ~` U `|` U = `1`. Proof. exact: joinCx. Qed.
-Lemma caphCx U : ~` U `&` U = `0`. Proof. exact: meetCx. Qed.
-Lemma cuphxC U : U `|` ~` U = `1`. Proof. exact: joinxC. Qed.
-Lemma caphxC U : U `&` ~` U = `0`. Proof. exact: meetxC. Qed.
-Lemma hsC1 : ~` `1` = `0` :> {hspace H}. Proof. exact: compl1. Qed.
-Lemma hsC0 : ~` `0` = `1` :> {hspace H}. Proof. exact: compl0. Qed.
-Lemma hsCK : involutive cpl.    Proof. exact: complK. Qed.
-Lemma hsC_inj : injective cpl. Proof. exact: compl_inj. Qed.
-Lemma hsC_eq U V : (~` U) == (~` V) = (U == V). Proof. exact: hsC_eq. Qed.
-Lemma hsCx_eq U V : (~` U) == V = (U == (~` V)). Proof. exact: hsC_eq_sym. Qed.
-Lemma hsxC_eq U V : U == (~` V) = ((~` U) == V). Proof. by rewrite hsCx_eq. Qed.
-Lemma wlehC : {homo cpl : a b /~ a `<=` b}. Proof. exact: leCP. Qed.
-Lemma lehC U V : (~` U) `<=` (~` V) = (V `<=` U).  Proof. exact: leC. Qed.
-Lemma lehCx U V : (~` U) `<=` V = ((~` V) `<=` U). Proof. exact: leCx. Qed.
-Lemma lehxC U V : U `<=` (~` V) = (V `<=` (~` U)). Proof. exact: lexC. Qed.
-Lemma hsCU U V : ~` (U `|` V) = ~` U `&` ~` V. Proof. exact: complU. Qed.
-Lemma hsCI U V : ~` (U `&` V) = ~` U `|` ~` V. Proof. exact: complI. Qed.
-Lemma hsUI U V : (U `|` V) = ~` (~` U `&` ~` V). Proof. by rewrite -hsCU hsCK. Qed.
-Lemma hsIU U V : (U `&` V) = ~` (~` U `|` ~` V). Proof. by rewrite -hsCI hsCK. Qed.
-Lemma lehxC_disj U V : (U `<=` ~` V) -> (U `&` V = `0`). Proof. exact: lexC_disj. Qed.
-Lemma hsUCI U V : U `<=` V -> U `|` ((~` U) `&` V) = V. Proof. exact: le_joinIC. Qed.
+Lemma cuphOx U : ~` U `|` U = `1`. Proof. exact: joinOx. Qed.
+Lemma caphOx U : ~` U `&` U = `0`. Proof. exact: meetOx. Qed.
+Lemma cuphxO U : U `|` ~` U = `1`. Proof. exact: joinxO. Qed.
+Lemma caphxO U : U `&` ~` U = `0`. Proof. exact: meetxO. Qed.
+Lemma hsO1 : ~` `1` = `0` :> {hspace H}. Proof. exact: ocompl1. Qed.
+Lemma hsO0 : ~` `0` = `1` :> {hspace H}. Proof. exact: ocompl0. Qed.
+Lemma hsOK : involutive cpl.    Proof. exact: ocomplK. Qed.
+Lemma hsO_inj : injective cpl. Proof. exact: ocompl_inj. Qed.
+Lemma hsO_eq U V : (~` U) == (~` V) = (U == V). Proof. exact: hsO_eq. Qed.
+Lemma hsOx_eq U V : (~` U) == V = (U == (~` V)). Proof. exact: hsO_eq_sym. Qed.
+Lemma hsxO_eq U V : U == (~` V) = ((~` U) == V). Proof. by rewrite hsOx_eq. Qed.
+Lemma wlehO : {homo cpl : a b /~ a `<=` b}. Proof. exact: leOP. Qed.
+Lemma lehO U V : (~` U) `<=` (~` V) = (V `<=` U).  Proof. exact: leO. Qed.
+Lemma lehOx U V : (~` U) `<=` V = ((~` V) `<=` U). Proof. exact: leOx. Qed.
+Lemma lehxO U V : U `<=` (~` V) = (V `<=` (~` U)). Proof. exact: lexO. Qed.
+Lemma hsOU U V : ~` (U `|` V) = ~` U `&` ~` V. Proof. exact: ocomplU. Qed.
+Lemma hsOI U V : ~` (U `&` V) = ~` U `|` ~` V. Proof. exact: ocomplI. Qed.
+Lemma hsUI U V : (U `|` V) = ~` (~` U `&` ~` V). Proof. by rewrite -hsOU hsOK. Qed.
+Lemma hsIU U V : (U `&` V) = ~` (~` U `|` ~` V). Proof. by rewrite -hsOI hsOK. Qed.
+Lemma lehxO_disj U V : (U `<=` ~` V) -> (U `&` V = `0`). Proof. exact: lexO_disj. Qed.
+Lemma hsUOI U V : U `<=` V -> U `|` ((~` U) `&` V) = V. Proof. exact: le_joinIO. Qed.
 Lemma hs_ortho U x y : x \in U -> y \in (~` U) -> [< x ; y >] = 0.
 Proof. exact: hs_ortho. Qed.
-Lemma caphsC I (r : seq I) (P : pred I) (f : I -> {hspace H}) :
+Lemma caphsO I (r : seq I) (P : pred I) (f : I -> {hspace H}) :
   ~` (\cap_(i <- r | P i) f i) = \cup_(i <- r | P i) ~` (f i).
-Proof. by elim/big_rec2: _ =>/= [|i d vs _ eqd]; rewrite ?hsC1// -eqd hsCI. Qed.
-Lemma cuphsC I (r : seq I) (P : pred I) (f : I -> {hspace H}) :
+Proof. by elim/big_rec2: _ =>/= [|i d vs _ eqd]; rewrite ?hsO1// -eqd hsOI. Qed.
+Lemma cuphsO I (r : seq I) (P : pred I) (f : I -> {hspace H}) :
   ~` (\cup_(i <- r | P i) f i) = \cap_(i <- r | P i) ~` (f i).
-Proof. by elim/big_rec2: _ =>/= [|i d vs _ eqd]; rewrite ?hsC0// -eqd hsCU. Qed.
+Proof. by elim/big_rec2: _ =>/= [|i d vs _ eqd]; rewrite ?hsO0// -eqd hsOU. Qed.
 
 (* basic construct -> lattice operator *)
 Definition hs0E : hspace0 H = `0`.
 Proof. by []. Qed.
 Definition hs1E : hspace1 H = `1`.
 Proof. by []. Qed.
-Definition hsCE U : U^⟂ = ~` U.
+Definition hsOE U : U^⟂ = ~` U.
 Proof. by []. Qed.
 Definition cuphE U V : cuph U V = U `|` V.
 Proof. by []. Qed.
 Definition caphE U V : caph U V = U `&` V.
 Proof. by []. Qed.
-Definition hs2lE := (hs0E, hs1E, hsCE, cuphE, caphE).
+Definition hs2lE := (hs0E, hs1E, hsOE, cuphE, caphE).
 
 (* lattice operator -> lfun operator *)
 Lemma hs2lf0E : (`0` : {hspace H})%:VF = 0.
 Proof. by rewrite -hs0E hsE. Qed.
 Lemma hs2lf1E : (`1` : {hspace H})%:VF = \1.
 Proof. by rewrite -hs1E hsE. Qed.
-Lemma hs2lfCE U : (~` U)%:VF = cplmt U.
-Proof. by rewrite -hsCE hsE. Qed.
+Lemma hs2lfOE U : (~` U)%:VF = cplmt U.
+Proof. by rewrite -hsOE hsE. Qed.
 Lemma cuph2lfE U V : (U `|` V)%:VF = supplf (U%:VF + V%:VF).
 Proof. by rewrite -cuphE hsE. Qed.
 Lemma caph2lfE U V : (U `&` V)%:VF = cplmt (supplf (cplmt U%:VF + cplmt V%:VF)).
 Proof. by rewrite -caphE /caph /cuph !hsE/=hsE. Qed.
-Definition hs2lfE := (hs2lf0E, hs2lf1E, hs2lfCE, cuph2lfE, caph2lfE).
+Definition hs2lfE := (hs2lf0E, hs2lf1E, hs2lfOE, cuph2lfE, caph2lfE).
 
-Lemma capCh_sub U V : U `<=` V -> 
+Lemma capOh_sub U V : U `<=` V -> 
   ((~` U) `&` V) = supph (V%:VF - U%:VF).
 Proof.
-move=>/supph_sub P; rewrite -[LHS]hsCK [X in ~` X]complI hsCK; apply/eqhP=>x.
-by rewrite memhCE hsCK memhCE hs2lfE supphP P !hsE/= /cplmt opprB !addrA [_ + \1]addrC.
+move=>/supph_sub P; rewrite -[LHS]hsOK [X in ~` X]ocomplI hsOK; apply/eqhP=>x.
+by rewrite memhOE hsOK memhOE hs2lfE supphP P !hsE/= /cplmt opprB !addrA [_ + \1]addrC.
 Qed.
 Lemma cuph_lub U V W : U `<=` W -> V `<=` W -> U `|` V `<=` W.
 Proof. by move=>P1 P2; rewrite leUx P1 P2. Qed.
@@ -1436,24 +1433,24 @@ Proof. by []. Qed.
 Lemma cokerhE (G : chsType) (A : 'Hom(H,G)) : cokerh A = ~` (cosupph A).
 Proof. by []. Qed.
 Lemma supphE (G : chsType) (A : 'Hom(H,G)) : supph A = ~` (kerh A).
-Proof. by rewrite kerhE hsCK. Qed.
+Proof. by rewrite kerhE hsOK. Qed.
 Lemma cosupphE (G : chsType) (A : 'Hom(H,G)) : cosupph A = ~` (cokerh A).
-Proof. by rewrite cokerhE complK. Qed.
+Proof. by rewrite cokerhE ocomplK. Qed.
 
-Lemma memh_suppCE (G : chsType) (A : 'Hom(H,G)) x : 
+Lemma memh_suppOE (G : chsType) (A : 'Hom(H,G)) x : 
   x \in ~` (supph A) = (A x == 0).
-Proof. exact: memh_suppCE. Qed.
+Proof. exact: memh_suppOE. Qed.
 
 Lemma eq_from_hs (G : chsType) U (f g : 'Hom(H,G)) :
   (forall x, x \in U -> f x = g x) -> (forall x, x \in ~` U -> f x = g x)
   -> f = g.
 Proof. exact: eq_from_hs. Qed.
 
-Lemma leh_memCP (U V : {hspace H}) : 
+Lemma leh_memOP (U V : {hspace H}) : 
   reflect (forall x, V x == 0 -> U x == 0) (U `<=` V).
 Proof.
-apply/(iffP (lehCP _ _))=>+ x; move=>/(_ x);
-by rewrite !memhCE !hsCK=>P1 P2; apply P1.
+apply/(iffP (lehOP _ _))=>+ x; move=>/(_ x);
+by rewrite !memhOE !hsOK=>P1 P2; apply P1.
 Qed.
 
 Lemma leh_memP (U V : {hspace H}) : 
@@ -1471,9 +1468,9 @@ by rewrite linearZl/= linearZr/= outp_comp dotp_norm !scalerA -mulrA mulVf
   ?mulr1// expf_eq0/= normr_eq0 E.
 Qed.
 
-Lemma hline_def (v : H) : (hline v) = HSType (ProjfType (outp_norm_proj v)).
+Lemma hline_def (v : H) : (hline v) = HSType (ProjLf_Build (outp_norm_proj v)).
 Proof.
-apply/hsC_inj/eqhP=>x; rewrite !memhCE !hsCK supphP !hsE/=.
+apply/hsO_inj/eqhP=>x; rewrite !memhOE !hsOK supphP !hsE/=.
 rewrite lfunE/= outpE [RHS]scaler_eq0. apply/eqb_iff; split.
 by move=>->; rewrite orbT. move/orP=>[|//].
 by rewrite invr_eq0 expf_eq0/= normr_eq0=>/eqP->; rewrite scaler0.
@@ -1524,7 +1521,10 @@ Lemma sumv2h I (r : seq I) (P : pred I) (f : I -> {vspace H}) :
   (\sum_(i <- r | P i) (f i))%VS = hs2vs (\cup_(i <- r | P i) vs2hs (f i)).
 Proof. by rewrite cuphs2v vs2hsK; under [RHS]eq_bigr do rewrite vs2hsK. Qed.
 Lemma dimh2v U : \Dim U = \dim (hs2vs U).
-Proof. by rewrite /dimh /dimv /lfrank /hs2vs mx2vsK. Qed.
+Proof.
+by rewrite /dimh /dimv /lfrank /hs2vs mx2vsK trmx_mul mxrankMfree 
+  ?mxrank_tr// row_free_unit unitmx_tr unitmx_inv h2vU_unitmx.
+Qed.
 Lemma dimv2h (U : {vspace H}) : \dim U = \Dim (vs2hs U).
 Proof. by rewrite dimh2v vs2hsK. Qed. 
 Lemma hs2vs_eq U V : (U == V) = (hs2vs U == hs2vs V)%VS.
@@ -1570,10 +1570,10 @@ rewrite dotp_sumr (bigD1 i)//= big1=>[j/negPf nj|];
 by rewrite dotpZr ponb_dot 1?eq_sym ?nj?mulr0// eqxx mulr1 linear0 addr0.
 Qed.
 
-Lemma cosupph_memCE H G (A : 'Hom(H,G)) x : 
+Lemma cosupph_memOE H G (A : 'Hom(H,G)) x : 
   x \in ~` (cosupph A) = (A^A x == 0).
 Proof.
-rewrite memhCE hsCK; move: (cosupphP A [>x; x<])=>/esym.
+rewrite memhOE hsOK; move: (cosupphP A [>x; x<])=>/esym.
 rewrite !outp_compl hermf_adjE/= !outp_eq0.
 by case: eqP=>// ->; rewrite !linear0 !eqxx.
 Qed.
@@ -1581,7 +1581,7 @@ Qed.
 Lemma cosupph_adj H G (A : 'Hom(H,G)) : 
   cosupph (A^A) = supph A.
 Proof.
-by apply/hsC_inj/eqhP=>x; rewrite cosupph_memCE memh_suppCE adjfK.
+by apply/hsO_inj/eqhP=>x; rewrite cosupph_memOE memh_suppOE adjfK.
 Qed.
 
 Lemma supph_adj H G (A : 'Hom(H,G)) : 
@@ -1619,30 +1619,34 @@ Proof. by rewrite -kerh_adj adjfK. Qed.
 
 Lemma memh_kerE H G (A : 'Hom(H,G)) x : 
   x \in kerh A = (A x == 0).
-Proof. exact: memh_suppCE. Qed.
+Proof. exact: memh_suppOE. Qed.
 
 Lemma memh_kerCP H G (A : 'Hom(H,G)) x : 
   reflect (exists y, x = A^A y) (x \in ~` kerh A).
-Proof. rewrite /kerh hsCK; exact: memh_suppP. Qed.
+Proof. rewrite /kerh hsOK; exact: memh_suppP. Qed.
 
-Lemma memh_cokerCP H G (A : 'Hom(H,G)) x : 
+Lemma memh_cokerOP H G (A : 'Hom(H,G)) x : 
   reflect (exists y, x = A y) (x \in ~` cokerh A).
-Proof. rewrite /cokerh hsCK; exact: memh_cosuppP. Qed.
+Proof. rewrite /cokerh hsOK; exact: memh_cosuppP. Qed.
 
 Lemma cosupph_id H (U : {hspace H}) : cosupph U = U.
 Proof. by rewrite -supph_adj hermf_adjE/= supph_id. Qed.
 
-Lemma kerhC H (U : {hspace H}) : kerh U = ~` U.
+Lemma kerhO H (U : {hspace H}) : kerh U = ~` U.
 Proof. by rewrite /kerh supph_id. Qed.
 Lemma kerhK H (U : {hspace H}) : kerh (kerh U) = U.
-Proof. by rewrite !kerhC hsCK. Qed.
-Lemma cokerhC H (U : {hspace H}) : cokerh U = ~` U. 
+Proof. by rewrite !kerhO hsOK. Qed.
+Lemma cokerhO H (U : {hspace H}) : cokerh U = ~` U. 
 Proof. by rewrite /cokerh cosupph_id. Qed.
 Lemma cokerhK H (U : {hspace H}) : cokerh (cokerh U) = U.
-Proof. by rewrite !cokerhC hsCK. Qed.
+Proof. by rewrite !cokerhO hsOK. Qed.
 
 End CoHspace.
 
+HB.lock Definition sumoutp (H G : chsType) (F : finType) (l : F -> C) 
+  (f : F -> H) (g : F -> G) : 'Hom(H,G) := 
+  (\sum_i (l i) *: [> g i ; f i <]).
+Canonical sumoutp_unlockable := Unlockable sumoutp.unlock.
 
 (* ?? merge to lfrepresent.v ?? *)
 Section CastFinFun.
@@ -1664,28 +1668,22 @@ Lemma castfun_const (F G : finType) (eqc : #|F| = #|G|) (T : Type) (x : T) :
 Proof. by []. Qed.
 
 Lemma castfun_ponb (H : chsType) (F G : finType) (eqc : #|F| = #|G|) (f : 'PONB(F;H)) :
-  ponbasis (castfun eqc f).
+  forall i j, [< (castfun eqc f) i ; (castfun eqc f) j >] = (i == j)%:R.
 Proof.
 by move=>i j; rewrite /castfun ponb_dot enum_ord_eq enum_valK 
   cast_ord_comp cast_ord_id (can_eq enum_rankK).
 Qed.
-Canonical castfun_ponbasis H F G eqc f := PONBasis (@castfun_ponb H F G eqc f).
+HB.instance Definition _ (H : chsType) (F G : finType) eqc (f : 'PONB(F;H)) :=
+  isPONB.Build H G (castfun eqc f) (@castfun_ponb H F G eqc f).
 
-Lemma castfun_onb (H : chsType) (F G : finType) (eqc : #|F| = #|G|) (f : 'ONB(F;H)) :
-  ponbasis (castfun eqc f).
-Proof. exact: castfun_ponb. Qed.
 Lemma castfun_card (H : chsType) (F G : finType) (eqc : #|F| = #|G|) (f : 'ONB(F;H)) :
-  #|G| = Vector.dim H.
-Proof. by rewrite -eqc (onb_card f). Qed.
-Canonical castfun_onbasis H F G eqc f := ONBasis
-   (@castfun_onb H F G eqc f) (@castfun_card H F G eqc f).
+  #|G| = dim H.
+Proof. by rewrite -eqc (@onb_card H F f). Qed.
+HB.instance Definition _ (H : chsType) (F G : finType) eqc (f : 'ONB(F;H)) :=
+  isFullDim.Build H G (castfun eqc f) (@castfun_card H F G eqc f).
 
 (* standard form of decomposition *)
-Fact sumoutp_key : unit. Proof. by []. Qed.
-Definition sumoutp (H G : chsType) (F : finType) (l : F -> C) 
-  (f : F -> H) (g : F -> G) : 'Hom(H,G) := 
-  locked_with sumoutp_key (\sum_i (l i) *: [> g i ; f i <]).
-Canonical sumoutp_unlockable H G F l f g := [unlockable of @sumoutp H G F l f g].
+(* Fact sumoutp_key : unit. Proof. by []. Qed. *)
 
 Lemma sumoutpE H G F l f g : 
   @sumoutp H G F l f g = \sum_i (l i) *: [> g i ; f i <].
@@ -1793,7 +1791,7 @@ Lemma sumoutp_cast (G : chsType) (F K: finType) (eqc : #|F| = #|K|)
   sumoutp (castfun eqc l) (castfun eqc f) (castfun eqc g) = sumoutp l f g.
 Proof.
 pose h i := enum_val (cast_ord (esym eqc) (enum_rank i)).
-rewrite /sumoutp (reindex h)//. 
+rewrite sumoutp.unlock (reindex h)//. 
 exists (fun i=>enum_val (cast_ord eqc (enum_rank i)))=>i _;
 by rewrite /h enum_valK cast_ord_comp cast_ord_id enum_rankK.
 Qed.
@@ -1805,7 +1803,7 @@ Proof.
 apply/hermlfP; rewrite sumoutpE raddf_sum; apply eq_bigr=>i _.
 by rewrite /=adjfZ adj_outp conj_Creal.
 Qed.
-Definition sumoutp_hermfType F f l P := HermfType (@sumoutp_herm F f l P).
+Definition sumoutp_hermfType F f l P := HermLf_Build (@sumoutp_herm F f l P).
 Lemma sumoutp_proj (F : finType) (f : 'PONB(F;H)) :
   sumoutp (fun=>1) f f \is projlf.
 Proof.
@@ -1814,17 +1812,14 @@ rewrite sumoutpE linear_suml; apply eq_bigr=>i _.
 by rewrite linear_sumr (bigD1 i)//= big1=>[j/negPf nj|];
 rewrite ?scale1r outp_comp ponb_dot ?eqxx ?addr0 ?scale1r// eq_sym nj scale0r.
 Qed.
-Canonical sumoutp_projfType F f := ProjfType (@sumoutp_proj F f).
-Canonical sumoutp_obsfType (F : finType) (f : 'PONB(F;H)) := Eval hnf in 
-  [obs of sumoutp (fun=>1) f f as [obs of [proj of sumoutp (fun=>1) f f]]].
-Canonical sumoutp_psdfType (F : finType) (f : 'PONB(F;H)) := Eval hnf in 
-  [psd of sumoutp (fun=>1) f f as [psd of [proj of sumoutp (fun=>1) f f]]].
+HB.instance Definition _ (F : finType) (f : 'PONB(F;H)) :=
+  isProjLf.Build H (sumoutp (fun=>1) f f) (@sumoutp_proj F f).
 
 Lemma supph_sumoutp (G : chsType) (F : finType) (l : F -> C) 
   (f : 'PONB(F;H)) (g : 'PONB(F;G)) :
   supph (sumoutp l f g) = supph (sumoutp (fun i=>(l i != 0)%:R) f f).
 Proof.
-apply/hsC_inj/eqhP=>x; rewrite !memh_suppCE.
+apply/hsO_inj/eqhP=>x; rewrite !memh_suppOE.
 rewrite !sumoutpE !sum_lfunE; under eq_bigr do rewrite lfunE/= outpE scalerA.
 under [in RHS]eq_bigr do rewrite lfunE/= outpE scalerA.
 apply/eqb_iff; rewrite !eq_iff !ponb_sum_eq0; split=>P i; move: (P i);
@@ -1837,7 +1832,7 @@ Lemma lesupph_sumoutp (G : chsType) (F : finType) (l : F -> C)
   (f : F -> H) (g : F -> G) :
   supph (sumoutp l f g) `<=` supph (sumoutp (fun=>1) f f).
 Proof.
-apply/leh_memCP=>x; rewrite !supphP sumoutpE=>/eqP/(f_equal (dotp x))/eqP.
+apply/leh_memOP=>x; rewrite !supphP sumoutpE=>/eqP/(f_equal (dotp x))/eqP.
 rewrite sum_lfunE dotp_sumr linear0.
 under eq_bigr do rewrite scale1r outpE dotpZr -conj_dotp -normCKC.
 rewrite psumr_eq0=>[i _|]. by rewrite exprn_ge0.
@@ -1866,12 +1861,13 @@ Proof. by rewrite sumoutp_cst_trlf mul1r. Qed.
 Lemma dim_supp_sumoutp (F : finType) (f : 'PONB(F;H)) :
   \Dim (supph (sumoutp (fun=>1) f f)) = #|F|.
 Proof.
-apply/eqP; rewrite -(eqr_nat [numDomainType of C]).
+apply/eqP; rewrite -(eqr_nat C).
 by rewrite/= -projf_trlf/= supph_projK hsE/= sumoutp1_trlf.
 Qed.
 
 End Decomposition.
 
+(* TODO : generalize to svd decomposition *)
 (* unitarylf : spetralUE eigenvalU_norm1 *)
 (* projlf : spectralPE sumoutp (fun=>1) eigenvec eigenvec *)
 (* proj1lf : spetralP1E [> eigenvecP1 ; eigenvecP1 <] *)
@@ -1880,21 +1876,23 @@ Section SpectralDecomposition.
 Variable (H : chsType).
 
 Definition eigenvec_all (U : 'End(H)) i :=
-  r2v (row i (spectralmx (f2mx U))).
+  c2h (col i (eigenmx (h2mx U))).
 Definition eigenval_all (U : 'End(H)) i :=
-  spectral_diag (f2mx U) 0 i.
+  spectral_diag (h2mx U) 0 i.
 
 Lemma eigenvec_all_onb (U : 'End(H)) i j : 
   [< eigenvec_all U i ; eigenvec_all U j >] = (i == j)%:R.
 Proof.
-rewrite dotp_mulmx -[_^*m]trmxK -trmx_mul mxE /eigenvec_all !r2vK.
-by rewrite conjmxE map_row tr_row -mulmx_rowcol map_trmx 
-  -adjmxE unitarymxK ?spectral_unitarymx// mxE eq_sym.
+by rewrite dotp_mulmx !c2hK adjmxE tr_col map_row -mulmx_rowcol -adjmxE
+  unitarymxKV /eigenmx ?trmxC_unitary ?spectral_unitarymx// mxE.
 Qed.
-Canonical eigenvec_all_ponbasis U := PONBasis (@eigenvec_all_onb U).
-Canonical eigenvec_all_onbasis U := ONBasis (@eigenvec_all_onb U) (@card_ord _).
-Canonical eigenvec_all_nsType U i := Eval hnf in 
-  [NS of @eigenvec_all U i as [NS of [PONB of @eigenvec_all U] i]].
+
+HB.instance Definition _ (U : 'End(H)) :=
+  isPONB.Build H 'I_(dim H) (eigenvec_all U) (@eigenvec_all_onb U).
+HB.instance Definition _ (U : 'End(H)) :=
+  isFullDim.Build H 'I_(dim H) (eigenvec_all U) (@card_ord _).
+HB.instance Definition _ (U : 'End(H)) (i : 'I_(dim H)) := 
+  NormalState.copy (eigenvec_all U i) ((eigenvec_all U : 'PONB) i : 'NS).
 
 Definition spectral_all U := (sumoutp (eigenval_all U) (eigenvec_all U) (eigenvec_all U)).
 
@@ -1904,64 +1902,64 @@ rewrite /spectral_all sumoutpE linear_sum; apply eq_bigr=>i _.
 by rewrite/= linearZ/= outp_trlf onb_dot eqxx mulr1.
 Qed.
 
-Lemma spectral_allPmx U : f2mx U \is normalmx -> U = spectral_all U.
+Lemma spectral_allPmx U : h2mx U \is normalmx -> U = spectral_all U.
 Proof.
-rewrite qualifE=>/unitarymx_spectralP P.
-apply/f2mx_inj. rewrite /spectral_all sumoutpE P linear_sum/=.
+move=>/eigen_dec P; apply/h2mx_inj.
+rewrite/spectral_all sumoutpE P linear_sum/= .
 rewrite mulmx_colrow; apply eq_bigr=>i _.
-rewrite col_diag_mul linearZ/= /eigenval_all /eigenvec_all r2vK -scalemxAl.
-by do 2 f_equal; rewrite !adjmxE -map_col -tr_row.
+rewrite col_diag_mul linearZ/= /eigenval_all /eigenvec_all -scalemxAl; f_equal.
+by rewrite outp.unlock /= mx2hK c2hK !adjmxE tr_col map_row.
 Qed.
 
 Lemma spectral_allUP U : U \is unitarylf -> U = spectral_all U.
-Proof. rewrite qualifE=>/unitarymx_normal; exact: spectral_allPmx. Qed.
+Proof. by rewrite qualifE trmxC_unitary=>/unitarymx_normal; exact: spectral_allPmx. Qed.
 Lemma spectral_allP U : U \is hermlf -> U = spectral_all U.
 Proof. rewrite qualifE=>/hermmx_normal; exact: spectral_allPmx. Qed.
 Lemma spectralUE (U : 'FU(H)) : U%:VF = spectral_all U.
-Proof. apply/spectral_allUP/unitaryf_unitary. Qed.
+Proof. apply/spectral_allUP/is_unitarylf. Qed.
 Lemma spectral_allE (U : 'FH(H)) : U%:VF = spectral_all U.
-Proof. apply/spectral_allP/hermf_herm. Qed.
+Proof. apply/spectral_allP/is_hermlf. Qed.
 
 Lemma eigenvalU_norm1 (U : 'FU(H)) i : `|@eigenval_all U i| = 1.
 Proof.
-move: (unitaryf_unitary U)=>/unitarylfP/lfunP/(_ (eigenvec_all U i))
+move: (is_unitarylf U)=>/unitarylfP/lfunP/(_ (eigenvec_all U i))
 /(f_equal (dotp (eigenvec_all U i)))/eqP.
-rewrite lfunE/= adj_dotEV lfunE/= !dotp_norm {1}spectralUE /spectral_all sumoutp_apply.
-by rewrite normrZ ns_norm mulr1 expr1n sqrp_eq1// =>/eqP.
+rewrite lfunE/= adj_dotEr lfunE/= !dotp_norm {1}spectralUE /spectral_all sumoutp_apply.
+by rewrite hnormZ ns_norm mulr1 expr1n sqrp_eq1// =>/eqP.
 Qed.
 
 Lemma spectral_all_herm (U : 'FH(H)) : spectral_all U \is hermlf.
-Proof. by rewrite -spectral_allP hermf_herm. Qed.
-Canonical spectral_all_hermfType U := HermfType (spectral_all_herm U).
+Proof. by rewrite -spectral_allP is_hermlf. Qed.
+HB.instance Definition _ (U : 'FH(H)) := isHermLf.Build H (spectral_all U) (spectral_all_herm U).
 Lemma spectral_all_psd (U : 'F+(H)) : spectral_all U \is psdlf.
-Proof. by rewrite -spectral_allP ?psdlf_herm ?psdf_psd. Qed.
-Canonical spectral_all_psdfType U := PsdfType (spectral_all_psd U).
+Proof. by rewrite -spectral_allP ?psdlf_herm ?is_psdlf. Qed.
+HB.instance Definition _ (U : 'F+(H)) := Herm_isPsdLf.Build H (spectral_all U) (spectral_all_psd U).
 Lemma spectral_all_obs (U : 'FO(H)) : spectral_all U \is obslf.
-Proof. by rewrite -spectral_allP ?obslf_herm ?obsf_obs. Qed.
-Canonical spectral_all_obsfType U := ObsfType (spectral_all_obs U).
+Proof. by rewrite -spectral_allP ?obslf_herm ?is_obslf. Qed.
+HB.instance Definition _ (U : 'FO(H)) := Psd_isObsLf.Build H (spectral_all U) (spectral_all_obs U).
 Lemma spectral_all_den (U : 'FD(H)) : spectral_all U \is denlf.
-Proof. by rewrite -spectral_allP ?denlf_herm ?denf_den. Qed.
-Canonical spectral_all_denfType U := DenfType (spectral_all_den U).
+Proof. by rewrite -spectral_allP ?denlf_herm ?is_denlf. Qed.
+HB.instance Definition _ (U : 'FD(H)) := Obs_isDenLf.Build H (spectral_all U) (spectral_all_den U).
 Lemma spectral_all_den1 (U : 'FD1(H)) : spectral_all U \is den1lf.
-Proof. by rewrite -spectral_allP ?den1lf_herm ?den1f_den1. Qed.
-Canonical spectral_all_den1fType U := Den1fType (spectral_all_den1 U).
+Proof. by rewrite -spectral_allP ?den1lf_herm ?is_den1lf. Qed.
+HB.instance Definition _ (U : 'FD1(H)) := Den_isDen1Lf.Build H (spectral_all U) (spectral_all_den1 U).
 Lemma spectral_all_proj (U : 'FP(H)) : spectral_all U \is projlf.
-Proof. by rewrite -spectral_allP ?projlf_herm ?projf_proj. Qed.
-Canonical spectral_all_projfType U := ProjfType (spectral_all_proj U).
+Proof. by rewrite -spectral_allP ?projlf_herm ?is_projlf. Qed.
+HB.instance Definition _ (U : 'FP(H)) := Obs_isProjLf.Build H (spectral_all U) (spectral_all_proj U).
 Lemma spectral_all_proj1 (U : 'FP1(H)) : spectral_all U \is proj1lf.
-Proof. by rewrite -spectral_allP ?proj1lf_herm ?proj1f_proj1. Qed.
-Canonical spectral_all_proj1fType U := Proj1fType (spectral_all_proj1 U).
+Proof. by rewrite -spectral_allP ?proj1lf_herm ?is_proj1lf. Qed.
+HB.instance Definition _ (U : 'FP1(H)) := isProj1Lf.Build H (spectral_all U) (spectral_all_proj1 U).
 Lemma spectral_all_unitary (U : 'FU(H)) : spectral_all U \is unitarylf.
-Proof. by rewrite -spectral_allUP ?unitaryf_unitary. Qed.
-Canonical spectral_all_unitaryfType U := UnitaryfType (spectral_all_unitary U).
+Proof. by rewrite -spectral_allUP ?is_unitarylf. Qed.
+HB.instance Definition _ (U : 'FU(H)) := isUnitaryLf.Build H (spectral_all U) (spectral_all_unitary U).
 
 (* remark : for unitarylf, use spectral_all *)
 (* following : give decomposition : \Rank U rather than the whole space *)
 
-Definition eigen_index_sig (U : 'End(H)) := 
-    [finType of {i : 'I_(Vector.dim H) | eigenval_all U i != 0}].
+Definition eigen_index_sig (U : 'End(H)) : finType := 
+    {i : 'I_(dim H) | eigenval_all U i != 0}.
 
-Definition eigen_index (U : 'End(H)) : 'I_(\Rank U) -> 'I_(Vector.dim H) :=
+Definition eigen_index (U : 'End(H)) : 'I_(\Rank U) -> 'I_(dim H) :=
   match \Rank U =P #|eigen_index_sig U| with
   | ReflectT equ => fun i => val (enum_val (cast_ord equ i))
   | ReflectF _ => fun i => widen_ord (ranklf_le_dom U) i
@@ -1982,26 +1980,29 @@ Definition eigenval (U : 'End(H)) i := eigenval_all U (@eigen_index U i).
 Lemma eigenvec_ponb (U : 'End(H)) i j : 
   [< @eigenvec U i ; @eigenvec U j >] = (i == j)%:R.
 Proof. by rewrite/eigenvec onb_dot (inj_eq (@eigen_index_inj _)). Qed.
-Canonical eigenvec_ponbasis U := PONBasis (@eigenvec_ponb U).
-Canonical eigenvec_nsType U i := Eval hnf in 
-  [NS of @eigenvec U i as [NS of [PONB of @eigenvec U] i]].
+
+HB.instance Definition _ (U : 'End(H)) :=
+  isPONB.Build H 'I_(\Rank U) (@eigenvec U) (@eigenvec_ponb U).
+HB.instance Definition _ (U : 'End(H)) (i : 'I_(\Rank U)) := 
+  NormalState.copy (@eigenvec U i) ((@eigenvec U : 'PONB) i : 'NS).
+
 Definition spectral U := (sumoutp (@eigenval U) (@eigenvec U) (@eigenvec U)).
 
-Lemma eigen_index_card (U : 'End(H)) : f2mx U \is normalmx -> 
+Lemma eigen_index_card (U : 'End(H)) : h2mx U \is normalmx -> 
   \Rank U = #|eigen_index_sig U|.
 Proof.
-move=>/unitarymx_spectralP P.
+move=>/eigen_dec P.
 rewrite /eigen_index_sig card_sig -[RHS]muln1 -sum_nat_const /lfrank.
-rewrite P mxrank_mulmxU ?mxrank_mulUCmx ?spectral_unitarymx// rank_diagmx /eigenval_all.
-rewrite (bigID (fun i=>(spectral_diag (f2mx U) 0 i != 0)))/= [X in (_ + X)%N]big1 ?addn0.
+rewrite P mxrank_mulmxUC ?mxrank_mulUmx ?spectral_unitarymx// rank_diagmx /eigenval_all.
+rewrite (bigID (fun i=>(spectral_diag (h2mx U) 0 i != 0)))/= [X in (_ + X)%N]big1 ?addn0.
 by move=>i/negbNE/eqP->; rewrite eqxx.
 by apply eq_bigr=>i; rewrite inE=>->.
 Qed.
 
-Lemma spectralPA (U : 'End(H)) : f2mx U \is normalmx -> U = spectral U.
+Lemma spectralPA (U : 'End(H)) : h2mx U \is normalmx -> U = spectral U.
 Proof.
 move=>P; rewrite {1}(spectral_allPmx P) /spectral_all sumoutpE.
-rewrite (bigID (fun i=>(spectral_diag (f2mx U) 0 i != 0))) [in LHS]/= [X in (_ + X)]big1 ?addr0.
+rewrite (bigID (fun i=>(spectral_diag (h2mx U) 0 i != 0))) [in LHS]/= [X in (_ + X)]big1 ?addr0.
 by rewrite /eigenval_all; move=>i/negbNE/eqP->; rewrite scale0r.
 rewrite /spectral sumoutpE -[LHS]big_sig /eigenval /eigenvec /eigen_index.
 case: eqP=>//[P2|]; last by rewrite -eigen_index_card.
@@ -2010,13 +2011,13 @@ by move=>x _; rewrite 1?enum_valK cast_ord_comp cast_ord_id// enum_rankK.
 Qed.
 
 Lemma eigenval_neq0A (U : 'End(H)) : 
-  f2mx U \is normalmx -> (forall i, @eigenval U i != 0).
+  h2mx U \is normalmx -> (forall i, @eigenval U i != 0).
 Proof.
 move=>P i; rewrite /eigenval /eigen_index; case: eqP; last by rewrite -eigen_index_card.
 move=>P1/=; case: (enum_val (cast_ord P1 i))=>x IH//.
 Qed.
 Lemma eigenval_eq0A (U : 'End(H)) : 
-  f2mx U \is normalmx -> (forall i, @eigenval U i == 0 = false).
+  h2mx U \is normalmx -> (forall i, @eigenval U i == 0 = false).
 Proof. by move=>/eigenval_neq0A +i; move=>/(_ i)/negPf. Qed.
 
 (* Lemma spectralUP U : U \is unitarylf -> U = spectral U.
@@ -2024,29 +2025,29 @@ Proof. rewrite qualifE=>/unitarymx_normal; exact: spectralPA. Qed. *)
 Lemma spectralP U : U \is hermlf -> U = spectral U.
 Proof. rewrite qualifE=>/hermmx_normal; exact: spectralPA. Qed.
 (* Lemma spectralUE (U : 'FU(H)) : U%:VF = spectral U.
-Proof. apply/spectralUP/unitaryf_unitary. Qed. *)
+Proof. apply/spectralUP/is_unitarylf. Qed. *)
 Lemma spectralE (U : 'FH(H)) : U%:VF = spectral U.
-Proof. apply/spectralP/hermf_herm. Qed.
+Proof. apply/spectralP/is_hermlf. Qed.
 
 Lemma eigenval_neq0 (U : 'FH(H)) i : @eigenval U i != 0.
-Proof. by apply/eigenval_neq0A/hermmx_normal; move: (hermf_herm U); rewrite qualifE. Qed.
+Proof. by apply/eigenval_neq0A/hermmx_normal; move: (is_hermlf U); rewrite qualifE. Qed.
 Lemma eigenval_eq0 (U : 'FH(H)) i : @eigenval U i == 0 = false.
 Proof. apply/eqP/eqP; exact: eigenval_neq0. Qed.
 
 Lemma eigenval_herm (U : 'FH(H)) i : @eigenval U i \is Num.real.
 Proof.
-move: (hermf_herm U)=>/hermlfP.
+move: (is_hermlf U)=>/hermlfP.
 rewrite {1 2}spectralE /spectral sumoutp_adj=>/lfunP/(_ (eigenvec i)).
 by rewrite !sumoutp_apply=>/ns_scaleI/CrealP.
 Qed.
 Lemma eigenval_psd (U : 'F+(H)) i : @eigenval U i > 0.
 Proof.
-by move: (psdf_psd U)=>/psdlfP/(_ (eigenvec i)); rewrite {2}spectralE 
+by move: (is_psdlf U)=>/psdlfP/(_ (eigenvec i)); rewrite {2}spectralE 
   /spectral sumoutp_apply dotpZr ns_dot mulr1 le_eqVlt eq_sym eigenval_eq0.
 Qed.
 Lemma eigenval_obs (U : 'FO(H)) i : 0 < @eigenval U i <= 1.
 Proof.
-move: (obsf_obs U)=>/obslfP[_]/(_ (eigenvec i)).
+move: (is_obslf U)=>/obslfP[_]/(_ (eigenvec i)).
 by rewrite {2}spectralE /spectral sumoutp_apply dotpZr ns_dot mulr1 eigenval_psd.
 Qed.
 Lemma eigenval_proj (U : 'FP(H)) i : @eigenval U i = 1.
@@ -2059,9 +2060,9 @@ Lemma spectralPE (U : 'FP(H)) : U%:VF = sumoutp (fun=>1) (@eigenvec U) (@eigenve
 rewrite {1}spectralE /spectral/=; apply/sumoutp_eq=>i; exact: eigenval_proj.
 Qed.
 Lemma rank_proj1 (U : 'FP1(H)) : \Rank U = 1%N.
-Proof. by move: (proj1f_proj1 U)=>/proj1lf_rankP[]. Qed.
+Proof. by move: (is_proj1lf U)=>/proj1lf_rankP[]. Qed.
 Lemma trlf_proj1 (U : 'FP1(H)) : \Tr U = 1.
-Proof. by move: (proj1f_proj1 U)=>/proj1lfP[]. Qed.
+Proof. by move: (is_proj1lf U)=>/proj1lfP[]. Qed.
 Lemma eigen_index_P1 (U : 'FP1(H)) : #|'I_(\Rank U) | = #|'I_1|.
 Proof. by rewrite rank_proj1. Qed.
 Definition eigenvecP1 (U : 'FP1(H)) := castfun (eigen_index_P1 U) (@eigenvec U) ord0.
@@ -2072,7 +2073,8 @@ by rewrite sumoutpE big_ord1 /castfun eigenval_proj scale1r.
 Qed.
 Lemma eigenvectP1_ns (U : 'FP1(H)) : [< eigenvecP1 U ; eigenvecP1 U >] == 1.
 Proof. by rewrite -outp_trlf -spectralP1E trlf_proj1. Qed.
-Canonical eigenvectP1_nsType U := NSType (@eigenvectP1_ns U).
+HB.instance Definition _ U := isNormalState.Build H (eigenvecP1 U)
+  (eqP (@eigenvectP1_ns U)).
 
 Lemma supph_eigenE (U : 'FH(H)) : 
   (supph U)%:VF = sumoutp (fun=>1) (@eigenvec U) (@eigenvec U).
@@ -2084,30 +2086,31 @@ by move=>i; rewrite eigenval_neq0.
 Qed.
 
 Lemma spectral_herm (U : 'FH(H)) : spectral U \is hermlf.
-Proof. by rewrite -spectralP hermf_herm. Qed.
-Canonical spectral_hermfType U := HermfType (spectral_herm U).
+Proof. by rewrite -spectralP is_hermlf. Qed.
+HB.instance Definition _ (U : 'FH(H)) := isHermLf.Build H (spectral U) (spectral_herm U).
 Lemma spectral_psd (U : 'F+(H)) : spectral U \is psdlf.
-Proof. by rewrite -spectralP ?psdlf_herm ?psdf_psd. Qed.
-Canonical spectral_psdfType U := PsdfType (spectral_psd U).
+Proof. by rewrite -spectralP ?psdlf_herm ?is_psdlf. Qed.
+HB.instance Definition _ (U : 'F+(H)) := Herm_isPsdLf.Build H (spectral U) (spectral_psd U).
 Lemma spectral_obs (U : 'FO(H)) : spectral U \is obslf.
-Proof. by rewrite -spectralP ?obslf_herm ?obsf_obs. Qed.
-Canonical spectral_obsfType U := ObsfType (spectral_obs U).
+Proof. by rewrite -spectralP ?obslf_herm ?is_obslf. Qed.
+HB.instance Definition _ (U : 'FO(H)) := Psd_isObsLf.Build H (spectral U) (spectral_obs U).
 Lemma spectral_den (U : 'FD(H)) : spectral U \is denlf.
-Proof. by rewrite -spectralP ?denlf_herm ?denf_den. Qed.
-Canonical spectral_denfType U := DenfType (spectral_den U).
+Proof. by rewrite -spectralP ?denlf_herm ?is_denlf. Qed.
+HB.instance Definition _ (U : 'FD(H)) := Obs_isDenLf.Build H (spectral U) (spectral_den U).
 Lemma spectral_den1 (U : 'FD1(H)) : spectral U \is den1lf.
-Proof. by rewrite -spectralP ?den1lf_herm ?den1f_den1. Qed.
-Canonical spectral_den1fType U := Den1fType (spectral_den1 U).
+Proof. by rewrite -spectralP ?den1lf_herm ?is_den1lf. Qed.
+HB.instance Definition _ (U : 'FD1(H)) := Den_isDen1Lf.Build H (spectral U) (spectral_den1 U).
 Lemma spectral_proj (U : 'FP(H)) : spectral U \is projlf.
-Proof. by rewrite -spectralP ?projlf_herm ?projf_proj. Qed.
-Canonical spectral_projfType U := ProjfType (spectral_proj U).
+Proof. by rewrite -spectralP ?projlf_herm ?is_projlf. Qed.
+HB.instance Definition _ (U : 'FP(H)) := Obs_isProjLf.Build H (spectral U) (spectral_proj U).
 Lemma spectral_proj1 (U : 'FP1(H)) : spectral U \is proj1lf.
-Proof. by rewrite -spectralP ?proj1lf_herm ?proj1f_proj1. Qed.
+Proof. by rewrite -spectralP ?proj1lf_herm ?is_proj1lf. Qed.
+(*? no canonical*)
 
 (* following for hspace *)
 Definition heigen (U : {hspace H}) : 'I_(\Dim U) -> H := (@eigenvec U).
-Canonical heigen_ponbasis U := Eval hnf in [PONB of @heigen U].
-Canonical heigen_nsType U i := Eval hnf in [NS of @heigen U i].
+HB.instance Definition _ U := PONB.on (@heigen U).
+HB.instance Definition _ U i := NormalState.on (@heigen U i).
 Lemma heigenE (U : {hspace H}) :
   U%:VF = sumoutp (fun=>1) (@heigen U) (@heigen U).
 Proof. exact: spectralPE. Qed.
@@ -2124,7 +2127,7 @@ Qed.
 Lemma sumoutp_compl (F : finType) (f : 'PONB(F;H)) :
   sumoutp (fun=>1) f f + sumoutp (fun=>1) (ponb_compl f) (ponb_compl f) = \1.
 Proof.
-apply/(intro_onb [ONB of (ponb_ext f)])=>/= i.
+apply/(intro_onb (ponb_ext f))=>/= i.
 rewrite !lfunE/=; case: i=>i; rewrite ?ponb_extCE ?ponb_extE 
   ?sumoutp_apply ?sumoutp_applyC scale1r ?add0r//.
 rewrite sumoutpE sum_lfunE big1 ?addr0// =>j _.
@@ -2134,52 +2137,105 @@ Qed.
 Lemma hspacelfP (A B : {hspace H}) : A%:VF = B <-> A = B.
 Proof. by split=>[/lfunP|/hspaceP] P; [apply/hspaceP=>i|apply/lfunP=>i]. Qed.
 
-Lemma sumoutp_hsC (U : {hspace H}) : 
-  (~` U) = supph (sumoutp (fun=>1) (ponb_compl [PONB of @heigen U]) 
-  (ponb_compl [PONB of @heigen U])).
+Lemma sumoutp_hsO (U : {hspace H}) : 
+  (~` U) = supph (sumoutp (fun=>1) (ponb_compl (@heigen U)) 
+  (ponb_compl (@heigen U))).
 Proof.
 apply/hspacelfP; rewrite supph_projK hs2lfE hsE/= /cplmt.
-move: (sumoutp_compl [PONB of @heigen U])=>/esym/eqP; rewrite addrC -subr_eq=>/eqP<-.
+move: (sumoutp_compl (@heigen U))=>/esym/eqP; rewrite addrC -subr_eq=>/eqP<-.
 by rewrite {1}spectralPE.
 Qed.
 
 End SpectralDecomposition.
 
+Lemma ranklf_le_minn (U V : chsType) (A : 'Hom(U,V)) :
+  (\Rank A <= minn (dim V) (dim U))%N.
+Proof. by rewrite leq_min ranklf_le_dom ranklf_le_codom. Qed.
+
+HB.lock
+Definition svd_ui (U V : chsType) (A : 'Hom(U,V)) (i : 'I_(\Rank A)) :=
+  c2h (col (widen_ord (ranklf_le_codom A) i) (svd_u (h2mx A))).
+Arguments svd_ui {U V} A i.
+
+HB.lock
+Definition svd_vi (U V : chsType) (A : 'Hom(U,V)) (i : 'I_(\Rank A)) :=
+  c2h (col (widen_ord (ranklf_le_dom A) i) (svd_v (h2mx A))^*t).
+Arguments svd_vi {U V} A i.
+
+HB.lock
+Definition svd_di (U V : chsType) (A : 'Hom(U,V)) (i : 'I_(\Rank A)) :=
+  svd_d (h2mx A) 0 (widen_ord (ranklf_le_minn A) i).
+Arguments svd_di {U V} A i.
+
+(* TODO : unfinished *)
+(* Section SingularValueDecomposition.
+Variable (U V : chsType).
+Implicit Type (A : 'Hom(U,V)).
+
+Lemma svd_dec A : A = sumoutp (svd_di A) (svd_vi A) (svd_ui A).
+Admitted.
+
+Lemma svd_ui_ponb A : forall i j, [< svd_ui A i ; svd_ui A j >] = (i == j)%:R.
+Admitted.
+HB.instance Definition _ A := isPONB.Build V _ (svd_ui A) (@svd_ui_ponb A).
+
+Lemma svd_vi_ponb A : forall i j, [< svd_vi A i ; svd_vi A j >] = (i == j)%:R.
+Admitted.
+HB.instance Definition _ A := isPONB.Build U _ (svd_vi A) (@svd_vi_ponb A).
+
+Lemma svd_di_ge0 A i : 0 <= svd_di A i.
+Admitted.
+
+Lemma svd_di_decreasing A (i j : 'I_(\Rank A)) :
+  (i <= j)%N -> svd_di A i >= svd_di A j.
+Admitted.
+
+(* add lemmas from mxpred about svd and svds *)
+(* add norm lemmas, at least for trnorm and i2norm *)
+End SingularValueDecomposition. *)
+
 Section RankExtra.
 Variable (F G H : chsType).
 
 Lemma ranklfM_max (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
-  (\Rank (A \o B) <= Vector.dim F)%N.
-Proof. by rewrite /lfrank f2mx_comp; exact: mulmx_max_rank. Qed.
+  (\Rank (A \o B) <= dim F)%N.
+Proof. by rewrite /lfrank h2mx_comp; exact: mulmx_max_rank. Qed.
 
 Lemma ranklfM_maxl (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
   (\Rank (A \o B) <= \Rank A)%N.
-Proof. by rewrite /lfrank f2mx_comp; exact: mxrankM_maxr. Qed.
+Proof. by rewrite /lfrank h2mx_comp; exact: mxrankM_maxl. Qed.
 
 Lemma ranklfM_maxr (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
   (\Rank (A \o B) <= \Rank B)%N.
-Proof. by rewrite /lfrank f2mx_comp; exact: mxrankM_maxl. Qed.
+Proof. by rewrite /lfrank h2mx_comp; exact: mxrankM_maxr. Qed.
 
 Lemma ranklfM_min (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
-  (\Rank A + \Rank B - Vector.dim F <= \Rank (A \o B))%N.
-Proof. rewrite /lfrank f2mx_comp addnC; exact: mxrank_mul_min. Qed.
+  (\Rank A + \Rank B - dim F <= \Rank (A \o B))%N.
+Proof. by rewrite /lfrank h2mx_comp; exact: mxrank_mul_min. Qed.
 
 Lemma ranklfM0_max (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
-  A \o B = 0 -> (\Rank A + \Rank B <= Vector.dim F)%N.
-Proof. by move=>/(f_equal f2mx); rewrite /lfrank addnC f2mx_comp linear0; exact: mulmx0_rank_max. Qed.
+  A \o B = 0 -> (\Rank A + \Rank B <= dim F)%N.
+Proof. by move=>/(f_equal h2mx); rewrite /lfrank h2mx_comp linear0; exact: mulmx0_rank_max. Qed.
 
 Lemma ranklfM1_max (B : 'Hom(F,G)) (A : 'Hom(G,H)) (C : 'Hom(H,F)) :
-  A \o B \o C = \1 -> (Vector.dim H <= \Rank B)%N.
-Proof. move=>/(f_equal f2mx); rewrite /lfrank !f2mx_comp f2mx1 mulmxA; exact: mulmx1_min_rank. Qed.
+  A \o B \o C = \1 -> (dim H <= \Rank B)%N.
+Proof. by move=>/(f_equal h2mx); rewrite /lfrank !h2mx_comp h2mx1; exact: mulmx1_min_rank. Qed.
 
 Lemma ranklf_Frobenius (I : chsType) (A : 'Hom(F,G)) (B : 'Hom(H,F)) (C : 'Hom(I,H)) :
   (\Rank (A \o B) + \Rank (B \o C) <= \Rank B + \Rank (A \o B \o C))%N.
-Proof. rewrite /lfrank !f2mx_comp mulmxA addnC; exact: mxrank_Frobenius. Qed.
+Proof. by rewrite /lfrank !h2mx_comp; exact: mxrank_Frobenius. Qed.
 
-Lemma ranklfM_free (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
-  (Vector.dim F <= \Rank A)%N -> \Rank (A \o B) = \Rank B.
+Lemma ranklfMfreel (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
+  (dim F <= \Rank B)%N -> \Rank (A \o B) = \Rank A.
 Proof.
-rewrite /lfrank row_leq_rank f2mx_comp; exact: mxrankMfree.
+rewrite /lfrank row_leq_rank h2mx_comp; exact: mxrankMfree.
+Qed.
+
+Lemma ranklfMfreer (A : 'Hom(F,G)) (B : 'Hom(H,F)) :
+  (dim F <= \Rank A)%N -> \Rank (A \o B) = \Rank B.
+Proof.
+rewrite /lfrank -mxrank_tr row_leq_rank h2mx_comp=>P.
+by rewrite -mxrank_tr trmx_mul mxrankMfree// mxrank_tr.
 Qed.
 
 End RankExtra.
@@ -2212,11 +2268,11 @@ simph2v; apply/(iffP (memv_addP)); move=>[u Pu[v Pv Puv]];
 by (exists u; last exists v); simph2v=>//; simpv2h=>//.
 Qed.
 
-Lemma memh_cupsl I r (P : pred I) vs U :
+Lemma memh_cupl I r (P : pred I) vs U :
   (forall i, P i -> vs i \in U) -> \sum_(i <- r | P i) vs i \in U.
 Proof. by simph2v=>P1; apply/memv_suml=>i/P1; simph2v. Qed.
 
-Lemma memh_cupsr I (r : seq I) (P : pred I) (vs : I -> H) (Us : I -> {hspace H}) :
+Lemma memh_cupr I (r : seq I) (P : pred I) (vs : I -> H) (Us : I -> {hspace H}) :
     (forall i, P i -> vs i \in Us i) ->
   \sum_(i <- r | P i) vs i \in (\cup_(i <- r | P i) Us i).
 Proof.
@@ -2224,7 +2280,7 @@ move=>Uv; elim: r=>[|r x IH]; first by rewrite !big_nil mem0h.
 by rewrite !big_cons; case E: (P r)=>//; apply/memhU=>//; apply Uv.
 Qed.
 
-Lemma memh_cupsP (I : finType) {P : pred I} {Us : I -> {hspace H}} {v} : 
+Lemma memh_cupP (I : finType) {P : pred I} {Us : I -> {hspace H}} {v} : 
   reflect (exists2 vs, forall i, P i ->  vs i \in Us i
                      & v = \sum_(i | P i) vs i)
           (v \in \cup_(i | P i) Us i).
@@ -2248,11 +2304,11 @@ Proof. by rewrite -!(cuphC W) !(caphC U); apply: hs_modl. Qed.
 Lemma diffhE U V : U `\` V =  U `&` (~` (U `&` V)). Proof. by []. Qed.
 Lemma leBh U V : U `\` V `<=` U. Proof. exact: lehIl. Qed.
 Lemma caphDx U V : (U `\` V) `&` V = `0`.
-Proof. by rewrite diffhE caphAC caphxC. Qed.
+Proof. by rewrite diffhE caphAC caphxO. Qed.
 Lemma caphxD U V : V `&` (U `\` V) = `0`.
 Proof. by rewrite caphC caphDx. Qed.
 Lemma cuphDI U V : (U `\` V) `|` (U `&` V) = U.
-Proof. by rewrite diffhE cuphC [_ `&` ~` _]caphC hsUCI ?lehIl. Qed.
+Proof. by rewrite diffhE cuphC [_ `&` ~` _]caphC hsUOI ?lehIl. Qed.
 Lemma cuphID U V : (U `&` V) `|` (U `\` V) = U.
 Proof. by rewrite cuphC cuphDI. Qed.
 Lemma cuphDx U V : (U `\` V) `|` V = U `|` V.
@@ -2263,10 +2319,10 @@ Proof. by rewrite !(cuphC V) cuphDx. Qed.
 (* Subspace dimension. *)
 Lemma dimh0 : \Dim (`0` : {hspace H}) = 0%N.
 Proof. by rewrite /dimh hs2lfE ranklf0. Qed.
-Lemma dimh1 : \Dim (`1` : {hspace H}) = Vector.dim H.
+Lemma dimh1 : \Dim (`1` : {hspace H}) = dim H.
 Proof. by rewrite /dimh hs2lfE ranklf1. Qed.
-Lemma dimhC (U : {hspace H}) : \Dim (~` U) = (\Dim {:H} - \Dim U)%N.
-Proof. by rewrite sumoutp_hsC dim_supp_sumoutp !card_ord dimh1. Qed.
+Lemma dimhO (U : {hspace H}) : \Dim (~` U) = (\Dim {:H} - \Dim U)%N.
+Proof. by rewrite sumoutp_hsO dim_supp_sumoutp !card_ord dimh1. Qed.
 Lemma dimh_le U V : U `<=` V -> (\Dim U <= \Dim V)%N.
 Proof. by rewrite leh_compr /dimh=>/eqP<-; exact: ranklfM_maxl. Qed.
 Lemma dimhIl U V : (\Dim (U `&` V) <= \Dim U)%N.
@@ -2296,7 +2352,7 @@ Proof. simph2v=>/vs2hs_inj; exact: dimv_disjoint_sum. Qed.
 Lemma dimhID U V : (\Dim (U `&` V) + \Dim (U `\` V))%N = \Dim U.
 Proof.
 rewrite -[in RHS](cuphID U V) dimhU_disjoint//.
-by rewrite diffhE caphC -caphA caphCx caph0.
+by rewrite diffhE caphC -caphA caphOx caph0.
 Qed.
 Lemma dimhDI U V : (\Dim (U `\` V) + \Dim (U `&` V))%N = \Dim U.
 Proof. by rewrite addnC dimhID. Qed.
@@ -2331,10 +2387,10 @@ Variable (H : chsType).
 Implicit Type (u v : H) (U V : {hspace H}).
 
 (* norm and dot compared to 1 *)
-Lemma hnorm_le1 v : `|v| <= 1 = ([< v ; v >] <= 1).
-Proof. by rewrite dotp_norm -{2}(expr1n _ 2%N) ler_pexpn2r// nnegrE. Qed.
+(* Lemma hnorm_le1 v : `|v| <= 1 = ([< v ; v >] <= 1).
+Proof. by rewrite dotp_norm -{2}(expr1n _ 2%N) ler_pXn2r// nnegrE. Qed.
 Lemma hnorm_eq1 v : `|v| == 1 = ([<v ; v>] == 1).
-Proof. by rewrite dotp_norm -{2}(expr1n _ 2%N) eqr_expn2//. Qed.
+Proof. by rewrite dotp_norm -{2}(expr1n _ 2%N) eqrXn2//. Qed. *)
 
 Lemma memh_line v : v \in <[v]>.
 Proof. by apply/hlineP; exists 1; rewrite scale1r. Qed.
@@ -2363,8 +2419,8 @@ Lemma hlineE u : <[u]> = supph [>u ; u<].
 Proof. by []. Qed.
 Lemma supphZ (c : C) (A : 'End(H)) : c != 0 -> supph (c *: A) = supph A.
 Proof.
-by move=>/negPf P; apply/hsC_inj/eqhP=>x; apply/eqb_iff; 
-rewrite !memh_suppCE lfunE/= scaler_eq0 P.
+by move=>/negPf P; apply/hsO_inj/eqhP=>x; apply/eqb_iff; 
+rewrite !memh_suppOE lfunE/= scaler_eq0 P.
 Qed.
 Lemma hlineZ (c : C) u : c != 0 -> <[c *: u]> = <[u]>.
 Proof. 
@@ -2391,7 +2447,7 @@ Proof.
 move=>P1; have P2: U%:VF + V%:VF \is projlf.
 by apply/projlfP; rewrite adjfD !hermf_adjE/= linearDl/= 
   !linearDr/= P1 !projf_idem projf_comp_eq0P// addr0 add0r.
-by rewrite hsE/= !supph_projK !hsE -{1}(projfE tt P2) supplfK.
+by rewrite hsE/= !supph_projK !hsE (supplfK (ProjLf_Build P2)).
 Qed.
 
 Lemma memhUl U V u : u \in U -> u \in U `|` V.

@@ -2,13 +2,14 @@
   - add support to F_True and F_False
   - cut rules
   - optimize autorewrite
-  - subst in fsetform (to speed up the decision procedure)
+  - subst in setform (to speed up the decision procedure)
   - optimize br_ext_single 
 *)
 
 (*  Proof by reflection implementation of
     Anisimov, Alexander. Proof Automation for Typed Finite Sets. 2015. *)
 (* -------------------------------------------------------------------- *)
+From HB Require Import structures.
 From mathcomp Require Import all_ssreflect.
 From elpi     Require Export elpi.
 (* ------- *) Require Import BinPos Number Decimal.
@@ -22,7 +23,7 @@ Unset SsrOldRewriteGoalsOrder.
 (* -------------------------------------------------------------------- *)
 
 (*
-  The tactic fsetdec solves goals of the form F :
+  The tactic setdec solves goals of the form F :
 
   F ::=
   | P
@@ -52,7 +53,7 @@ Unset SsrOldRewriteGoalsOrder.
   V ::= v1 | ... | vn (set variables)
 
 
-  The tactic fsetdec_bool solves goals of the form Fb :
+  The tactic setdec_bool solves goals of the form Fb :
 
   Fb ::=
   | Pb
@@ -70,32 +71,32 @@ Unset SsrOldRewriteGoalsOrder.
 
 Notation eltvar := positive.
 
-Inductive fsetsyn : Type :=
+Inductive setsyn : Type :=
 | FSS_empty
 | FSS_full
 | FSS_single of eltvar
 | FSS_var   of positive
-| FSS_union of fsetsyn & fsetsyn
-| FSS_diff  of fsetsyn & fsetsyn
-| FSS_inter of fsetsyn & fsetsyn
+| FSS_union of setsyn & setsyn
+| FSS_diff  of setsyn & setsyn
+| FSS_inter of setsyn & setsyn
 .
 
-Variant fsetelt : Type :=
+Variant setelt : Type :=
   | FE_var of eltvar
-  | FE_exvar of fsetsyn & fsetsyn.
+  | FE_exvar of setsyn & setsyn.
 
-Variant fsetpred : Type :=
-  | FSP_In    of fsetelt & fsetsyn
-  | FSP_Eqelt of fsetelt & fsetelt
-  | FSP_Eqset of fsetsyn & fsetsyn
-  | FSP_Sub   of fsetsyn & fsetsyn.
+Variant setpred : Type :=
+  | FSP_In    of setelt & setsyn
+  | FSP_Eqelt of setelt & setelt
+  | FSP_Eqset of setsyn & setsyn
+  | FSP_Sub   of setsyn & setsyn.
 
-Inductive fsetform : Type :=
-| F_Pred  of fsetpred
-| F_Not   of fsetform
-| F_And   of fsetform & fsetform
-| F_Or    of fsetform & fsetform
-| F_Imply of fsetform & fsetform
+Inductive setform : Type :=
+| F_Pred  of setpred
+| F_Not   of setform
+| F_And   of setform & setform
+| F_Or    of setform & setform
+| F_Imply of setform & setform
 | F_False
 | F_True
 .
@@ -120,23 +121,24 @@ Proof.
   - by move=> ->; elim: y => //=.
 Qed.
 
-Canonical positive_eqMixin := EqMixin eqpP.
-Canonical positive_eqType := Eval hnf in EqType positive positive_eqMixin.
+HB.instance Definition _ := hasDecEq.Build positive eqpP.
+(* Canonical positive_eqMixin := EqMixin eqpP. *)
+(* Canonical positive_eqType := Eval hnf in EqType positive positive_eqMixin. *)
 
-Fixpoint eq_fsetsyn x y :=
+Fixpoint eq_setsyn x y :=
   match x, y with
   | FSS_empty, FSS_empty => true
   | FSS_full, FSS_full => true
   | FSS_single a, FSS_single b => a == b
   | FSS_var a, FSS_var b => a == b
-  | FSS_union a b, FSS_union a' b' => eq_fsetsyn a a' && eq_fsetsyn b b'
-  | FSS_diff a b, FSS_diff a' b' => eq_fsetsyn a a' && eq_fsetsyn b b'
-  | FSS_inter a b, FSS_inter a' b' => eq_fsetsyn a a' && eq_fsetsyn b b'
+  | FSS_union a b, FSS_union a' b' => eq_setsyn a a' && eq_setsyn b b'
+  | FSS_diff a b, FSS_diff a' b' => eq_setsyn a a' && eq_setsyn b b'
+  | FSS_inter a b, FSS_inter a' b' => eq_setsyn a a' && eq_setsyn b b'
   | _, _ => false
   end.
 
-Lemma eq_eq_fsetsyn a :
-  forall b, (a = b -> eq_fsetsyn a b).
+Lemma eq_eq_setsyn a :
+  forall b, (a = b -> eq_setsyn a b).
 Proof.
   elim: a.
   - by move=> b <-.
@@ -146,8 +148,8 @@ Proof.
     all: move=> x Hx y Hy b <- /=; by rewrite Hx // Hy.
 Qed.
 
-Lemma eq_fsetsyn_eq a :
-  forall b, (eq_fsetsyn a b -> a = b).
+Lemma eq_setsyn_eq a :
+  forall b, (eq_setsyn a b -> a = b).
 Proof.
   elim: a.
   - by case.
@@ -157,22 +159,23 @@ Proof.
     all: by move=> x Hx y Hy [] //= x' y' /andP [] /Hx -> /Hy ->.
 Qed.
 
-Lemma eq_fsetsynP : Equality.axiom eq_fsetsyn.
+Lemma eq_setsynP : Equality.axiom eq_setsyn.
 Proof.
-  move=> a b; apply: (iffP idP); [apply: eq_fsetsyn_eq | apply: eq_eq_fsetsyn].
+  move=> a b; apply: (iffP idP); [apply: eq_setsyn_eq | apply: eq_eq_setsyn].
 Qed.
 
-Canonical fsetsyn_eqMixin := EqMixin eq_fsetsynP.
-Canonical fsetsyn_eqType := Eval hnf in EqType fsetsyn fsetsyn_eqMixin.
+HB.instance Definition _ := hasDecEq.Build setsyn eq_setsynP.
+(* Canonical setsyn_eqMixin := EqMixin eq_setsynP. *)
+(* Canonical setsyn_eqType := Eval hnf in EqType setsyn setsyn_eqMixin. *)
 
-Definition eq_fsetelt x y :=
+Definition eq_setelt x y :=
   match x, y with
   | FE_var a, FE_var b => a == b
   | FE_exvar a b, FE_exvar a' b' => (a == a') && (b == b')
   | _, _ => false
   end.
 
-Lemma eq_fseteltP : Equality.axiom eq_fsetelt.
+Lemma eq_seteltP : Equality.axiom eq_setelt.
 Proof.
   move=> a b; apply: (iffP idP).
   - move: a => []; move: b => [] //= x y. by move/eqP=> ->.
@@ -180,10 +183,11 @@ Proof.
   - move=> ->; case: b => //= x y; by rewrite !eqxx.
 Qed.
 
-Canonical fsetelt_eqMixin := EqMixin eq_fseteltP.
-Canonical fsetelt_eqType := Eval hnf in EqType fsetelt fsetelt_eqMixin.
+HB.instance Definition _ := hasDecEq.Build setelt eq_seteltP.
+(* Canonical setelt_eqMixin := EqMixin eq_seteltP.
+Canonical setelt_eqType := Eval hnf in EqType setelt setelt_eqMixin. *)
 
-Definition eq_fsetpred a b :=
+Definition eq_setpred a b :=
   match a, b with
   | FSP_In x y, FSP_In x' y' => (x == x') && (y == y')
   | FSP_Eqelt x y, FSP_Eqelt x' y' => (x == x') && (y == y')
@@ -192,29 +196,30 @@ Definition eq_fsetpred a b :=
   | _, _ => false
   end.
 
-Lemma eq_fsetpredP : Equality.axiom eq_fsetpred.
+Lemma eq_setpredP : Equality.axiom eq_setpred.
 Proof.
   move=> a b; apply: (iffP idP).
   - case: a; by case: b => //= x x' y y' => /andP [] /eqP -> /eqP ->.
   - move=> -> //=; case: b => //=; move=> x y; by rewrite !eqxx.
 Qed.
 
-Canonical fsetpred_eqMixin := EqMixin eq_fsetpredP.
-Canonical fsetpred_eqType := Eval hnf in EqType fsetpred fsetpred_eqMixin.
+HB.instance Definition _ := hasDecEq.Build setpred eq_setpredP.
+(* Canonical setpred_eqMixin := EqMixin eq_setpredP.
+Canonical setpred_eqType := Eval hnf in EqType setpred setpred_eqMixin. *)
 
-Fixpoint eq_fsetform a b :=
+Fixpoint eq_setform a b :=
   match a, b with
   | F_Pred x, F_Pred y => x == y
-  | F_Not x, F_Not y => eq_fsetform x y
-  | F_And a b, F_And a' b'  => eq_fsetform a a' && eq_fsetform b b'
-  | F_Or a b, F_Or a' b'  => eq_fsetform a a' && eq_fsetform b b'
-  | F_Imply a b, F_Imply a' b'  => eq_fsetform a a' && eq_fsetform b b'
+  | F_Not x, F_Not y => eq_setform x y
+  | F_And a b, F_And a' b'  => eq_setform a a' && eq_setform b b'
+  | F_Or a b, F_Or a' b'  => eq_setform a a' && eq_setform b b'
+  | F_Imply a b, F_Imply a' b'  => eq_setform a a' && eq_setform b b'
   | F_False, F_False => true
   | F_True, F_True => true
   | _, _ => false
   end.
 
-Lemma eq_fsetformP : Equality.axiom eq_fsetform.
+Lemma eq_setformP : Equality.axiom eq_setform.
 Proof.
   move=> a b; apply (iffP idP).
   - elim: a b; try by move=> x Hx y Hy [] //= x' y' /andP [] /Hx -> /Hy ->.
@@ -225,21 +230,22 @@ Proof.
   - move=> ->; elim: b => //=; by move=> x -> y ->.
 Qed.
 
-Canonical fsetform_eqMixin := EqMixin eq_fsetformP.
-Canonical fsetform_eqType := Eval hnf in EqType fsetform fsetform_eqMixin.
+HB.instance Definition _ := hasDecEq.Build setform eq_setformP.
+(* Canonical setform_eqMixin := EqMixin eq_setformP.
+Canonical setform_eqType := Eval hnf in EqType setform setform_eqMixin. *)
 
-Section fsetform_interp.
+Section setform_interp.
   Context {T : finType}.
 
   (*  
-    setvar_lst collects fset variables,
+    setvar_lst collects set variables,
     var_lst collects T variables.
   *)
   Variable (setvar_lst : seq {set T}).
   Variable (var_lst : seq T).
 
   (* assignment of existential variables introduced by (S3) *)
-  Variable asn : fsetsyn -> fsetsyn -> option T.
+  Variable asn : setsyn -> setsyn -> option T.
 
   Definition sem_eltvar (x : eltvar) :=
     List.nth_error var_lst (nat_of_pos x - 1).
@@ -250,61 +256,61 @@ Section fsetform_interp.
     | None => None
     end.
 
-  Fixpoint sem_fsetsyn (x : fsetsyn) : option {set T} := 
+  Fixpoint sem_setsyn (x : setsyn) : option {set T} := 
     match x with
     | FSS_empty => Some set0
     | FSS_full => Some setT
     | FSS_single e => sem_singleton e
     | FSS_var k => List.nth_error setvar_lst (nat_of_pos k - 1)
     | FSS_union a b =>
-        match (sem_fsetsyn a), (sem_fsetsyn b) with
+        match (sem_setsyn a), (sem_setsyn b) with
         | Some x, Some y => Some (setU x y)
         | _, _ => None
         end
     | FSS_diff a b =>
-        match (sem_fsetsyn a), (sem_fsetsyn b) with
+        match (sem_setsyn a), (sem_setsyn b) with
         | Some x, Some y => Some (setD x y)
         | _, _ => None
         end
     | FSS_inter a b =>
-        match (sem_fsetsyn a), (sem_fsetsyn b) with
+        match (sem_setsyn a), (sem_setsyn b) with
         | Some x, Some y => Some (setI x y)
         | _, _ => None
         end
     end.
 
-  Definition sem_fsetelt x :=
+  Definition sem_setelt x :=
     match x with
     | FE_var a => sem_eltvar a
     | FE_exvar a b => asn a b (* existential variable introduced by (S3) *)
     end.
 
-  Definition sem_FSP_In (a : fsetelt) (A : fsetsyn) :=
-    match (sem_fsetelt a), (sem_fsetsyn A) with
+  Definition sem_FSP_In (a : setelt) (A : setsyn) :=
+    match (sem_setelt a), (sem_setsyn A) with
     | Some a, Some A => Some (a \in A)
     | _, _ => None
     end.
 
-  Definition sem_FSP_Eqelt (a : fsetelt) (b : fsetelt) :=
-    match (sem_fsetelt a), (sem_fsetelt b) with
+  Definition sem_FSP_Eqelt (a : setelt) (b : setelt) :=
+    match (sem_setelt a), (sem_setelt b) with
     | Some x, Some y => Some (x == y)
     | _, _ => None
     end.
 
-  Definition sem_FSP_Eqset (A : fsetsyn) (B : fsetsyn) :=
-    match (sem_fsetsyn A), (sem_fsetsyn B) with
+  Definition sem_FSP_Eqset (A : setsyn) (B : setsyn) :=
+    match (sem_setsyn A), (sem_setsyn B) with
     | Some A, Some B => Some (A == B)
     | _, _ => None
     end.
 
-  Definition sem_FSP_Sub (A : fsetsyn) (B : fsetsyn) :=
-    match (sem_fsetsyn A), (sem_fsetsyn B) with
+  Definition sem_FSP_Sub (A : setsyn) (B : setsyn) :=
+    match (sem_setsyn A), (sem_setsyn B) with
     | Some A, Some B => Some (A \subset B)
     | _, _ => None
     end.
       
 
-  Definition sem_fsetpred (p : fsetpred) : option bool :=
+  Definition sem_setpred (p : setpred) : option bool :=
     match p with
     | FSP_In a b => sem_FSP_In a b
     | FSP_Eqelt a b => sem_FSP_Eqelt a b
@@ -312,23 +318,23 @@ Section fsetform_interp.
     | FSP_Sub a b => sem_FSP_Sub a b
     end.
 
-  Fixpoint sem_fsetform (f : fsetform) : option bool :=
+  Fixpoint sem_setform (f : setform) : option bool :=
     match f with
-    | F_Pred p => (sem_fsetpred p)
+    | F_Pred p => (sem_setpred p)
     | F_Not f =>
-        if (sem_fsetform f) is Some g then Some (~~ g) else None
+        if (sem_setform f) is Some g then Some (~~ g) else None
     | F_And a b =>
-        match (sem_fsetform a), (sem_fsetform b) with
+        match (sem_setform a), (sem_setform b) with
         | Some a, Some b => Some (a && b)
         | _, _ => None
         end
     | F_Or a b =>
-        match (sem_fsetform a), (sem_fsetform b) with
+        match (sem_setform a), (sem_setform b) with
         | Some a, Some b => Some (a || b)
         | _, _ => None
         end
     | F_Imply a b =>
-        match (sem_fsetform a), (sem_fsetform b) with
+        match (sem_setform a), (sem_setform b) with
         | Some a, Some b => Some (a ==> b)
         | _, _ => None
         end
@@ -338,20 +344,20 @@ Section fsetform_interp.
 
   (* check if there is an existential variable *)
 
-  Definition elt_hasex (x y : fsetsyn) (e : fsetelt) :=
+  Definition elt_hasex (x y : setsyn) (e : setelt) :=
     match e with
     | FE_var _  => true
     | FE_exvar a b => (a == x) && (b == y)
     end.
 
-  Definition pred_hasex x y (p : fsetpred) :=
+  Definition pred_hasex x y (p : setpred) :=
     match p with
     | FSP_In a b => elt_hasex x y a
     | FSP_Eqelt a b => elt_hasex x y a || elt_hasex x y b
     | _ => false
     end.
 
-  Fixpoint form_hasex x y (f : fsetform) :=
+  Fixpoint form_hasex x y (f : setform) :=
     match f with
     | F_Pred p => (pred_hasex x y p)
     | F_Not f => (form_hasex x y f)
@@ -369,32 +375,32 @@ Section fsetform_interp.
       | false => asn x y
       end.
 
-End fsetform_interp.
+End setform_interp.
 
-Section fsetform_decide.
+Section setform_decide.
 
   Variable T : finType.
   Variable (setvar_lst : seq {set T}).
   Variable (var_lst : seq T).
 
-  Local Notation sem_elt := (@sem_fsetelt T var_lst).
-  Local Notation sem_syn := (@sem_fsetsyn T setvar_lst var_lst).
-  Local Notation sem_pred := (@sem_fsetpred T setvar_lst var_lst).
-  Local Notation sem_form := (@sem_fsetform T setvar_lst var_lst).
+  Local Notation sem_elt := (@sem_setelt T var_lst).
+  Local Notation sem_syn := (@sem_setsyn T setvar_lst var_lst).
+  Local Notation sem_pred := (@sem_setpred T setvar_lst var_lst).
+  Local Notation sem_form := (@sem_setform T setvar_lst var_lst).
   Definition valid_form asn f :=
     if (sem_form asn f) is Some b then b else false.
 
-  Local Notation branch := (seq fsetform).
-  Local Notation exasn := (fsetsyn -> fsetsyn -> option T).
+  Local Notation branch := (seq setform).
+  Local Notation exasn := (setsyn -> setsyn -> option T).
 
-  Lemma noex_sem_elt (e : fsetelt) x y z asn :
+  Lemma noex_sem_elt (e : setelt) x y z asn :
     ~~ elt_hasex x y e -> sem_elt (add_asn asn x y z) e = sem_elt asn e.
   Proof.
     by case: e => //= a b /negbTE H; rewrite /add_asn H.
   Qed.
 
 
-  Lemma noex_sem_pred (p : fsetpred) x y z asn :
+  Lemma noex_sem_pred (p : setpred) x y z asn :
     ~~ pred_hasex x y p -> sem_pred (add_asn asn x y z) p = sem_pred asn p.
   Proof.
     case: p; try by [].
@@ -404,7 +410,7 @@ Section fsetform_decide.
       rewrite /sem_FSP_Eqelt Ha Hb //=.
   Qed.
 
-  Lemma noex_sem_form (f : fsetform) x y z asn :
+  Lemma noex_sem_form (f : setform) x y z asn :
     ~~ form_hasex x y f -> sem_form (add_asn asn x y z) f = sem_form asn f.
   Proof.
     elim: f; try by move=> a Ha b Hb /=; rewrite negb_or => /andP [Pa Pb]; rewrite (Ha Pa) (Hb Pb).
@@ -414,7 +420,7 @@ Section fsetform_decide.
     - by [].
   Qed.
 
-  Lemma noex_valid_form (f : fsetform) x y z asn :
+  Lemma noex_valid_form (f : setform) x y z asn :
     ~~ form_hasex x y f -> valid_form (add_asn asn x y z) f = valid_form asn f.
   Proof.
     move/noex_sem_form => /(_ z asn). rewrite /valid_form.
@@ -431,7 +437,7 @@ Section fsetform_decide.
 
   Notation F_NotSub a b := (F_Not (F_Pred (FSP_Sub a b))).
 
-  Definition ext_nsub (a b : fsetsyn) :=
+  Definition ext_nsub (a b : setsyn) :=
     [:: F_Pred (FSP_In (FE_exvar a b) a);
      (F_Not (F_Pred (FSP_In (FE_exvar a b) b)))].
 
@@ -451,7 +457,7 @@ Section fsetform_decide.
     exists x. by rewrite !add_asnE xin xnin.
   Qed.
 
-  Definition is_nsub f : (prod fsetsyn fsetsyn) + (unit) :=
+  Definition is_nsub f : (prod setsyn setsyn) + (unit) :=
     match f with
     | F_Not (F_Pred (FSP_Sub a b)) => inl (a, b)
     | _ => inr tt
@@ -652,7 +658,7 @@ Proof.
 
   (* P1 P5 P6 P7 S4 S8 S9 S10 S11 S13 S14 *)
 
-  Fixpoint ext_single (ext : fsetform -> seq fsetform) (br : branch) :=
+  Fixpoint ext_single (ext : setform -> seq setform) (br : branch) :=
     match br with
     | nil => nil
     | f :: fs => (ext f) ++ (ext_single ext fs)
@@ -678,7 +684,7 @@ Proof.
 
   (* P1 *)
 
-  Definition ext_and (f : fsetform) :=
+  Definition ext_and (f : setform) :=
     match f with
     | F_And a b => [:: a; b]
     | _ => nil
@@ -693,7 +699,7 @@ Proof.
 
   (* P5 *)
 
-  Definition ext_nor (f : fsetform) :=
+  Definition ext_nor (f : setform) :=
     match f with
     | F_Not (F_Or a b) => [:: F_Not a; F_Not b]
     | _ => nil
@@ -708,7 +714,7 @@ Proof.
 
   (* P6 *)
 
-  Definition ext_nimp (f : fsetform) :=
+  Definition ext_nimp (f : setform) :=
     match f with
     | F_Not (F_Imply a b) => [:: a; F_Not b]
     | _ => nil
@@ -723,7 +729,7 @@ Proof.
 
   (* P7 *)
 
-  Definition ext_nnot(f : fsetform) :=
+  Definition ext_nnot(f : setform) :=
     match f with
     | F_Not (F_Not a) => [:: a]
     | _ => nil
@@ -738,16 +744,16 @@ Proof.
 
   (* S4 *)
 
-  Definition ext_fseteq (f : fsetform) :=
+  Definition ext_seteq (f : setform) :=
     match f with
     | F_Pred (FSP_Eqset a b) => [:: F_Pred (FSP_Sub a b); F_Pred (FSP_Sub b a)]
     | _ => nil
     end.
 
-  Lemma ext_fseteq_sound asn f:
-    (valid_form asn f) -> all (valid_form asn) (ext_fseteq f).
+  Lemma ext_seteq_sound asn f:
+    (valid_form asn f) -> all (valid_form asn) (ext_seteq f).
   Proof.
-    rewrite /ext_fseteq /valid_form. case: f => //. case=> //.
+    rewrite /ext_seteq /valid_form. case: f => //. case=> //.
     move=> a b /=. rewrite /sem_FSP_Eqset /sem_FSP_Sub.
     case: (sem_syn _) => //; case: (sem_syn _) => //.
     move=> ? ? /eqP ->. by rewrite !subxx.
@@ -755,7 +761,7 @@ Proof.
 
   (* S8 *)
 
-  Definition ext_elteq (f : fsetform) :=
+  Definition ext_elteq (f : setform) :=
     match f with
     | F_Pred (FSP_Eqelt a b) => [:: F_Pred (FSP_Eqelt b a)]
     | _ => nil
@@ -772,7 +778,7 @@ Proof.
 
   (* S9 *)
 
-  Definition ext_insingle (f : fsetform) :=
+  Definition ext_insingle (f : setform) :=
     match f with
     | F_Pred (FSP_In a (FSS_single b)) => [:: F_Pred (FSP_Eqelt a (FE_var b))]
     | _ => nil
@@ -790,7 +796,7 @@ Proof.
 
   (* S10 *)
 
-  Definition ext_ninsingle (f : fsetform) :=
+  Definition ext_ninsingle (f : setform) :=
     match f with
     | F_Not (F_Pred (FSP_In a (FSS_single b))) =>
         [:: F_Not (F_Pred (FSP_Eqelt a (FE_var b)))]
@@ -809,7 +815,7 @@ Proof.
 
   (* S11 *)
 
-  Definition ext_singlesub (f : fsetform) :=
+  Definition ext_singlesub (f : setform) :=
     match f with
     | (F_Pred (FSP_Sub (FSS_single a) b)) => [:: (F_Pred (FSP_In (FE_var a) b))]
     | _ => nil
@@ -826,7 +832,7 @@ Proof.
 
   (* S13 *)
 
-  Definition ext_ninunion (f : fsetform) :=
+  Definition ext_ninunion (f : setform) :=
     match f with
     | F_Not (F_Pred (FSP_In a (FSS_union b c))) =>
         [:: F_Not (F_Pred (FSP_In a b)); F_Not (F_Pred (FSP_In a c))]
@@ -845,7 +851,7 @@ Proof.
 
   (* S14 *)
 
-  Definition ext_indiff (f : fsetform) :=
+  Definition ext_indiff (f : setform) :=
     match f with
     | (F_Pred (FSP_In a (FSS_diff b c))) =>
         [:: (F_Pred (FSP_In a b)); F_Not (F_Pred (FSP_In a c))]
@@ -862,9 +868,9 @@ Proof.
     by rewrite in_setD => /andP [] -> ->.
   Qed.
 
-  (* S16 in_fsetI *)
+  (* S16 in_setI *)
 
-  Definition ext_ininter (f : fsetform) :=
+  Definition ext_ininter (f : setform) :=
     match f with
     | (F_Pred (FSP_In a (FSS_inter b c))) =>
         [:: (F_Pred (FSP_In a b)); (F_Pred (FSP_In a c))]
@@ -888,7 +894,7 @@ Proof.
     let br := (br_ext_single ext_nor br) in
     let br := (br_ext_single ext_nimp br) in
     let br := (br_ext_single ext_nnot br) in
-    let br := (br_ext_single ext_fseteq br) in
+    let br := (br_ext_single ext_seteq br) in
     let br := (br_ext_single ext_elteq br) in
     let br := (br_ext_single ext_insingle br) in
     let br := (br_ext_single ext_ninsingle br) in
@@ -910,7 +916,7 @@ Proof.
     apply: (br_ext_single_sound (@ext_ninsingle_sound _)).
     apply: (br_ext_single_sound (@ext_insingle_sound _)).
     apply: (br_ext_single_sound (@ext_elteq_sound _)).
-    apply: (br_ext_single_sound (@ext_fseteq_sound _)).
+    apply: (br_ext_single_sound (@ext_seteq_sound _)).
     apply: (br_ext_single_sound (@ext_nnot_sound _)).
     apply: (br_ext_single_sound (@ext_nimp_sound _)).
     apply: (br_ext_single_sound (@ext_nor_sound _)).
@@ -922,8 +928,8 @@ Proof.
   (* S1 S2 S6 S7 *)
 
   Fixpoint ext_pair
-           (ext : (fsetform * fsetform) -> seq fsetform)
-           (ps : seq (fsetform * fsetform)) :=
+           (ext : (setform * setform) -> seq setform)
+           (ps : seq (setform * setform)) :=
     match ps with
     | nil => nil
     | p :: ps => (ext p) ++ (ext_pair ext ps)
@@ -969,7 +975,7 @@ Proof.
   Qed.
 
   (* S1 *)
-  Definition ext_insub (p : fsetform * fsetform):=
+  Definition ext_insub (p : setform * setform):=
     let (p1, p2) := p in
     match p1, p2 with
     | F_Pred (FSP_In a A), (F_Pred (FSP_Sub A' B)) =>
@@ -992,7 +998,7 @@ Proof.
   Qed.
 
   (* S2 *)
-  Definition ext_ninsub (p : fsetform * fsetform):=
+  Definition ext_ninsub (p : setform * setform):=
     let (p1, p2) := p in
     match p1, p2 with
     | F_Not (F_Pred (FSP_In a A)), (F_Pred (FSP_Sub B A')) =>
@@ -1017,7 +1023,7 @@ Proof.
   Qed.
 
   (* S6 *)
-  Definition ext_eqin (p : fsetform * fsetform):=
+  Definition ext_eqin (p : setform * setform):=
     let (p1, p2) := p in
     match p1, p2 with
     | (F_Pred (FSP_Eqelt a b)), (F_Pred (FSP_In b' B)) =>
@@ -1041,7 +1047,7 @@ Proof.
   Qed.
 
   (* S7 *)
-  Definition ext_eqtrans (p : fsetform * fsetform):=
+  Definition ext_eqtrans (p : setform * setform):=
     let (p1, p2) := p in
     match p1, p2 with
     | (F_Pred (FSP_Eqelt a b)), (F_Pred (FSP_Eqelt b' c)) =>
@@ -1089,7 +1095,7 @@ Proof.
   (* Eval compute in (1 \in [:: 1; 2; 3]). *)
 
   Fixpoint get_form_branching_aux
-           (ext : fsetform -> option (fsetform * fsetform))
+           (ext : setform -> option (setform * setform))
            (fs br : branch) :=
     match fs with
     | nil => None
@@ -1186,15 +1192,15 @@ Proof.
 
   (* S5 *)
 
-  Definition ext_fsetneq f :=
+  Definition ext_setneq f :=
     match f with
     | F_Not (F_Pred (FSP_Eqset a b)) =>
         Some (F_Not (F_Pred (FSP_Sub a b)), F_Not (F_Pred (FSP_Sub b a)))
     | _ => None
     end.
 
-  Lemma ext_fsetneq_sound asn f a b :
-    ext_fsetneq f = Some (a, b) -> valid_form asn f ->
+  Lemma ext_setneq_sound asn f a b :
+    ext_setneq f = Some (a, b) -> valid_form asn f ->
     valid_form asn a || valid_form asn b.
   Proof.
     case: f => //. case => //. case => //. move=> a0 b0 /= [] <- <- /=.
@@ -1275,7 +1281,7 @@ Proof.
 
   Definition br_branching br :=
     pick_some (fun f => (get_form_branching f br))
-              [:: ext_or; ext_imp; ext_nand; ext_fsetneq; ext_inunion;
+              [:: ext_or; ext_imp; ext_nand; ext_setneq; ext_inunion;
                ext_nindiff; ext_nininter].
 
 
@@ -1292,8 +1298,8 @@ Proof.
     case: (get_form_branching ext_imp br); first by case => ? ?; apply.
     move=> _; move: (get_form_branching_sound (@ext_nand_sound _) Hbr).
     case: (get_form_branching ext_nand br); first by case => ? ?; apply.
-    move=> _; move: (get_form_branching_sound (@ext_fsetneq_sound _) Hbr).
-    case: (get_form_branching ext_fsetneq br); first by case => ? ?; apply.
+    move=> _; move: (get_form_branching_sound (@ext_setneq_sound _) Hbr).
+    case: (get_form_branching ext_setneq br); first by case => ? ?; apply.
     move=> _; move: (get_form_branching_sound (@ext_inunion_sound _) Hbr).
     case: (get_form_branching ext_inunion br); first by case => ? ?; apply.
     move=> _; move: (get_form_branching_sound (@ext_nindiff_sound _) Hbr).
@@ -1369,7 +1375,7 @@ Proof.
   Qed.
 
 
-  Definition is_in_empty (f : fsetform) :=
+  Definition is_in_empty (f : setform) :=
     match f with
     | F_Pred (FSP_In x FSS_empty) => true
     | _ => false
@@ -1396,7 +1402,7 @@ Proof.
     (has is_in_empty 
          [:: F_Pred (FSP_In (FE_var xH) FSS_empty)]). *)
 
-  Definition is_nin_full (f : fsetform) :=
+  Definition is_nin_full (f : setform) :=
     match f with
     | F_Not (F_Pred (FSP_In a FSS_full)) => true
     | _ => false
@@ -1424,7 +1430,7 @@ Proof.
     rewrite finbr. by rewrite (Hf asn).
   Qed.
   
-  Definition is_neg_refl (f : fsetform) :=
+  Definition is_neg_refl (f : setform) :=
     match f with
     | F_Not (F_Pred (FSP_Eqelt a b)) => a == b
     | _ => false
@@ -1641,16 +1647,16 @@ Proof.
     rewrite H. apply: has_not_valid_branch_nil.
   Qed.
 
-  Definition fset_decide asn n f :=
+  Definition set_decide asn n f :=
     match (sem_form asn f) with
     | Some _ => saturate n [:: [:: F_Not f]] == nil
     | None => false
     end.
 
-  Lemma fset_decide_sound n f asn :
-    fset_decide asn n f -> valid_form asn f.
+  Lemma set_decide_sound n f asn :
+    set_decide asn n f -> valid_form asn f.
   Proof.
-    rewrite /fset_decide /valid_form.
+    rewrite /set_decide /valid_form.
     remember (sem_form asn f) as sf.
     case: sf Heqsf => // a Ha.
     move=> /saturate_has_not_valid_branch /has_not_valid_branch_single.
@@ -1658,7 +1664,7 @@ Proof.
     by rewrite /valid_form -Ha.
   Qed.
 
-End fsetform_decide.
+End setform_decide.
 
 Example E0 (T : finType) (A B : {set T}) {x y : T} asn :
   valid_form [:: A; B] [:: x; y] asn
@@ -1680,7 +1686,7 @@ Qed.
 
 (* rewrite Props to boolean expressions *)
 
-Global Hint Rewrite <- setTD setI_eq0 : fsetdec_unfold.
+Global Hint Rewrite <- setTD setI_eq0 : setdec_unfold.
 
 Lemma rwPeqP (T : eqType) (x y : T) : x = y <-> x == y.
 Proof. by rewrite (rwP eqP). Qed.
@@ -1697,11 +1703,11 @@ Proof. by rewrite (rwP implyP). Qed.
 Lemma rwPnegP (x : bool) : (x -> False) <-> ~~ x.
 Proof.  by move: (rwP (@negP x)); rewrite /not. Qed.
 
-Global Hint Rewrite rwPeqP rwPorP rwPandP rwPimplyP rwPnegP : fsetdec_prop_to_bool.
+Global Hint Rewrite rwPeqP rwPorP rwPandP rwPimplyP rwPnegP : setdec_prop_to_bool.
 
-Global Hint Rewrite orbF orFb andTb andbT implyTb Bool.negb_involutive : fsetdec_bool_simp.
+Global Hint Rewrite orbF orFb andTb andbT implyTb Bool.negb_involutive : setdec_bool_simp.
 
-Elpi Tactic fsetform_reify.
+Elpi Tactic setform_reify.
 Elpi Accumulate lp:{{
     pred mem o:term, o:term, o:term.
     mem {{ lp:X :: _     }} X {{ xH      }} :- !.
@@ -1739,7 +1745,7 @@ Elpi Accumulate lp:{{
     pred quote-form i:term, o:term, o:term, i:term, o:term.
     quote-form _T Setvars Eltvars 
         {{ @eq_op lp:S lp:X lp:Y }} {{ F_Pred (FSP_Eqset lp:PX lp:PY)}}:- 
-      coq.unify-eq S {{ set_of_eqType _ }} ok,
+      coq.unify-eq S {{ finset_set_of__canonical__eqtype_Equality _ }} ok,
       quote-syn Setvars Eltvars X PX,
       quote-syn Setvars Eltvars Y PY.
     quote-form T _Setvars Eltvars 
@@ -1747,11 +1753,11 @@ Elpi Accumulate lp:{{
       quote-elt Eltvars X PX,
       quote-elt Eltvars Y PY.
     quote-form _T Setvars Eltvars 
-        {{ in_mem lp:X (mem (@SetDef.pred_of_set _ lp:Y)) }} {{ F_Pred (FSP_In (FE_var lp:PX) lp:PY)}}:- !,
+        {{ in_mem lp:X (mem (@pred_of_set _ lp:Y)) }} {{ F_Pred (FSP_In (FE_var lp:PX) lp:PY)}}:- !,
       quote-elt Eltvars X PX,
       quote-syn Setvars Eltvars Y PY.
     quote-form _T Setvars Eltvars 
-        {{ subset (mem (@SetDef.pred_of_set _ lp:X)) (mem (@SetDef.pred_of_set _ lp:Y)) }} {{ F_Pred (FSP_Sub lp:PX lp:PY)}}:- !,
+        {{ subset (mem (@pred_of_set _ lp:X)) (mem (@pred_of_set _ lp:Y)) }} {{ F_Pred (FSP_Sub lp:PX lp:PY)}}:- !,
       quote-syn Setvars Eltvars X PX,
       quote-syn Setvars Eltvars Y PY.
     quote-form T Setvars Eltvars {{ negb lp:X }} {{ F_Not lp:FX }}:- !,
@@ -1766,7 +1772,7 @@ Elpi Accumulate lp:{{
       quote-form T Setvars Eltvars X FX,
       quote-form T Setvars Eltvars Y FY.
     quote-form  _ _ _ _ _ :- !,
-      coq.say "Wrong fset formula".
+      coq.say "Wrong set formula".
 
     solve (goal _Ctx _ {{ is_true lp:Goal }} _ [] as G) GL :-
     coq.elaborate-skeleton Goal {{ bool }} EGoal ok,
@@ -1780,27 +1786,27 @@ Elpi Accumulate lp:{{
 Elpi Typecheck.
 
 (*  
-  fsetdec_bool is about 5-10x faster than the fsetdec implemented in MSetDecide.v
-  while the fsetdec here is 2-3x slower than fsetdec_bool.
+  setdec_bool is about 5-10x faster than the setdec implemented in MSetDecide.v
+  while the setdec here is 2-3x slower than setdec_bool.
   Maybe the performance of the autorewrite tactic or even the rewrite tactic
   is the bottleneck in simple cases.
 *)
 
 (* T is not used currently *)
-Ltac fsetdec_bool T :=
-  autorewrite with fsetdec_unfold;
-  elpi fsetform_reify;
-  apply: (@fset_decide_sound _ _ _ (Nat.of_num_uint 10000%uint)); vm_compute; 
+Ltac setdec_bool :=
+  autorewrite with setdec_unfold;
+  elpi setform_reify;
+  apply: (@set_decide_sound _ _ _ (Nat.of_num_uint 10000%uint)); vm_compute; 
   reflexivity.
   
-Ltac fsetdec T :=
-  autorewrite with fsetdec_unfold;
+Ltac setdec :=
+  autorewrite with setdec_unfold;
   unfold not;
   unfold iff;
-  autorewrite with fsetdec_prop_to_bool;
-  autorewrite with fsetdec_bool_simp;
-  elpi fsetform_reify;
-  apply: (@fset_decide_sound _ _ _ (Nat.of_num_uint 10000%uint)); vm_compute; 
+  autorewrite with setdec_prop_to_bool;
+  autorewrite with setdec_bool_simp;
+  elpi setform_reify;
+  apply: (@set_decide_sound _ _ _ (Nat.of_num_uint 10000%uint)); vm_compute; 
   reflexivity.
 
 (* test cases *)
@@ -1808,43 +1814,43 @@ Ltac fsetdec T :=
 Lemma tb0 (T : finType) (A B : {set T}) (x : T) :
   (A \subset B) ==> (x \in A) ==> (x \in B).
 Proof.
-  time fsetdec_bool T.
+  time setdec_bool.
 Defined.
 
 Lemma t0 (T : finType) (A B : {set T}) (x : T) :
   (A \subset B) -> (x \in A) -> (x \in B).
 Proof.
-  time fsetdec T.
+  time setdec.
 Defined.
 
 Lemma tb1 (T : finType) (x y : T) :
   [set x;y] == [set y;x;x].
 Proof.
-  time fsetdec_bool T.
+  time setdec_bool.
 Qed.
 
 Lemma t1 (T : finType) (x y : T) :
   [set x;y] = [set y;x;x].
 Proof.
-  time fsetdec T.
+  time setdec.
 Qed.
 
 (* seq not supported
 Lemma t2 (T : finType) (x y : T) :
-[fset e in [:: y;x]] = [fset e in [:: x;y;x]].
+[set e in [:: y;x]] = [set e in [:: x;y;x]].
 Proof.
-fsetdec.
+setdec.
 Abort. 
   *)
 
 Lemma tb2 (A B : {set 'I_3}) : (A :|: B == A) ==> (B \subset A).
 Proof.
-  time fsetdec_bool ('I_3).
+  time setdec_bool.
 Qed.
 
 Lemma t2 (A B : {set 'I_3}) : (A :|: B == A) -> (B \subset A).
 Proof.
-  time fsetdec ('I_3).
+  time setdec.
 Qed.
 
 Local Definition o0 := @Ordinal 3 0 erefl.
@@ -1855,28 +1861,28 @@ Lemma tb3 (A B : {set 'I_3}) (x y : 'I_3):
   (([set o0; x] \subset A) && ([set o1; y] \subset B))
     ==> (([set o0; x; y] \subset (setU B A))).
 Proof.
-  time fsetdec_bool ('I_3).
+  time setdec_bool.
 Qed.
 
 Lemma t3 (A B : {set 'I_3}) (x y : 'I_3):
   (([set o0; x] \subset A) /\ ([set o1; y] \subset B))
     -> (([set o0; x; y] \subset (setU B A))).
 Proof.
-  time fsetdec ('I_3).
+  time setdec.
 Qed.
 
 Lemma tb4 (T : finType) (A B : {set T}) :
   [disjoint A & B] ==> [disjoint B & A].
-(* A `&` B = fset0 -> B `&` A = fset0. *)
+(* A `&` B = set0 -> B `&` A = set0. *)
 Proof.
-  time fsetdec_bool T.
+  time setdec_bool.
 Qed.
 
 Lemma t4 (T : finType) (A B : {set T}) :
   [disjoint A & B] -> [disjoint B & A].
-(* A `&` B = fset0 -> B `&` A = fset0. *)
+(* A `&` B = set0 -> B `&` A = set0. *)
 Proof.
-  time fsetdec T.
+  time setdec.
 Qed.
 
 Lemma tb5 (T : finType) (f2 f4 f0 : {set T}) :
@@ -1885,7 +1891,7 @@ Lemma tb5 (T : finType) (f2 f4 f0 : {set T}) :
   (f0 :&: f2 == set0) ==>
   ~~ ((f0 :|: f2) :&: f4 != set0).
 Proof.
-  time fsetdec_bool T.
+  time setdec_bool.
 Qed.
 
 Lemma t5 (T : finType) (f2 f4 f0 : {set T}) :
@@ -1894,7 +1900,7 @@ Lemma t5 (T : finType) (f2 f4 f0 : {set T}) :
   (f0 :&: f2 = set0) ->
   ~ ((f0 :|: f2) :&: f4 <> set0).
 Proof.
-  time fsetdec T.
+  time setdec.
 Qed.
 
 Section Examples.
@@ -1907,7 +1913,7 @@ Lemma test_eq_trans_1 : forall x y z (s : {set T}),
   z \in s.
 Proof.  
   move=> x y z s.
-  fsetdec T. 
+  setdec. 
 Qed.
 
 Lemma test_eq_trans_2 : forall (x y z : T) (r s : {set T}),
@@ -1918,7 +1924,7 @@ Lemma test_eq_trans_2 : forall (x y z : T) (r s : {set T}),
   z \in s.
 Proof. 
   move=> x y z r s.
-  fsetdec T. 
+  setdec. 
 Qed.
 
 Lemma test_eq_neq_trans_1 : forall w x y z (s : {set T}),
@@ -1929,13 +1935,13 @@ Lemma test_eq_neq_trans_1 : forall w x y z (s : {set T}),
   w \in (s :\ z).
 Proof. 
   move=> w x y z s.
-  fsetdec T. 
+  setdec. 
 Qed.
 
 (*
   The performance on this example is much worse than the Ltac implementation of 
   the same decision procedure.
-  Maybe the reason is the lack of substitution in fsetforms.
+  Maybe the reason is the lack of substitution in setforms.
 *)
 Lemma test_eq_neq_trans_2 : forall w x y z (r1 r2 s : {set T}),
   x \in (set1 w) ->
@@ -1948,43 +1954,43 @@ Lemma test_eq_neq_trans_2 : forall w x y z (r1 r2 s : {set T}),
 Proof. 
   move=> w x y z r1 r2 s.  
   unfold not.
-  autorewrite with fsetdec_prop_to_bool.
-  time fsetdec_bool T. 
+  autorewrite with setdec_prop_to_bool.
+  time setdec_bool. 
 Qed.
 
 Lemma test_In_singleton : forall (x : T),
   x \in (set1 x).
-Proof. move=> x. fsetdec T. Qed.
+Proof. move=> x. setdec. Qed.
 
 Lemma test_add_In : forall x y (s : {set T}),
   x \in (y |: s) ->
   ~ x = y ->
   x \in s.
-Proof. move=> x y s. fsetdec T. Qed.
+Proof. move=> x y s. setdec. Qed.
 
 Lemma test_Subset_add_remove : forall x (s : {set T}),
   s \subset (x |: (s :\ x)).
-Proof. move=> x s. fsetdec T. Qed.
+Proof. move=> x s. setdec. Qed.
 
 Lemma test_eq_disjunction : forall w x y z : T,
   w \in (x |: (y |: (set1 z))) ->
   w = x \/ w = y \/ w = z.
-Proof. move=> w x y z. fsetdec T. Qed.
+Proof. move=> w x y z. setdec. Qed.
 
 Lemma test_not_In_disj : forall x y s1 s2 s3 (s4 : {set T}),
   ~ x \in (setU s1 (setU s2 (setU s3 (y |: s4)))) ->
   ~ (x \in s1 \/ x \in s4 \/ y = x).
-Proof. move=> x y s1 s2 s3 s4. fsetdec T. Qed.
+Proof. move=> x y s1 s2 s3 s4. setdec. Qed.
 
 Lemma test_not_In_conj : forall x y s1 s2 s3 (s4 : {set T}),
   ~ x \in (setU s1 (setU s2 (setU s3 (y |: s4)))) ->
   ~ x \in s1 /\ ~ x \in s4 /\ ~ x = y.
-Proof. move=> x y s1 s2 s3 s4. fsetdec T. Qed.
+Proof. move=> x y s1 s2 s3 s4. setdec. Qed.
 
 Lemma test_iff_conj : forall a x (s s' : {set T}),
 (a \in s' <-> x = a \/ a \in s) ->
 (a \in s' <-> a \in (x |: s)).
-Proof. move=> a x s s'. fsetdec T. Qed.
+Proof. move=> a x s s'. setdec. Qed.
 
 (* cut rule needed *)
 (* Lemma test_set_ops_1 : forall x q r (s : {set T}),
@@ -1995,8 +2001,8 @@ Proof. move=> a x s s'. fsetdec T. Qed.
 Proof. 
   move=> x q r s.
   unfold not.
-  autorewrite with fsetdec_prop_to_bool. 
-  elpi fsetform_reify. *)
+  autorewrite with setdec_prop_to_bool. 
+  elpi setform_reify. *)
 
 (* cut rule needed *)
 (* Lemma eq_chain_test : forall x1 x2 x3 x4 (s1 s2 s3 s4 : {set T}),
@@ -2017,8 +2023,8 @@ Lemma test_too_complex : forall (x y z : T) (r s : {set T}),
   z \in r ->
   z \in s.
 Proof.
-  (** [fsetdec] is not intended to solve this directly. *)
-  intros until s; fsetdec T.
+  (** [setdec] is not intendd to solve this directly. *)
+  intros until s; setdec.
 Qed.
 
 Lemma function_test_1 :
@@ -2032,10 +2038,10 @@ Lemma function_test_1 :
   (g (g x2)) \in (f s2).
 Proof. 
   move=> f g s1 s2 x1 x2. 
-  fsetdec T. 
+  setdec. 
 Qed.
 
-(* fsetdec in MSetDecide.v cannot solve this directly *)
+(* setdec in MSetDecide.v cannot solve this directly *)
 Lemma function_test_2 :
   forall (f : {set T} -> {set T}),
   forall (g : T -> T),
@@ -2048,7 +2054,7 @@ Lemma function_test_2 :
   (g (g x2)) \in (f s2).
 Proof.
   move=> f g s1 s2 x1 x2. 
-  fsetdec T.
+  setdec.
 Qed.
 
 Lemma test_baydemir :
@@ -2058,34 +2064,34 @@ Lemma test_baydemir :
   x \in (y |: (f s)) ->
   ~ x = y ->
   x \in (f s).
-Proof. move=> f s x y. fsetdec T. Qed.
+Proof. move=> f s x y. setdec. Qed.
 
 Lemma test_seq (a b c : T):
   [set b; b; c; a; a; a; b] :\: (set1 a) :|: (set1 a) \subset [set a; b; c] .
-Proof. fsetdec T. Qed.
+Proof. setdec. Qed.
 
 Lemma test_comp_comp (A : {set T}) :
   ~: (~: A) = A.
-  Proof. fsetdec T. Qed.
+  Proof. setdec. Qed.
 
 Lemma test_union_comp (A : {set T}) :
   A :|: (~: A) = setT.
-  Proof. fsetdec T. Qed.
+  Proof. setdec. Qed.
 
 Lemma test_inter_comp (A : {set T}) :
   A :&: (~: A) = set0.
-  Proof. fsetdec T. Qed.
+  Proof. setdec. Qed.
 
 Lemma test_diff_comp (A : {set T}) :
   A :\: (~: A) = A.
-  Proof. fsetdec T. Qed.
+  Proof. setdec. Qed.
 
 Lemma test_comp_setT (A : {set T}) :
   ~: setT = (set0 : {set T}).
-  Proof. fsetdec T. Qed.
+  Proof. setdec. Qed.
 
 Lemma test_comp_set0 (A : {set T}) :
   ~: set0 = (setT : {set T}).
-  Proof. fsetdec T. Qed.
+  Proof. setdec. Qed.
 
 End Examples.
