@@ -12,7 +12,7 @@ We depend on the following external libraries:
   "coq-mathcomp-ssreflect"   { = "2.2.0"            }
   "coq-mathcomp-algebra"     { = "2.2.0"            }
   "coq-mathcomp-fingroup"    { = "2.2.0"            }
-  "coq-mathcomp-analysis"    { = "1.0.0"            }
+  "coq-mathcomp-analysis"    { = "1.3.1"            }
   "coq-mathcomp-real-closed" { = "2.0.0"            }
   "coq-mathcomp-finmap"      { = "2.1.0"            }
 ```

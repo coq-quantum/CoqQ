@@ -632,21 +632,21 @@ Definition RzGate (r : R) := (cosp (r / 2%:R))%:C *: \1 - ('i * (sinp (r / 2%:R)
 Lemma RxGate_unitary r : RxGate r \is unitarylf.
 Proof.
 rewrite /RxGate FormGateE; apply/FormGate_unitary=>/=.
-by rewrite !unlock cos2Dsin2. by rewrite PauliX_adj.
+by rewrite cosp.unlock sinp.unlock cos2Dsin2. by rewrite PauliX_adj.
 Qed.
 HB.instance Definition _ (r : R) :=
   isUnitaryLf.Build ('Hs bool) (RxGate r) (@RxGate_unitary r).
 Lemma RyGate_unitary r : RyGate r \is unitarylf.
 Proof.
 rewrite /RyGate FormGateE; apply/FormGate_unitary=>/=.
-by rewrite !unlock cos2Dsin2. by rewrite PauliY_adj.
+by rewrite cosp.unlock sinp.unlock cos2Dsin2. by rewrite PauliY_adj.
 Qed.
 HB.instance Definition _ (r : R) :=
   isUnitaryLf.Build ('Hs bool) (RyGate r) (@RyGate_unitary r).
 Lemma RzGate_unitary r : RzGate r \is unitarylf.
 Proof.
 rewrite /RzGate FormGateE; apply/FormGate_unitary=>/=.
-by rewrite !unlock cos2Dsin2. by rewrite PauliZ_adj.
+by rewrite cosp.unlock sinp.unlock cos2Dsin2. by rewrite PauliZ_adj.
 Qed.
 HB.instance Definition _ (r : R) :=
   isUnitaryLf.Build ('Hs bool) (RzGate r) (@RzGate_unitary r).
@@ -670,13 +670,13 @@ Lemma RxGateD (r1 r2 : R) : (RxGate r1) \o (RxGate r2) = RxGate (r1 + r2).
 Proof.
 rewrite /RxGate; rude_bmx; rewrite !simp_muli.
 2,3: rewrite -opprD -mulrDl; do 2 f_equal.
-all: rewrite -!real2c; f_equal; rewrite !unlock.
+all: rewrite -!real2c; f_equal; rewrite cosp.unlock sinp.unlock.
 2,4: rewrite addrC. 1,3: by rewrite -cosD -mulrDr -mulrDl.
 all: by rewrite -sinD -mulrDr -mulrDl.
 Qed.
 Lemma RxGate_adj r : (RxGate r)^A = RxGate (-r).
 Proof.
-rewrite /RxGate; rude_bmx; rewrite !simp_muli !unlock.
+rewrite /RxGate; rude_bmx; rewrite !simp_muli (cosp.unlock,sinp.unlock).
 1,4: by rewrite mulrN cosN.
 all: by rewrite -[RHS]mulNr -realcN mulrN sinN.
 Qed.
@@ -687,26 +687,26 @@ by rewrite /RxGate mul0r [cosp]unlock [sinp]unlock
 Qed.
 Lemma RyGateD (r1 r2 : R) : (RyGate r1) \o (RyGate r2) = RyGate (r1 + r2).
 Proof.
-rewrite /RyGate; rude_bmx; rewrite !simp_muli -!real2c !unlock; f_equal.
+rewrite /RyGate; rude_bmx; rewrite !simp_muli -!real2c cosp.unlock sinp.unlock; f_equal.
 3: rewrite -opprD; f_equal. 2,4: rewrite addrC. 
 1,3: by rewrite -cosD -mulrDr -mulrDl.
 all: by rewrite -sinD -mulrDr -mulrDl.
 Qed.
 Lemma RyGate_adj r : (RyGate r)^A = RyGate (-r).
 Proof.
-rewrite /RyGate; rude_bmx; rewrite !simp_muli !unlock.
+rewrite /RyGate; rude_bmx; rewrite !simp_muli (cosp.unlock, sinp.unlock).
 all: by rewrite mulrN ?sinN ?cosN// -?realcN// opprK.
 Qed.
 Lemma RzGateD (r1 r2 : R) : (RzGate r1) \o (RzGate r2) = RzGate (r1 + r2).
 Proof.
 rewrite /RzGate; rude_bmx; rewrite//!simp_muli.
 all: rewrite mulrDr !mulrDl !simp_muli !addrA addrC !addrA -addrA; f_equal.
-2,4: by rewrite -?opprD -!mulrDl !unlock -!real2c -sinD -mulrDr mulrDl.
-all: by rewrite addrC -!real2c !unlock -cosD -mulrDr.
+2,4: by rewrite -?opprD -!mulrDl cosp.unlock sinp.unlock -!real2c -sinD -mulrDr mulrDl.
+all: by rewrite addrC -!real2c cosp.unlock sinp.unlock -cosD -mulrDr.
 Qed.
 Lemma RzGate_adj r : (RzGate r)^A = RzGate (-r).
 Proof.
-rewrite /RzGate; rude_bmx; rewrite !simp_muli// !unlock.
+rewrite /RzGate; rude_bmx; rewrite !simp_muli// cosp.unlock sinp.unlock.
 all: by simpc; rewrite ?mulrN sinN cosN// opprK.
 Qed.
 

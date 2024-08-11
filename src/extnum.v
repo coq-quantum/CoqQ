@@ -2,7 +2,7 @@ From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra.
 From mathcomp.classical Require Import boolp cardinality mathcomp_extra
   classical_sets functions.
-From mathcomp.analysis Require Import ereal reals signed topology 
+From mathcomp.analysis Require Import ereal reals signed topology function_spaces
   prodnormedzmodule normedtype sequences.
 From mathcomp.analysis Require Import -(notations)forms.
 (* From mathcomp.real_closed Require Import complex. *)
@@ -174,10 +174,10 @@ rewrite /mx_norm; apply/le_anti/andP; split.
 rewrite (bigmax_eq_arg _ (ord0,ord0))// =>[|i _]; last by rewrite -num_le//=.
 set i := [arg max_(i > (ord0, ord0))`|row_mx M1 M2 i.1 i.2|%:nng]%O : 'I_p.+1 * 'I_(m.+1 + n.+1).
 case: i=>a b/=; rewrite -(splitK b); case: (fintype.split b)=>/= c;
-rewrite ?row_mxEl ?row_mxEr num_le_maxr; apply/orP; [left|right];
+rewrite ?row_mxEl ?row_mxEr num_le_max; apply/orP; [left|right];
 rewrite -num_abs_le//; apply/bigmax_geP; right;
 by exists (a,c)=>//=; rewrite -num_le/= normr_id.
-rewrite num_le_maxl; apply/andP; split;
+rewrite num_ge_max; apply/andP; split;
 rewrite (bigmax_eq_arg _ (ord0,ord0))// =>[|i _].
 2,4: by rewrite -num_le//=. all: rewrite -num_abs_le//.
 set i := [arg max_(i > (ord0, ord0))`|M1 i.1 i.2|%:nng]%O.
@@ -1118,7 +1118,7 @@ Proof.
 move=> ndu cu Ml; have [[n Mun]|/forallNP Mu] := pselect (exists n, x <= u n).
   near=> m; suff : u n <= u m by exact: le_trans.
   by near: m; exists n.+1 => // p q; apply/ndu/ltnW.
-have Cn n : comparable x (u n) by apply/(comparabler_trans 
+have Cn n : x >=< (u n) by apply/(comparabler_trans 
   (lt_comparable Ml))/ge_comparable/etnondecreasing_cvgn_le.
 have {}Mu : forall y, x > u y. move=> y. rewrite comparable_ltNge. by apply/negP.
 by rewrite comparable_sym.
@@ -1918,9 +1918,9 @@ Module MxCPorder.
 
 Section Definitions.
 Variables (R: realType) (C : extNumType R) (m n : nat).
-Variable (disp: unit) (B : POrder.axioms_ disp 'M[C]_(m,n)).
+Variable (disp: unit) (B : Order.POrder.axioms_ disp 'M[C]_(m,n)).
 Local Notation M := 'M[C]_(m,n).
-Local Notation "x '⊑' y" := (@Order.le disp (@POrder.Pack disp M B) x y) 
+Local Notation "x '⊑' y" := (@Order.le disp (@Order.POrder.Pack disp M B) x y) 
   (at level 70, y at next level).
 
 Structure mxcporder := MxCPorder {
@@ -1945,11 +1945,11 @@ Section Property.
 Import Num.Def Num.Theory.
 Variable (R: realType) (C: extNumType R) (m n : nat).
 Local Notation M := 'M[C]_(m,n).
-Variable (disp: unit) (B : POrder.axioms_ disp 'M[C]_(m,n)).
+Variable (disp: unit) (B : Order.POrder.axioms_ disp 'M[C]_(m,n)).
 Variable (mxorder : mxcporder B disp).
 
-Local Notation "x '⊏' y" := (@Order.lt disp (@POrder.Pack disp M B) x y) (at level 70, y at next level).
-Local Notation "x '⊑' y" := (@Order.le disp (@POrder.Pack disp M B) x y) (at level 70, y at next level).
+Local Notation "x '⊏' y" := (@Order.lt disp (@Order.POrder.Pack disp M B) x y) (at level 70, y at next level).
+Local Notation "x '⊑' y" := (@Order.le disp (@Order.POrder.Pack disp M B) x y) (at level 70, y at next level).
 Notation "'ubounded_by' b f" := (forall i, f i ⊑ b) (at level 10, b, f at next level).
 Notation "'lbounded_by' b f" := (forall i, b ⊑ f i) (at level 10, b, f at next level).
 Notation "'mxnondecreasing_seq' f" := ({homo f : n m / (n <= m)%nat >-> (n ⊑ m)})
@@ -2056,14 +2056,14 @@ Qed.
 Lemma mxlimn_ge_near (x : M) (u : M ^nat) : 
   cvgn u -> (\forall n \near \oo, x ⊑ u n) -> x ⊑ limn u.
 Proof.
-move=> /[swap] /(closed_cvg ((@Order.le disp (@POrder.Pack disp M B) x)))/= P1;
+move=> /[swap] /(closed_cvg ((@Order.le disp (@Order.POrder.Pack disp M B) x)))/= P1;
 apply P1. apply: mxclosed_ge.
 Qed.
 
 Lemma mxlimn_le_near (x : M) (u : M ^nat) : 
   cvgn u -> (\forall n \near \oo, u n ⊑ x) -> limn u ⊑ x.
 Proof.
-move=> /[swap] /(closed_cvg (fun y =>(@Order.le disp (@POrder.Pack disp M B) y x)))/= P1;
+move=> /[swap] /(closed_cvg (fun y =>(@Order.le disp (@Order.POrder.Pack disp M B) y x)))/= P1;
 apply P1. apply: mxclosed_le.
 Qed.
 
@@ -2268,7 +2268,7 @@ HB.export FinNormedModuleExports.
 
 HB.mixin Record FinNormedModule_isVOrderFinNormedModule (R : numFieldType) V of
   FinNormedModule R V & VOrder R V := {
-    closed_gev0 : closed [set x : V | (le 0 x)] ;
+    closed_gev0 : closed [set x : V | (Order.le 0 x)] ;
   }.
 
 Module VOrderFinNormedModule.
@@ -2324,7 +2324,7 @@ Record axioms_ (R : numFieldType) (T : Type) : Type := Class {
     Vector.mixin_of R T GRing_isNmodule_mixin 
       choice_hasChoice_mixin eqtype_hasDecEq_mixin 
       GRing_Nmodule_isZmodule_mixin GRing_Zmodule_isLmodule_mixin;
-  Order_isPOrder_mixin : isPOrder.axioms_ ring_display T
+  Order_isPOrder_mixin : Order.isPOrder.axioms_ ring_display T
                            eqtype_hasDecEq_mixin;
   mxpred_POrderedLmodule_isVOrder_mixin : 
     POrderedLmodule_isVOrder.axioms_ R T GRing_isNmodule_mixin
@@ -2402,10 +2402,10 @@ Definition extnum_VOrderFinNormedModule_class__to__Num_NormedZmodule_class
 
 Definition extnum_VOrderFinNormedModule_class__to__Order_POrder_class
   (R : numFieldType) (C : Type) (c : VOrderFinNormedModule.axioms_ R C) := 
-  POrder.Class (VOrderFinNormedModule.choice_hasChoice_mixin c)
+  Order.POrder.Class (VOrderFinNormedModule.choice_hasChoice_mixin c)
   (VOrderFinNormedModule.Order_isPOrder_mixin c).
 #[reversible] Coercion extnum_VOrderFinNormedModule_class__to__Order_POrder_class : 
-  VOrderFinNormedModule.axioms_ >-> POrder.axioms_.
+  VOrderFinNormedModule.axioms_ >-> Order.POrder.axioms_.
 
 Definition extnum_VOrderFinNormedModule_class__to__Num_POrderedZmodule_class 
   (R : numFieldType) (C : Type) (c : VOrderFinNormedModule.axioms_ R C) := 
@@ -2538,7 +2538,7 @@ Definition extnum_VOrderFinNormedModule_class__to__mxpred_VOrder_class
 #[reversible] Coercion VOrderFinNormedModule.vector_Lmodule_hasFinDim_mixin : 
   VOrderFinNormedModule.axioms_ >-> Vector.mixin_of.
 #[reversible] Coercion VOrderFinNormedModule.Order_isPOrder_mixin : 
-  VOrderFinNormedModule.axioms_ >-> isPOrder.axioms_.
+  VOrderFinNormedModule.axioms_ >-> Order.isPOrder.axioms_.
 #[reversible] Coercion VOrderFinNormedModule.mxpred_POrderedLmodule_isVOrder_mixin : 
   VOrderFinNormedModule.axioms_ >-> POrderedLmodule_isVOrder.axioms_.
 #[reversible] Coercion VOrderFinNormedModule.extnum_FinNormedModule_isVOrderFinNormedModule_mixin : 
@@ -2582,9 +2582,9 @@ Canonical extnum_VOrderFinNormedModule__to__Num_NormedZmodule.
 
 Definition extnum_VOrderFinNormedModule__to__Order_POrder
   (R : numFieldType) (C : vorderFinNormedModType R) := 
-  POrder.Pack (VOrderFinNormedModule.class C).
+  Order.POrder.Pack (VOrderFinNormedModule.class C).
 #[reversible] Coercion extnum_VOrderFinNormedModule__to__Order_POrder : 
-  VOrderFinNormedModule.type >-> POrder.type.
+  VOrderFinNormedModule.type >-> Order.POrder.type.
 Canonical extnum_VOrderFinNormedModule__to__Order_POrder.
 
 Definition extnum_VOrderFinNormedModule__to__Num_POrderedZmodule 
