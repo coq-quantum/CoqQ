@@ -1037,8 +1037,8 @@ Qed.
 Lemma abs_expip_sin a : `|1 - expip (2%:R * a)| = 2%:R * `|sin (pi * a)|%:C.
 Proof.
 have ->: 2%:R * `|sin (pi * a)|%:C = `|2%:R * sinp a|%:C.
-by rewrite unlock normrM ger0_norm// realcM natrC.
-rewrite !unlock /expi; simpc; f_equal.
+by rewrite [sinp]unlock normrM ger0_norm// realcM natrC.
+rewrite [expip]unlock [sinp]unlock /expi; simpc; f_equal.
 rewrite sqrrN sqrrB -!addrA cos2Dsin2 expr1n mul1r addrC -addrA -mulr2n addrC.
 rewrite -mulrnBl mulrC -mulrA [in LHS]mulr_natl cos2x_sin opprB addrC addrNK.
 by rewrite -mulr_natl -(mulr_natl (_ * _)) mulrA -expr2 -exprMn sqrtr_sqr (mulrC a).
