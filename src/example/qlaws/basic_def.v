@@ -6,7 +6,7 @@ From mathcomp.analysis Require Import reals.
 (* From mathcomp.real_closed Require Import complex. *)
 From quantum.external Require Import complex.
 
-Require Import mcextra mcaextra notation mxpred.
+Require Import mcextra mcaextra notation mxpred svd mxnorm.
 Require Import hermitian quantum hspace inhabited prodvect tensor.
 Require Import orthomodular hspace_extra.
 From quantum.dirac Require Import hstensor.

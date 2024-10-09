@@ -923,7 +923,7 @@ Qed.
 Lemma conj_hdotp x y : (hdotp x y)^* = hdotp y x.
 Proof. by rewrite rmorph_prod; apply/eq_bigr=> i _; rewrite conj_dotp. Qed.
 
-Lemma linear_hdotp x : mlinear (G := [vectType C of C^o]) (hdotp x).
+Lemma linear_hdotp x : mlinear (G := Vector.clone C C^o _) (hdotp x).
 Proof.
 move=> /= i a y z; rewrite {1}/hdotp (bigD1 i) //= !(msetii, mvE).
 rewrite eqxx dotpDr dotpZr mulrDl -mulrA; congr (_ *: _ + _).

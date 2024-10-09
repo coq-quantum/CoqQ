@@ -10,10 +10,10 @@ Require Import -(notations)Setoid.
 (* topology and setoid has notation conflicts *)
 (* several lemma in classical_sets and finset have the same name. *)
 
-Require Import mcextra mcaextra notation mxpred extnum ctopology summable.
+Require Import mcextra mcaextra notation mxpred extnum ctopology summable convex.
 Require Import hermitian quantum hspace hspace_extra inhabited prodvect tensor qreg qmem cpo qtype.
 From quantum.dirac Require Import hstensor.
-From quantum.example.qlaws Require Import basic_def convex circuit.
+From quantum.example.qlaws Require Import basic_def circuit.
 Import Order.TTheory GRing.Theory Num.Theory Num.Def HermitianTopology.
 Import DefaultQMem.Exports.
 
@@ -31,6 +31,167 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+(****************************************************************************)
+(*                convex set of operators and super operator                *)
+(*           conv (A \o B) = conv (conv A \o conv B)                        *)
+(*           conv (A :o B) = conv (conv A :o conv B)                        *)
+(****************************************************************************)
+Section SetCompso.
+Variable (U : chsType).
+Local Open Scope classical_set_scope.
+
+Definition set_compso (A B : set 'SO(U)) :=
+  [set a :o b | a in A & b in B].
+Infix "`:o`" := set_compso (at level 50).
+
+Lemma set_compso1l : left_id  [set \:1] set_compso.
+Proof.
+move=>A; rewrite /set_compso image2_set1; apply/seteqP; split=>i/=.
+by move=>[x Px]; rewrite comp_so1l=><-.
+by move=>Pi; exists i=>//; rewrite comp_so1l.
+Qed.
+
+Lemma set_compso1r : right_id  [set \:1] set_compso.
+Proof.
+move=>A; rewrite /set_compso image2_set1; apply/seteqP; split=>i/=.
+by move=>[x Px]; rewrite comp_so1r=><-.
+by move=>Pi; exists i=>//; rewrite comp_so1r.
+Qed.
+
+Lemma set_compsoA : associative set_compso.
+Proof.
+move=>A B C; apply/seteqP; split=>i.
+  move=>[a Pa][?][b Pb][c Pc]<-<-.
+  exists (a :o b); first by exists a=>//; exists b.
+  by exists c=>//; rewrite comp_soA.
+move=>[?][a Pa][b Pb]<-[c Pc]<-.
+exists a=>//; exists (b :o c); first by exists b=>//; exists c.
+by rewrite comp_soA.
+Qed.
+
+HB.instance Definition _ := Monoid.isLaw.Build (set 'SO(U)) [set \:1]
+  set_compso set_compsoA set_compso1l set_compso1r.
+
+Lemma set_compsoxl u A : [set u] `:o` A = [set u :o i | i in A].
+Proof. by rewrite /set_compso image2_set1. Qed.
+
+Lemma set_compsoxr u A : A `:o` [set u] = [set i :o u | i in A].
+Proof. by rewrite /set_compso image2_set1. Qed.
+
+Lemma set_compso_le A B C D : 
+  A `<=` C -> B `<=` D -> A `:o` B `<=` C `:o` D.
+Proof.
+move=>P1 P2 ? [a Pa][b Pb]<-; exists a; first by apply P1.
+by exists b=>//; apply P2.
+Qed.
+Lemma set_compso_lel A B C :
+  B `<=` C -> A `:o` B `<=` A `:o` C.
+Proof. by move=>P1; apply/set_compso_le. Qed.
+Lemma set_compso_ler A B C :
+  B `<=` C -> B `:o` A `<=` C `:o` A.
+Proof. by move=>P1; apply/set_compso_le. Qed.
+
+Lemma set_compso0l A : A !=set0 -> 0 `:o` A = 0.
+Proof.
+move=>[x Px]; apply/seteqP; split=>?; rewrite /GRing.zero/=.
+by move=>[y]/=->[]??<-; rewrite comp_so0l.
+by move=>->; exists 0=>//; exists x=>//; rewrite comp_so0l.
+Qed.
+
+Lemma set_compso0r A : A !=set0 -> A `:o` 0 = 0.
+Proof.
+move=>[x Px]; apply/seteqP; split=>?; rewrite /GRing.zero/=.
+by move=>[??][?]/=-><-; rewrite comp_so0r.
+by move=>->; exists x=>//; exists 0=>//; rewrite comp_so0r.
+Qed.
+
+Lemma set_compsoDl (A B C : set 'SO(U)) : 
+  A `:o` (B + C) `<=` A `:o` B + (A `:o` C).
+Proof.
+move=>x[a Pa][?][/=b Pb][c Pc]<-<-.
+exists (a :o b); first by exists a=>//; exists b.
+exists (a :o c); first by exists a=>//; exists c.
+by rewrite comp_soDr.
+Qed.
+
+Lemma set_compsoDr (A B C : set 'SO(U)) : 
+  (A + B) `:o` C `<=` A `:o` C + (B `:o` C).
+Proof.
+move=>x[?][/=a Pa][b Pb]<-[c Pc]<-.
+exists (a :o c); first by exists a=>//; exists c.
+exists (b :o c); first by exists b=>//; exists c.
+by rewrite comp_soDl.
+Qed.
+
+Lemma set_compsoxDl c (A B : set 'SO(U)) : 
+  [set c] `:o` (A + B) = [set c] `:o` A + ([set c] `:o` B).
+Proof.
+rewrite !set_compsoxl; apply/seteqP; split=>?/=.
+move=>[?][a Pa][b Pb]<-<-; exists (c :o a); first by exists a.
+exists (c :o b); first by exists b. by rewrite comp_soDr.
+move=>[?][a Pa]<-[?][b Pb]<-<-; exists (a + b).
+by exists a=>//; exists b. by rewrite comp_soDr.
+Qed.
+
+Lemma set_compsoxDr c (A B : set 'SO(U)) : 
+  (A + B) `:o` [set c] = A `:o` [set c] + (B `:o` [set c]).
+Proof.
+rewrite !set_compsoxr; apply/seteqP; split=>?/=.
+move=>[?][a Pa][b Pb]<-<-; exists (a :o c); first by exists a.
+exists (b :o c); first by exists b. by rewrite comp_soDl.
+move=>[?][a Pa]<-[?][b Pb]<-<-; exists (a + b).
+by exists a=>//; exists b. by rewrite comp_soDl.
+Qed.
+
+Lemma set_compsoZl a A B :
+  a `*:` (A `:o` B) = (a `*:` A) `:o` B.
+Proof.
+apply/seteqP; split=>/=?.
+move=>[/=?][x Px][y Py]<-<-; exists (a *: x); first by exists x.
+by exists y=>//; rewrite comp_soZl.
+move=>[?][/=x Px]<-[y Py]<-; exists (x :o y); last by rewrite comp_soZl.
+by exists x=>//; exists y.
+Qed.
+
+Lemma set_compsoZr a A B :
+  a `*:` (A `:o` B) = A `:o` (a `*:` B).
+Proof.
+apply/seteqP; split=>/=?.
+move=>[/=?][x Px][y Py]<-<-; exists x=>//.
+exists (a *: y); by [exists y | rewrite comp_soZr].
+move=>[x Px][?][/= y Py]<-<-.
+exists (x :o y); last by rewrite comp_soZr.
+by exists x=>//; exists y.
+Qed.
+
+Lemma conv_compso A B :
+  conv ((conv A) `:o` (conv B)) = conv (A `:o` B).
+Proof.
+apply/seteqP; split.
+  rewrite -[conv (A `:o` B)]conv_idem; apply/conv_le_hom.
+  move=>x [xa [Fa][ca][fa][Pa1][Pa2][Pa3]Pa4] [xb [Fb][cb][fb][Pb1][Pb2][Pb3]Pb4] <-.
+  exists (Fa * Fb)%type.
+  exists (fun i=>ca i.1 * cb i.2).
+  exists (fun i=>fa i.1 :o fb i.2).
+  do ! split.
+  - move=>[i1 i2]/=; rewrite mulr_ge0 ?mulr_ile1//; 
+    by move: (Pa1 i1) (Pb1 i2)=>/andP[]++/andP[].
+  - by rewrite pair_bigV/= -Pa2; apply eq_bigr=>i _; rewrite -mulr_sumr Pb2 mulr1.
+  - move=>[i1 i2]; rewrite inE/=;
+    exists (fa i1); first by move: (Pa3 i1); rewrite inE.
+    by exists (fb i2)=>//; move: (Pb3 i2); rewrite inE.
+  - under eq_bigr do rewrite -scalerA -comp_soZr -comp_soZl.
+    rewrite Pa4 Pb4 pair_bigV/= linear_suml; apply eq_bigr=>i _.
+    by rewrite/= linear_sumr.
+by apply/conv_le_hom/set_compso_le; apply/conv_le.
+Qed.
+
+End SetCompso.
+
+Infix "`*:`" := set_scale (at level 40) : lfun_scope.
+Infix "`\o`" := set_comp (at level 50) : lfun_scope.
+Infix "`:o`" := set_compso (at level 50) : lfun_scope.
 
 (*****************************************************************************)
 (*                     nondeterministic without recursive                    *)
@@ -651,7 +812,7 @@ Qed.
 Lemma init_circuitK T (x : 'QReg[T]) phi (u : ucmd_) (sc : 'FU('Ht T)) :
   usem u = liftf_lf (tf2f x x sc) -> 
   <{[ ([x] := phi) ;; ([cir u ]) ]}> =c
-    <{[ [x] := [NS of sc (phi : 'Ht T)] ]}>.
+    <{[ [x] := NormalState.clone _ (sc (phi : 'Ht T)) _ ]}>.
 Proof.
 rewrite eq_fsem.unlock !fsemE image2_set1=>->; f_equal.
 rewrite -liftfso_formso -liftfso_comp;
@@ -661,7 +822,7 @@ Qed.
 
 Lemma init_unitaryK T (x : 'QReg[T]) phi (u : 'FU('Ht T)) :
     <{[ ([x] := phi) ;; ([cir [x] *= u ]) ]}> =c 
-      <{[ [x] := [NS of u (phi : 'Ht T)] ]}>.
+      <{[ [x] := NormalState.clone _ (u (phi : 'Ht T)) _ ]}>.
 Proof. by rewrite -(init_circuitK _ (u := <{[ [x] *= u ]}>))// usemE. Qed.
 
 Lemma init_unitaryKP T (x : 'QReg[T]) (phi v : 'NS) (u : 'FU('Ht T)) :
@@ -727,7 +888,7 @@ Lemma init_qifFK (x : qreg Bool) (psi : 'NS('Ht Bool))
       <{[ ([x] := phi false) ;; ([cir c0 ]) ]}>.
 Proof.
 move=>P; rewrite qif_sym init_qifTK//=.
-suff ->: (init_ x ([ONB of onb_swap phi] true)) =c (init_ x (phi false)) by [].
+suff ->: (init_ x ((ONB.clone _ _ (onb_swap phi) _)true)) =c (init_ x (phi false)) by [].
 by apply eq_init=>/=.
 Qed.
 
@@ -1582,7 +1743,7 @@ Add Parametric Morphism T (q : qreg T) M : (@while_ T q M)
   with signature eq_fsem ==> refine_cmd as refine_eq_cmd_while.
 Proof.
 move=>x y Pxy; rewrite refine_cmd.unlock.
-apply: (subset_trans _ (@conv_le _ _)).
+apply: (subset_trans _ (@conv_le _ _ _)).
 have: <{[M[q] * x]}> =c <{[M[q] * y]}> by rewrite Pxy.
 rewrite eq_fsem.unlock=>->; apply subset_refl.
 Qed.
@@ -1634,7 +1795,7 @@ Lemma refine_ifG T F (q : qreg T) (M : 'QM(F;'Ht T)) (f g : F -> cmd_) :
 Proof.
 rewrite refine_cmd.unlock=>Pi.
 rewrite !fsem_condE2 -conv_sum; apply/set_sum_le=>i _.
-rewrite -conv_compso conv1; apply/(subset_trans _ (@conv_le _ _)).
+rewrite -conv_compso conv1; apply/(subset_trans _ (@conv_le _ _ _)).
 by apply/set_compso_ler.
 Qed.
 
@@ -1738,7 +1899,7 @@ have -> : liftfso (initialso (tv2v x phi))
   by rewrite mulrC !linearZ/=.
 rewrite -!set_scalex -!set_compsoZr !set_compsoZl -set_compsoxDr.
 rewrite -conv_compso conv1; 
-apply/(subset_trans _ (@conv_le _ _))/set_compso_ler.
+apply/(subset_trans _ (@conv_le _ _ _))/set_compso_ler.
 have P1: 0 <= s0 by rewrite /s0 psdf_trlf.
 have P2: 0 <= s1 by rewrite /s1 psdf_trlf.
 have P3: s0 = 1 - s1.

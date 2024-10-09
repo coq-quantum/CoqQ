@@ -282,17 +282,19 @@ Proof. by rewrite (normalC (conjCfunK) (dotmx_is_hermitian n)) ortho_id. Qed.
 
 Definition proj_ortho p n (U : 'M[C]_(p, n)) := proj_mx <<U>>%MS U^!%MS.
 
-Let sub_adds_genmx_ortho (p m n : nat) (U : 'M[C]_(p, n))  (W : 'M_(m, n)) :
+Lemma sub_adds_genmx_ortho (p m n : nat) (U : 'M[C]_(p, n))  (W : 'M_(m, n)) :
   (W <= <<U>> + U^!)%MS.
 Proof.
 by rewrite !(adds_eqmx (genmxE _) (eqmx_refl _)) addsmx_ortho submx1.
 Qed.
+Local Hint Resolve sub_adds_genmx_ortho : core.
 
-Let cap_genmx_ortho (p n : nat) (U : 'M[C]_(p, n)) : (<<U>> :&: U^!)%MS = 0.
+Lemma cap_genmx_ortho (p n : nat) (U : 'M[C]_(p, n)) : (<<U>> :&: U^!)%MS = 0.
 Proof.
 apply/eqmx0P; rewrite !(cap_eqmx (genmxE _) (eqmx_refl _)).
 by rewrite orthomx_ortho_disj; apply/eqmx0P.
 Qed.
+Local Hint Resolve cap_genmx_ortho : core.
 
 Lemma proj_ortho_sub (p m n : nat) (U : 'M_(p, n)) (W : 'M_(m, n)) :
    (W *m proj_ortho U <= U)%MS.
@@ -751,7 +753,7 @@ move=> Ahermi; apply/normalmxP.
 by rewrite (trmx_sesqui Ahermi) scale1r map_mxCK.
 Qed.
 
-Notation symmetric_form := (false, [rmorphism of idfun]).-sesqui.
+Notation symmetric_form := (false,  (GRing.RMorphism.clone _ _ idfun _)).-sesqui.
 
 Lemma realsym_hermsym n (A : 'M[C]_n) :
   A \is symmetric_form -> A \is a realmx -> A \is hermitian.

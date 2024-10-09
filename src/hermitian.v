@@ -216,6 +216,7 @@ Next Obligation.
 by move=> x; rewrite /hnorm !(dotpNl, dotpNr) opprK.
 Qed.
 
+#[non_forgetful_inheritance]
 HB.instance Definition _ := hermitian_normedZmodMixin.
 
 Lemma hnormE (u : E) : `|u| = sqrtC [< u; u >].
@@ -641,13 +642,16 @@ Proof. by apply/matrixP=>i j; rewrite mxE v2hU.unlock !mxE tnthE. Qed.
 Lemma v2hUE i j : v2hU i j = v2r (eb j) 0 i.
 Proof. by rewrite v2hU_def mxE. Qed.
 
-Let span_b2mx n (X : n.-tuple E) : span X = mx2vs (b2mx X).
+#[local] Lemma span_b2mx n (X : n.-tuple E) : span X = mx2vs (b2mx X).
 Proof. by rewrite unlock tvalK; case: _ / (esym _). Qed.
-Let free_b2mx n (X : n.-tuple E) : free X = row_free (b2mx X).
+#[local] Lemma free_b2mx n (X : n.-tuple E) : free X = row_free (b2mx X).
 Proof. by rewrite /free /dimv span_b2mx genmxE size_tuple. Qed.
 
 Lemma v2hU_unitmx : v2hU \in unitmx.
-Proof. by rewrite v2hU.unlock unitmx_tr -row_free_unit -free_b2mx; apply/ort_free/onb_tuple_eb. Qed.
+Proof.
+rewrite v2hU.unlock unitmx_tr -row_free_unit -free_b2mx.
+by apply/ort_free/onb_tuple_eb.
+Qed.
 Lemma h2vU_unitmx : h2vU \in unitmx.
 Proof. by rewrite h2vU.unlock unitmx_inv v2hU_unitmx. Qed.
 
@@ -1245,189 +1249,7 @@ Definition lfun_chsMixin := @HermitianSpace_isCanonical.Build 'Hom(U,V)
   lfun_eb lfun_eb_dot lfun_dim_proper.
 Definition lfun_chsType : chsType := HB.pack 'Hom(U,V) lfun_chsMixin.
 
-Lemma lfun_hnormE (u : 'Hom(U,V)) : `|u| = l2norm (h2mx u).
-Proof. by rewrite hnormE /dotp/= /lfundotp h2mx_comp l2norm_dotV adj_lfun.unlock mx2hK. Qed.
+Lemma lfun_hnormE (u : 'Hom(U,V)) : `|u| = l2normC (h2mx u).
+Proof. by rewrite hnormE /dotp/= /lfundotp h2mx_comp l2normC_dotV adj_lfun.unlock mx2hK. Qed.
 
 End LfunHermitian.
-
-(*
-(* extra structure, PONB (partial orthonormal basis = orthonormal), *)
-(* ONB (orthonormal basis), partial state (vector with norm less equal 1) *)
-(* normalized state (vector with norm 1) *)
-Module PONB.
-
-Section ClassDef.
-Variable (H : hermitianType) (F : finType).
-
-Definition axiom (f : F -> H) := 
-  (forall i j, [< f i ; f j >] = (i == j)%:R).
-
-Structure map (phUV : phant (F -> H)) := Pack {
-  apply; 
-  _ : axiom apply; 
-}.
-Local Coercion apply : map >-> Funclass.
-
-Variables (phUV : phant (F -> H)) (f g : F -> H) (cF : map phUV).
-Definition class := let: Pack _ c as cF' := cF return axiom cF' in c.
-Definition clone fA of phant_id g (apply cF) & phant_id fA class :=
-  @Pack phUV f fA.
-
-End ClassDef.
-
-Module Exports.
-Notation ponbasis f := (axiom f).
-Coercion apply : map >-> Funclass.
-Notation PONBasis fA := (Pack (Phant _) fA).
-Notation "''PONB' ( F ; S )" := (map (Phant (F -> S))) : type_scope.
-(* Notation "''PONB[' H ]_ ( F ; S )" := (map (Phant (F -> 'H[H]_S))) : type_scope. *)
-(* Notation "''PONB_' ( F ; S )" := ('PONB[_]_(F;S)) : type_scope. *)
-Notation "''PONB'" := ('PONB(_;_)) (only parsing) : type_scope.
-Notation "[ 'PONB' 'of' f 'as' g ]" := (@clone _ _ _ _ f g _ _ idfun id) : form_scope.
-Notation "[ 'PONB' 'of' f ]" := (@clone _ _ _ _ f f _ _ id id) : form_scope.
-End Exports.
-
-End PONB.
-Export PONB.Exports.
-
-Module ONB.
-
-Section ClassDef.
-Variable (H : hermitianType) (F : finType).
-
-Definition axiom (f : F -> H) := 
-  (forall i j, [< f i ; f j >] = (i == j)%:R) /\ #|F| = dim H.
-Definition mixin_of (f : F -> H) := #|F| = dim H.
-
-Record class_of f : Prop := Class {base : ponbasis f; mixin : mixin_of f}.
-Local Coercion base : class_of >-> ponbasis.
-
-Lemma class_of_axiom (f : F -> H) : axiom f -> class_of f.
-Proof. by move=>[??]; split. Qed.
-
-Lemma class_of_axiom_split (f : F -> H) :
-  (forall i j, [< f i ; f j >] = (i == j)%:R) ->
-  #|F| = dim H -> class_of f.
-Proof. by split. Qed.
-
-Structure map (phUV : phant (F -> H)) := Pack {apply; _ : class_of apply}.
-Local Coercion apply : map >-> Funclass.
-
-Variables (phUV : phant (F -> H)) (f g : F -> H) (cF : map phUV).
-Definition class := let: Pack _ c as cF' := cF return class_of cF' in c.
-Definition clone fL of phant_id g (apply cF) & phant_id fL class :=
-  @Pack phUV f fL.
-
-Definition pack (fZ : mixin_of f) :=
-  fun (bF : PONB.map phUV) fA & phant_id (PONB.class bF) fA =>
-  Pack phUV (Class fA fZ).
-
-Definition ponbType := PONB.Pack phUV class.
-End ClassDef.
-
-Module Exports.
-Notation onbasis f := (axiom f).
-Coercion apply : map >-> Funclass.
-Coercion class_of_axiom : axiom >-> class_of.
-Canonical ponbType.
-(* provide orthonormal and card *)
-Notation ONBasis fA fB := (Pack (Phant _) (class_of_axiom_split fA fB)).
-(* provide card; already a ponbasis *)
-Notation CardONBasis fC := (pack fC id).
-Notation "''ONB' ( F ; S )" := (map (Phant (F -> S))) : type_scope.
-(* Notation "''ONB[' H ]_ ( F ; S )" := (map (Phant (F -> 'H[H]_S))) : type_scope. *)
-(* Notation "''ONB_' ( F ; S )" := ('ONB[_]_(F;S)) : type_scope. *)
-Notation "''ONB'" := ('ONB(_;_)) (only parsing) : type_scope.
-Notation "[ 'ONB' 'of' f 'as' g ]" := (@clone _ _ _ _ f g _ _ idfun id) : form_scope.
-Notation "[ 'ONB' 'of' f ]" := (@clone _ _ _ _ f f _ _ id id) : form_scope.
-End Exports.
-
-End ONB.
-Export ONB.Exports.
-
-Module PartialState.
-
-Section ClassDef.
-Variable (U : hermitianType).
-Definition axiom (v : U) := [< v ; v >] <= 1.
-Structure type := Pack { sort: U; _ : axiom sort; }.
-Local Coercion sort : type >-> HermitianSpace.sort.
-
-Variables (T : U) (cT : type).
-Definition class := let: Pack _ c as cT' := cT return (axiom cT') in c.
-Definition clone c of phant_id class c := @Pack T c.
-
-Local Canonical subType := Eval hnf in [subType for sort].
-Definition eqMixin := Eval hnf in [eqMixin of type by <:].
-Local Canonical  eqType  := Eval hnf in EqType type eqMixin.
-Definition choiceMixin := [choiceMixin of type by <:].
-Local Canonical  choiceType  := Eval hnf in ChoiceType type choiceMixin.
-
-End ClassDef.
-
-Module Import Exports.
-Coercion sort : type >-> HermitianSpace.sort.
-Canonical subType.
-Canonical eqType.
-Canonical choiceType.
-Notation PSType M := (@Pack _ _ M).
-Notation "''PS' ( S )" := (@type S) : type_scope.
-Notation "''PS'" := ('PS(_)) (only parsing) : type_scope.
-(* Notation "''PS[' H ]_ S" := ('PS('H[H]_S))   (only parsing) : type_scope. *)
-(* Notation "''PS[' H ]_ ( S )" := ('PS[H]_S)    (only parsing) : type_scope. *)
-(* Notation "''PS_' S"  := ('PS[_]_S) : type_scope. *)
-(* Notation "''PS_' ( S )" := ('PS_S) (only parsing) : type_scope. *)
-Notation "[ 'PS' 'of' u 'as' v ]" := (@clone _ _ u v _ idfun) : form_scope.
-Notation "[ 'PS' 'of' u ]" := (@clone _ _ u _ _ id) : form_scope.
-End Exports.
-
-End PartialState.
-Export PartialState.Exports.
-
-Module NormalizedState.
-
-Section ClassDef.
-Variable (U : hermitianType).
-Definition axiom (v : U) := [< v ; v >] == 1.
-Structure type := Pack { sort: U; _ : axiom sort; }.
-Local Coercion sort : type >-> HermitianSpace.sort.
-
-Lemma axiom_psaxiom (v : U) : axiom v -> [< v ; v >] <= 1.
-Proof. by move=>/eqP->. Qed.
-
-Variables (T : U) (cT : type).
-Definition class := let: Pack _ c as cT' := cT return (axiom cT') in c.
-Definition clone c of phant_id class c := @Pack T c.
-
-Local Canonical subType := Eval hnf in [subType for sort].
-Definition eqMixin := Eval hnf in [eqMixin of type by <:].
-Local Canonical  eqType  := Eval hnf in EqType type eqMixin.
-Definition choiceMixin := [choiceMixin of type by <:].
-Local Canonical  choiceType  := Eval hnf in ChoiceType type choiceMixin.
-
-Definition psType := PartialState.Pack (axiom_psaxiom class).
-
-End ClassDef.
-
-Module Import Exports.
-Coercion sort : type >-> HermitianSpace.sort.
-Canonical subType.
-Canonical eqType.
-Canonical choiceType.
-Canonical psType.
-Notation NSType M := (@Pack _ _ M).
-Notation "''NS' ( S )" := (@type S) : type_scope.
-Notation "''NS'" := ('NS(_)) (only parsing) : type_scope.
-(* Notation "''NS[' H ]_ S" := ('NS('H[H]_S))   (only parsing) : type_scope. *)
-(* Notation "''NS[' H ]_ ( S )" := ('NS[H]_S)    (only parsing) : type_scope. *)
-(* Notation "''NS_' S"  := ('NS[_]_S) : type_scope. *)
-(* Notation "''NS_' ( S )" := ('NS_S) (only parsing) : type_scope. *)
-Notation "[ 'NS' 'of' u 'as' v ]" := (@clone _ _ u v _ idfun) : form_scope.
-Notation "[ 'NS' 'of' u ]" := (@clone _ _ u _ _ id) : form_scope.
-End Exports.
-
-End NormalizedState.
-Export NormalizedState.Exports.
-*)
-
-

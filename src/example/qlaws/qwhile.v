@@ -438,7 +438,7 @@ Qed.
 Lemma init_circuitK T (x : 'QReg[T]) phi (u : ucmd_) (sc : 'FU('Ht T)) :
   usem u = liftf_lf (tf2f x x sc) -> 
     <{[ ([x] := phi) ;; ([cir u ]) ]}> =c 
-      <{[ [x] := [NS of sc (phi : 'Ht T)] ]}>.
+      <{[ [x] := NormalState.clone _ (sc (phi : 'Ht T)) _]}>.
 Proof.
 rewrite eq_fsem.unlock !fsemE /==>->; rewrite -liftfso_formso -liftfso_comp.
 by f_equal; apply/superopP =>y; rewrite soE !initialsoE formsoE 
@@ -447,7 +447,7 @@ Qed.
 
 Lemma init_unitaryK T (x : 'QReg[T]) phi (u : 'FU('Ht T)) :
     <{[ ([x] := phi) ;; ([cir [x] *= u ]) ]}> =c 
-      <{[ [x] := [NS of u (phi : 'Ht T)] ]}>.
+      <{[ [x] := NormalState.clone _ (u (phi : 'Ht T)) _ ]}>.
 Proof. by rewrite -(init_circuitK _ (u := <{[ [x] *= u ]}>))// usemE. Qed.
 
 Lemma init_unitaryKP T (x : 'QReg[T]) (phi v : 'NS) (u : 'FU('Ht T)) :

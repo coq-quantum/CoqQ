@@ -9,7 +9,7 @@ From mathcomp.classical Require Import classical_sets.
 From quantum.external Require Import complex.
 From mathcomp.real_closed Require Import mxtens.
 
-Require Import mcextra mcaextra notation mxpred hermitian ctopology quantum hspace.
+Require Import mcextra mcaextra notation mxpred svd mxnorm hermitian ctopology quantum hspace.
 Import Order.LTheory GRing.Theory Num.Theory.
 Import VectorInternalTheory.
 Local Notation C := hermitian.C.
@@ -75,6 +75,7 @@ HB.instance Definition _ := isPointed.Build nat 0%N.
 HB.instance Definition _ n := isPointed.Build 'I_n.+1 ord0.
 HB.instance Definition _ := isPointed.Build bool false.
 HB.instance Definition _ := isPointed.Build int 0.
+#[non_forgetful_inheritance]
 HB.instance Definition _ (R:realType) := isPointed.Build R 0.
 HB.instance Definition _ := isPointed.Build C 0.
 HB.instance Definition _ (T : choiceType) := isPointed.Build (option T) None.
@@ -126,28 +127,28 @@ Let H := {ffun T -> C^o}.
 
 Definition ddotp (x y : H) := dotmx (v2r x)^*m (v2r y)^*m.
 
-Let ddotpE x y : ddotp x y = \sum_i ((v2r x) 0 i)^* * ((v2r y) 0 i).
+#[local] Lemma ddotpE x y : ddotp x y = \sum_i ((v2r x) 0 i)^* * ((v2r y) 0 i).
 Proof.
 rewrite /ddotp /dotmx /form /= mulmx1 /mxtrace mxE;
 apply eq_bigr=>i _; by rewrite !mxE /conjCfun conjCK.
 Qed.
 
-Let ge0_ddotp v : 0 <= ddotp v v.
+#[local] Lemma ge0_ddotp v : 0 <= ddotp v v.
 Proof. exact: dnorm_ge0. Qed.
 
-Let ddotp_eq0 v : (ddotp v v == 0) = (v == 0).
+#[local] Lemma ddotp_eq0 v : (ddotp v v == 0) = (v == 0).
 Proof. 
 by rewrite dnorm_eq0 -(inj_eq (@conjmx_inj _ _ _)) conjmxK 
     -(inj_eq (@r2v_inj _ _)) v2rK !linear0.
 Qed.
 
-Let conj_ddotp u v : (ddotp u v)^* = ddotp v u.
+#[local] Lemma conj_ddotp u v : (ddotp u v)^* = ddotp v u.
 Proof.
 rewrite !ddotpE rmorph_sum /=. apply eq_bigr=>i _.
 by rewrite rmorphM/= conjCK mulrC.
 Qed.
 
-Let linear_ddotp u : linear_for *%R (ddotp u).
+#[local] Lemma linear_ddotp u : linear_for *%R (ddotp u).
 Proof.
 move=>c v w; rewrite !ddotpE mulr_sumr -big_split.
 apply eq_bigr=>i _; by rewrite linearP/= !mxE mulrDr !mulrA [_ * c]mulrC.
@@ -157,7 +158,7 @@ Definition default_hermitianMixin :=
   @Vector_isHermitianSpace.Build H ddotp ge0_ddotp ddotp_eq0 conj_ddotp linear_ddotp.
 Canonical default_hermitianType := @HermitianSpace.Pack H (HermitianSpace.Class default_hermitianMixin).
 
-Let ddotp_chE i j :
+#[local] Lemma ddotp_chE i j :
     [< r2v (delta_mx 0 i) : H; r2v (delta_mx 0 j) >] = (i == j)%:R.
 Proof.
 rewrite /dotp/= ddotpE !r2vK (bigD1 i)// big1/=.
@@ -165,13 +166,10 @@ by move=>k /negPf nki; rewrite mxE eqxx nki conjC0 mul0r.
 by rewrite !mxE !eqxx conjC1 mul1r addr0.
 Qed.
 
-Let ihb_dim_cast: #|T| = dim H.
-Proof. by rewrite /dim/= /dim/= muln1. Qed.
+#[local] Lemma ihb_dim_proper_subproof : (dim H > 0)%N.
+Proof. move: (max_card (pred1 (witness T))); by rewrite /dim/= /dim/= muln1 card1. Qed.
 
-Let ihb_dim_proper : (dim H > 0)%N.
-Proof. move: (max_card (pred1 (witness T))); by rewrite ihb_dim_cast card1. Qed.
-
-Definition ihb_chsMixin := HermitianSpace_isCanonical.Build H ddotp_chE ihb_dim_proper.
+Definition ihb_chsMixin := HermitianSpace_isCanonical.Build H ddotp_chE ihb_dim_proper_subproof.
 
 End DefaultChsType.
 
@@ -820,8 +818,8 @@ Qed.
 Lemma tentf_norm (T3 T4 : ihbFinType) (f : 'Hom[T1,T3]) (g : 'Hom[T2,T4]) :
   `|f ⊗f g| = `|f| * `|g|.
 Proof.
-rewrite /Num.norm/= /trfnorm h2mx_tentf /trnorm schattennormUr_eq_dim 
-  ?schattennormUl_eq_dim ?schattennorm_tens//.
+rewrite /Num.norm/= /trfnorm h2mx_tentf schnormUr_eq_dim 
+  ?schnormUl_eq_dim ?schnorm_tens//.
 2: apply/tentv_mxU_adj_unitarymx. 3: apply/tentv_mxU_unitarymx.
 all: by rewrite -!ihb_dim_cast card_prod.
 Qed.
@@ -1515,9 +1513,7 @@ elim: n f.
   case: _ / P1; case: _ / P2.
   set t := \matrix_(_,_) _.
   have ->: t = 1%:M by apply/matrixP=>i j; rewrite /t !mxE !ord1 eqxx.
-  rewrite /trnorm /schattennorm svd_d_const /pnorm root1C pair_bigV/= big_ord1.
-  under eq_bigr do rewrite mxE normr1 normr1 expr1n.
-  by rewrite minn_id big_ord1.
+  by rewrite schnorm.unlock svd_d1 lpnorm11 mxE normr1.
 move=>n IH f; case: (fconsP f)=>x g.
 rewrite big_ord_recl/= fcons0. under eq_bigr do rewrite fconsE.
 by rewrite -IH -tentf_norm -tentf_tuple_cons trfnormUr trfnormUl.
@@ -1534,9 +1530,7 @@ elim: n f.
   case: _ / P1; case: _ / P2.
   set t := \matrix_(_,_) _.
   have ->: t = 1%:M by apply/matrixP=>i j; rewrite /t !mxE !ord1 eqxx.
-  rewrite /i2norm svd_d_const.
-  under eq_bigr do rewrite mxE normr1.
-  by rewrite minn_id/= big_const_ord/= /Num.max ltr10.
+  by rewrite i2norm_scale/= normr1 mulr1.
 move=>n IH f; case: (fconsP f)=>x g.
 rewrite big_ord_recl/= fcons0. under eq_bigr do rewrite fconsE.
 by rewrite -IH -tentf_i2fnorm -tentf_tuple_cons i2fnormUr i2fnormUl.
@@ -2016,9 +2010,7 @@ move: n=>n Pn; elim: n F Pn T T' f =>[F PF T T' f|n IH F PF T T' f].
   case: _ / P1; case: _ / P2.
   set t := \matrix_(_,_) _.
   have ->: t = 1%:M by apply/matrixP=>i j; rewrite /t !mxE !ord1 eqxx.
-  rewrite /trnorm /schattennorm svd_d_const /pnorm root1C pair_bigV/= big_ord1.
-  under eq_bigr do rewrite mxE normr1 normr1 expr1n.
-  by rewrite minn_id big_ord1.
+  by rewrite schnorm.unlock lpnorm11 svd_d_scale mxE !normr1.
 have /card_gt0P [x _]: (0 < #|F|)%N by rewrite PF.
 rewrite -(tentf_dffun_consV x) trfnormUr trfnormUl tentf_norm IH/= ?test ?PF//.
 under eq_bigr do rewrite ffunE.
@@ -2039,9 +2031,7 @@ move: n=>n Pn; elim: n F Pn T T' f =>[F PF T T' f|n IH F PF T T' f].
   case: _ / P1; case: _ / P2.
   set t := \matrix_(_,_) _.
   have ->: t = 1%:M by apply/matrixP=>i j; rewrite /t !mxE !ord1 eqxx.
-  rewrite /i2norm svd_d_const.
-  under eq_bigr do rewrite mxE normr1.
-  by rewrite minn_id/= big_const_ord/= /Num.max ltr10.
+  by rewrite i2norm_scale /= normr1 mulr1.
 have /card_gt0P [x _]: (0 < #|F|)%N by rewrite PF.
 rewrite -(tentf_dffun_consV x) i2fnormUr i2fnormUl tentf_i2fnorm IH/= ?test ?PF//.
 under eq_bigr do rewrite ffunE.

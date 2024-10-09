@@ -73,6 +73,7 @@ Global Hint Extern 0 (is_true (uniq (index_enum _))) => solve [apply: index_enum
 
 Local Open Scope ring_scope.
 
+#[non_forgetful_inheritance]
 HB.instance Definition _ (T : finZmodType) := isPointed.Build T 0.
 
 Section ExpTrigoDef.

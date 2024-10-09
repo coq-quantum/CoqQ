@@ -1,14 +1,10 @@
 (* (c) Copyright 2006-2016 Microsoft Corporation and Inria.                  *)
 (* Distributed under the terms of CeCILL-B.                                  *)
 From HB Require Import structures.
-Require Import mathcomp.ssreflect.ssreflect.
-From mathcomp
-Require Import ssrfun ssrbool eqtype ssrnat seq choice fintype.
-From mathcomp
-Require Import bigop order ssralg ssrint div ssrnum rat poly closed_field.
-From mathcomp
-Require Import polyrcf matrix mxalgebra tuple mxpoly zmodp binomial realalg.
-From mathcomp Require Import mxpoly.
+From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq div.
+From mathcomp Require Import choice fintype tuple bigop binomial order ssralg.
+From mathcomp Require Import zmodp poly ssrnum ssrint archimedean rat matrix.
+From mathcomp Require Import mxalgebra mxpoly closed_field polyrcf realalg.
 
 (**********************************************************************)
 (*   This files defines the extension R[i] of a real field R,         *)
@@ -23,7 +19,7 @@ Import Order.TTheory GRing.Theory Num.Theory.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Obligation Tactic := idtac.
+#[local] Obligation Tactic := idtac.
 
 Local Open Scope ring_scope.
 
@@ -210,13 +206,11 @@ Proof. by move=> a b /=; simpc; rewrite subrr. Qed.
 Lemma real_complex_is_multiplicative : multiplicative (real_complex R).
 Proof. by split=> // a b /=; simpc; rewrite !mulr0 !mul0r addr0 subr0. Qed.
 
-HB.instance Definition _ :=
-  GRing.isAdditive.Build R [zmodType of R[i]] (real_complex R)
-    real_complex_is_additive.
+HB.instance Definition _ := GRing.isAdditive.Build R R[i]
+  (real_complex R) real_complex_is_additive.
 
-HB.instance Definition _ :=
-  GRing.isMultiplicative.Build R [ringType of R[i]] (real_complex R)
-    real_complex_is_multiplicative.
+HB.instance Definition _ := GRing.isMultiplicative.Build R R[i]
+  (real_complex R) real_complex_is_multiplicative.
 
 End ComplexField_realFieldType.
 
@@ -335,23 +329,23 @@ Qed.
 Lemma lec_normD x y : lec (normC (x + y)) (normC x + normC y).
 Proof.
 move: x y => [a b] [c d] /=; simpc; rewrite addr0 eqxx /=.
-rewrite -(@ler_pexpn2r _ 2) -?topredE /= ?(ler_paddr, sqrtr_ge0) //.
+rewrite -(@ler_pXn2r _ 2) -?topredE /= ?(ler_wpDr, sqrtr_ge0) //.
 rewrite [X in _ <= X] sqrrD ?sqr_sqrtr;
-   do ?by rewrite ?(ler_paddr, sqrtr_ge0, sqr_ge0, mulr_ge0) //.
-rewrite -addrA addrCA (monoRL (addrNK _) (ler_add2r _)) !sqrrD.
+   do ?by rewrite ?(ler_wpDr, sqrtr_ge0, sqr_ge0, mulr_ge0) //.
+rewrite -addrA addrCA (monoRL (addrNK _) (lerD2r _)) !sqrrD.
 set u := _ *+ 2; set v := _ *+ 2.
-rewrite [a ^+ _ + _ + _]addrAC [b ^+ _ + _ + _]addrAC -addrA.
-rewrite [u + _] addrC [X in _ - X]addrAC [b ^+ _ + _]addrC.
+rewrite [a ^+ _ + _ + _]addrAC [b ^+ _ + _ + _]addrAC -[X in X - _]addrA.
+rewrite [u + _]addrC [X in _ - X]addrAC [b ^+ _ + _]addrC.
 rewrite [u]lock [v]lock !addrA; set x := (a ^+ 2 + _ + _ + _).
-rewrite -addrA addrC addKr -!lock addrC.
+rewrite -addrA [leLHS]addrC addKr -!lock addrC.
 have [huv|] := ger0P (u + v); last first.
   by move=> /ltW /le_trans -> //; rewrite pmulrn_lge0 // mulr_ge0 ?sqrtr_ge0.
-rewrite -(@ler_pexpn2r _ 2) -?topredE //=; last first.
+rewrite -(@ler_pXn2r _ 2) -?topredE //=; last first.
   by rewrite ?(pmulrn_lge0, mulr_ge0, sqrtr_ge0) //.
-rewrite -mulr_natl !exprMn !sqr_sqrtr ?(ler_paddr, sqr_ge0) //.
-rewrite -mulrnDl -mulr_natl !exprMn ler_pmul2l ?exprn_gt0 ?ltr0n //.
-rewrite sqrrD mulrDl !mulrDr -!exprMn addrAC -!addrA ler_add2l !addrA.
-rewrite [_ + (b * d) ^+ 2]addrC -addrA ler_add2l.
+rewrite -mulr_natl !exprMn !sqr_sqrtr ?(ler_wpDr, sqr_ge0) //.
+rewrite -mulrnDl -[in leLHS]mulr_natl !exprMn ler_pM2l ?exprn_gt0 ?ltr0n //.
+rewrite sqrrD mulrDl !mulrDr -!exprMn addrAC -!addrA lerD2l !addrA.
+rewrite [_ + (b * d) ^+ 2]addrC -addrA lerD2l.
 have: 0 <= (a * d - b * c) ^+ 2 by rewrite sqr_ge0.
 by rewrite sqrrB addrAC subr_ge0 [_ * c]mulrC mulrACA [d * _]mulrC.
 Qed.
@@ -429,12 +423,10 @@ Proof. by move=> [a b] [c d] /=; simpc; rewrite [d - _]addrC. Qed.
 Lemma conjc_is_multiplicative : multiplicative (@conjc R).
 Proof. by split=> [[a b] [c d]|] /=; simpc. Qed.
 
-HB.instance Definition _ :=
-  GRing.isAdditive.Build [zmodType of R[i]] [zmodType of R[i]] conjc
+HB.instance Definition _ := GRing.isAdditive.Build R[i] R[i] conjc
     conjc_is_additive.
 
-HB.instance Definition _ :=
-  GRing.isMultiplicative.Build [ringType of R[i]] [ringType of R[i]] conjc
+HB.instance Definition _ := GRing.isMultiplicative.Build R[i] R[i] conjc
     conjc_is_multiplicative.
 
 Lemma conjcK : involutive (@conjc R).
@@ -507,7 +499,7 @@ Lemma normc_def (z : R[i]) : `|z| = (sqrtr ((Re z)^+2 + (Im z)^+2))%:C.
 Proof. by case: z. Qed.
 
 Lemma add_Re2_Im2 (z : R[i]) : ((Re z)^+2 + (Im z)^+2)%:C = `|z|^+2.
-Proof. by rewrite normc_def -rmorphX sqr_sqrtr ?addr_ge0 ?sqr_ge0. Qed.
+Proof. by rewrite normc_def -rmorphXn sqr_sqrtr ?addr_ge0 ?sqr_ge0. Qed.
 
 Lemma addcJ (z : R[i]) : z + z^*%C = 2%:R * (Re z)%:C.
 Proof. by rewrite ReJ_add mulrC mulfVK ?pnatr_eq0. Qed.
@@ -567,21 +559,10 @@ Section RComplexLMod.
 Variable R : rcfType.
 Implicit Types (k : R) (x y z : Rcomplex R).
 
-(* HB.instance Definition _ :=
-  GRing.isAdditive.Build R [zmodType of (Rcomplex R)] (real_complex R)
-    real_complex_is_additive.
-
-HB.instance Definition _ :=
-  GRing.isMultiplicative.Build R [ringType of R[i]] (real_complex R)
-    real_complex_is_multiplicative. *)
-
-
 Lemma conjc_is_scalable : scalable (conjc : Rcomplex R -> Rcomplex R).
 Proof. by move=> a [b c]; rewrite /GRing.scale /=; simpc. Qed.
 (* HB.instance Definition _ :=
-  GRing.isScalable.Build R
-    [the lmodType R of (Rcomplex R)] [the zmodType of (Rcomplex R)] *:%R conjc
-    conjc_is_scalable. *)
+  GRing.isScalable.Build R R[i] R[i] *:%R conjc conjc_is_scalable. *)
 
 End RComplexLMod.
 
@@ -606,11 +587,11 @@ End RComplexLMod.
 (* case: (boolP (0 <= x)) (@ivt ('X^2 - x%:P) 0 (1 + x))=> px; last first. *)
 (*   by move=> _; exists 0; rewrite lerr eqxx. *)
 (* case. *)
-(* * by rewrite ler_paddr ?ler01. *)
+(* * by rewrite ler_wpDr ?ler01. *)
 (* * rewrite !horner_lin oppr_le0 px /=. *)
 (*   rewrite subr_ge0 (@ler_trans _ (1 + x)) //. *)
-(*     by rewrite ler_paddl ?ler01 ?lerr. *)
-(*   by rewrite ler_pemulr // addrC -subr_ge0 ?addrK // subr0 ler_paddl ?ler01. *)
+(*     by rewrite ler_wpDl ?ler01 ?lerr. *)
+(*   by rewrite ler_peMr // addrC -subr_ge0 ?addrK // subr0 ler_wpDl ?ler01. *)
 (* * move=> y hy; rewrite /root !horner_lin; move/eqP. *)
 (*   move/(canRL (@addrNK _ _)); rewrite add0r=> <-. *)
 (* by exists y; case/andP: hy=> -> _; rewrite eqxx. *)
@@ -657,10 +638,10 @@ have F2: `|a| <= sqrtr (a^+2 + b^+2).
   by rewrite addrC -subr_ge0 addrK exprn_even_ge0.
 have F3: 0 <= (sqrtr (a ^+ 2 + b ^+ 2) - a) / 2%:R.
   rewrite mulr_ge0 // subr_ge0 (le_trans _ F2) //.
-  by rewrite -(maxrN a) le_maxr lexx.
+  by rewrite -(maxrN a) le_max lexx.
 have F4: 0 <= (sqrtr (a ^+ 2 + b ^+ 2) + a) / 2%:R.
   rewrite mulr_ge0 // -{2}[a]opprK subr_ge0 (le_trans _ F2) //.
-  by rewrite -(maxrN a) le_maxr lexx orbT.
+  by rewrite -(maxrN a) le_max lexx orbT.
 congr (_ +i* _); set u := if _ then _ else _.
   rewrite mulrCA !mulrA.
   have->: (u * u) = 1.
@@ -672,7 +653,7 @@ congr (_ +i* _); set u := if _ then _ else _.
 rewrite mulrCA -mulrA -mulrDr [sqrtr _ * _]mulrC.
 rewrite -mulr2n -sqrtrM // mulrAC !mulrA ?[_ * (_ - _)]mulrC -subr_sqr.
 rewrite sqr_sqrtr; last first.
-  by rewrite ler_paddr // exprn_even_ge0.
+  by rewrite ler_wpDr // exprn_even_ge0.
 rewrite [_^+2 + _]addrC addrK -mulrA -expr2 sqrtrM ?exprn_even_ge0 //.
 rewrite !sqrtr_sqr -(mulr_natr (_ * _)).
 rewrite [`|_^-1|]ger0_norm // -mulrA [_ * _%:R]mulrC divff //.
@@ -727,7 +708,7 @@ Proof. by rewrite normcE sqr_sqrtc. Qed.
 
 Lemma normc_ge_Re (x : R[i]) : `|Re x|%:C <= `|x|.
 Proof.
-by case: x => a b; simpc; rewrite -sqrtr_sqr ler_wsqrtr // ler_addl sqr_ge0.
+by case: x => a b; simpc; rewrite -sqrtr_sqr ler_wsqrtr // lerDl sqr_ge0.
 Qed.
 
 Lemma normcJ (x : R[i]) :  `|x^*%C| = `|x|.
@@ -1088,11 +1069,11 @@ move: u v => u v in fE *.
 pose L1fun : 'M[R]_n -> _ :=
   2%:R^-1 \*: (mulmxr u       \+ (mulmxr v \o trmx)
            \+ ((mulmx (u^T)) \- (mulmx (v^T) \o trmx))).
-pose L1 := lin_mx [linear of L1fun].
+pose L1 := lin_mx L1fun.
 pose L2fun : 'M[R]_n -> _ :=
   2%:R^-1 \*: (((@GRing.opp _) \o (mulmxr u \o trmx) \+ mulmxr v)
            \+ ((mulmx (u^T) \o trmx)               \+ (mulmx (v^T)))).
-pose L2 := lin_mx [linear of L2fun].
+pose L2 := lin_mx L2fun.
 have [] := @Lemma4 _ _ 1%:M _ [::L1; L2] (erefl _).
 + by move: HrV; rewrite mxrank1 !dvdn2 ?negbK oddM andbb.
 + by move=> ? _ /=; rewrite submx1.
@@ -1166,8 +1147,8 @@ suff: exists a, eigenvalue (restrict V f) a.
   by move=> [a /eigenvalue_restrict Hf]; exists a; apply: Hf.
 case: (\rank V) (restrict V f) => {f f_stabV V m} [|n] f in Hn dvd2n *.
   by rewrite dvdn0 in Hn.
-pose L1 := lin_mx [linear of mulmxr f \+ (mulmx f^T)].
-pose L2 := lin_mx [linear of mulmxr f \o mulmx f^T].
+pose L1 := lin_mx (mulmxr f \+ mulmx f^T).
+pose L2 := lin_mx (mulmxr f \o mulmx f^T).
 have [] /= := IHk _ (leqnn _) _  _ (skew R[i] n.+1) _ [::L1; L2] (erefl _).
 + rewrite rank_skew; apply: contra Hn.
   rewrite -(@dvdn_pmul2r 2) //= -expnSr muln2 -[_.*2]add0n.
@@ -1222,7 +1203,7 @@ move=> /(_ m.+1 1 _ f) []; last by move=> a; exists a.
 + by rewrite submx1.
 Qed.
 
-Lemma complex_acf_axiom : GRing.closed_field_axiom [ringType of R[i]].
+Lemma complex_acf_axiom : GRing.closed_field_axiom R[i].
 Proof.
 move=> n c n_gt0; pose p := 'X^n - \poly_(i < n) c i.
 suff [x rpx] : exists x, root p x.
@@ -1272,10 +1253,9 @@ Definition complexalg := realalg[i].
 
 HB.instance Definition _ := Num.ClosedField.on complexalg.
 
-Lemma complexalg_algebraic : integralRange (@ratr [unitRingType of complexalg]).
+Lemma complexalg_algebraic : integralRange (@ratr (GRing.UnitRing.clone complexalg _)).
 Proof.
 move=> x; suff [p p_monic] : integralOver (real_complex _ \o realalg_of _) x.
   by rewrite (eq_map_poly (fmorph_eq_rat _)); exists p.
 by apply: complex_algebraic_trans; apply: realalg_algebraic.
 Qed.
-

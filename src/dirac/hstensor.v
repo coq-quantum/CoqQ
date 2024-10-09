@@ -11,7 +11,7 @@ From mathcomp.real_closed Require Import mxtens.
 Require Import EqdepFacts Eqdep_dec.
 (* -------------------------------------------------------------------- *)
 
-Require Import mcextra mcaextra notation hermitian prodvect tensor cpo mxpred extnum ctopology quantum.
+Require Import mcextra mcaextra notation hermitian prodvect tensor cpo mxpred extnum ctopology svd mxnorm quantum.
 From quantum.dirac Require Import setdec.
 Import Order.TTheory GRing.Theory Num.Theory Num.Def MxLownerOrder.
 Import VectorInternalTheory.
@@ -1354,8 +1354,9 @@ Context {I : finType} {E : I -> chsType}.
 Implicit Type (S T W: {set I}).
 Local Notation v0 := (deltav (@idx0 _ E)).
 
-Let dotp_dv0Z (V : lmodType C) (f : V) : [< v0; v0 >] *: f = f.
+#[local] Lemma dotp_dv0Z (V : lmodType C) (f : V) : [< v0; v0 >] *: f = f.
 Proof. by rewrite dv_dot eqxx scale1r. Qed.
+Local Hint Resolve dotp_dv0Z : core.
 Lemma outp_dv0 : [> v0; v0 <] = \1.
 Proof. by apply/lfunPD=>i; rewrite !idx0E outpE dv_dot eqxx scale1r lfunE. Qed.
 Lemma cdv0E v : cdv idx0 v = [< v0 ; v >]. Proof. by rewrite cdvE. Qed.
@@ -1580,8 +1581,8 @@ Lemma tenf_norm S T S' T' (f: 'F[E]_(S,T)) (g: 'F_(S',T')) :
   [disjoint S & S'] -> [disjoint T & T'] ->
   `|f \⊗ g| = `|f| * `|g|.
 Proof.
-move=>dS dT; rewrite /Num.norm/= /trfnorm h2mx_tenf /trnorm
-  schattennormUr_eq_dim ?schattennormUl_eq_dim ?schattennorm_tens// ?tenv_dim//.
+move=>dS dT; rewrite /Num.norm/= /trfnorm h2mx_tenf
+  schnormUr_eq_dim ?schnormUl_eq_dim ?schnorm_tens// ?tenv_dim//.
 by apply/tenv_mxU_adj_unitarymx. by apply/tenv_mxU_unitarymx.
 Qed.
 

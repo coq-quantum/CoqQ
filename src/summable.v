@@ -536,14 +536,15 @@ Variable (I : choiceType).
 
 Let D : set {fset I} := setT.
 Let b : {fset I} -> set {fset I} := fun i => [set i].
-Let bT : \bigcup_(i in D) b i = setT.
+#[local] Lemma bT : \bigcup_(i in D) b i = setT.
 Proof. by rewrite predeqE => i; split => // _; exists i. Qed.
 
-Let bD : forall i j t, D i -> D j -> b i t -> b j t ->
+#[local] Lemma bD : forall i j t, D i -> D j -> b i t -> b j t ->
   exists k, [/\ D k, b k t & b k `<=` b i `&` b j].
 Proof. by move=> i j t _ _ -> ->; exists j. Qed.
 
-HB.instance Definition _ := Pointed_isBaseTopological.Build {fset I} bT bD.
+HB.instance Definition _ := Pointed_isBaseTopological.Build 
+  {fset I} bT bD.
 
 End fset_topologicalType.
 
@@ -1706,13 +1707,15 @@ Hypothesis (mnorm_ge0D : forall x y, (0 : V) ⊑ x -> (0 : V) ⊑ y -> `[x + y] 
 Let c1 : C := nosimpl (projT1 (cid2 (normv_lbounded mnorm)))^-1.
 Let c2 : C := nosimpl (projT1 (cid2 (normv_ubounded mnorm))).
 
-Let c1_gt0 : 0 < c1.
+#[local] Lemma c1_gt0 : 0 < c1.
 Proof. by rewrite invr_gt0; move: (projT2 (cid2 (normv_lbounded mnorm)))=>[] + _. Qed.
+Local Hint Resolve c1_gt0 : core.
 
-Let c2_gt0 : 0 < c2.
+#[local] Lemma c2_gt0 : 0 < c2.
 Proof. by move: (projT2 (cid2 (normv_ubounded mnorm)))=>[]. Qed.
+Local Hint Resolve c2_gt0 : core.
 
-Let mnorm_ge0_sum (J : Type) (r : seq J) (P : pred J) (f : J -> V) :
+#[local] Lemma mnorm_ge0_sum (J : Type) (r : seq J) (P : pred J) (f : J -> V) :
   (forall j, P j -> (0 : V) ⊑ f j) ->
     `[ \sum_(j <- r | P j) f j ] = \sum_(j <- r | P j) `[f j].
 Proof.
@@ -1722,24 +1725,27 @@ elim/big_rec2: _; first by rewrite normv0.
 by move=>j ? y Pj [] Py <-; split; rewrite ?addv_ge0 ?mnorm_ge0D// H.
 Qed.
 
-Let mnorm_ge0_mono (x y : V) : 
+#[local] Lemma mnorm_ge0_mono (x y : V) : 
   (0 : V) ⊑ x ⊑ y -> `[x] <= `[y].
 Proof.
 move=>/andP[]x_ge0; rewrite -subv_ge0=> yx_ge0.
 by rewrite -[y](addrNK x) mnorm_ge0D// lerDr.
 Qed.
+Local Hint Resolve mnorm_ge0_mono : core.
 
-Let ubmnorm (x : V) : `|x| <= c1 * `[x].
+#[local] Lemma ubmnorm (x : V) : `|x| <= c1 * `[x].
 Proof.
 rewrite mulrC ler_pdivlMr 1?mulrC; 
 by move: (projT2 (cid2 (normv_lbounded mnorm)))=>[].
 Qed.
+Local Hint Resolve ubmnorm : core.
 
-Let lbmnorm (x : V) : `[x] <= c2 * `|x|.
+#[local] Lemma lbmnorm (x : V) : `[x] <= c2 * `|x|.
 Proof. by move: (projT2 (cid2 (normv_ubounded mnorm)))=>[]. Qed.
+Local Hint Resolve lbmnorm : core.
 
 Let mmap (x : {summable I -> V}) (i : I) := `[x i].
-Let summable_mmap x : summable (mmap x).
+#[local] Lemma summable_mmap x : summable (mmap x).
 Proof.
 move: (summablefP x)=>[/= M PM].
 exists (c2 * M). near=>J. have: psum \`| x | J <= M by near: J.
@@ -1753,27 +1759,27 @@ Local Canonical bounded_mmapx x := Bounded.build
 Local Canonical summable_mmapx x := Summable.build (@summable_mmap x).
 
 Let smnorm (x : {summable I -> V}) := sum (mmap x).
-Let smnorm_ge0_mono (x y : {summable I -> V}) : 
+#[local] Lemma smnorm_ge0_mono (x y : {summable I -> V}) : 
   (0 : {summable I -> V}) ⊑ x ⊑ y -> smnorm x <= smnorm y.
 Proof.
 move=>/andP[/lesP Px /lesP Pyx].
 rewrite /smnorm/sum; apply: ler_etlim; [apply: summable_cvg.. |].
 by move=>S; apply/ler_sum=>i _; apply/mnorm_ge0_mono; rewrite Px Pyx.
 Qed.
-Let smnorm_ge0D (x y : {summable I -> V}) : 
+#[local] Lemma smnorm_ge0D (x y : {summable I -> V}) : 
   (0 : {summable I -> V}) ⊑ x -> (0 : {summable I -> V}) ⊑ y ->
     smnorm (x + y) = smnorm x + smnorm y.
 Proof.
 move=>/lesP /= Px /lesP /= Py; rewrite/smnorm -summable_sumD/=.
 by f_equal; apply/funext=>i; rewrite /mmap/= mnorm_ge0D.
 Qed.
-Let smnorm_ge0B (x y : {summable I -> V}) : 
+#[local] Lemma smnorm_ge0B (x y : {summable I -> V}) : 
   (0 : {summable I -> V}) ⊑ x ⊑ y -> smnorm (y - x) = smnorm y - smnorm x.
 Proof.
 move=>/andP[]Px; rewrite -subv_ge0=>Py.
 by rewrite -[LHS](addrK (smnorm x)) -smnorm_ge0D// addrNK.
 Qed.
-Let le_smnorm (x : {summable I -> V}) :
+#[local] Lemma le_smnorm (x : {summable I -> V}) :
 `|x| <= c1 * smnorm x.
 Proof.
 rewrite /Num.Def.normr/=/summable_norm /smnorm/sum.
@@ -1783,7 +1789,8 @@ apply: ler_etlim; [apply: summable_cvg| |].
 apply: is_cvgMr; apply: summable_cvg.
 by move=>S/=; rewrite/psum /normf mulr_sumr ler_sum// /mmap.
 Qed.
-Let ge_smnorm (x : {summable I -> V}) :
+Local Hint Resolve le_smnorm : core.
+#[local] Lemma ge_smnorm (x : {summable I -> V}) :
   smnorm x <= c2 * `|x|.
 Proof.
 rewrite /Num.Def.normr/=/summable_norm /smnorm/sum.
@@ -1793,6 +1800,7 @@ apply: ler_etlim; [apply: summable_cvg| |].
 apply: is_cvgMr; apply: summable_cvg.
 by move=>S/=; rewrite/psum mulr_sumr ler_sum// /mmap.
 Qed.
+Local Hint Resolve ge_smnorm : core.
 
 Program Definition smnorm_vnorm_mixin := @isVNorm.Build
   R[i] {summable I -> V} smnorm _ _ _.
@@ -1857,12 +1865,13 @@ by apply/le_lt_trans/le_smnorm.
 Unshelve. end_near.
 Qed.
 
-Let smnorm_ler_abs (x : {summable I -> V}) : `[sum x] <= sum (mmap x).
+#[local] Lemma smnorm_ler_abs (x : {summable I -> V}) : `[sum x] <= sum (mmap x).
 Proof.
 rewrite/sum -lim_normv. apply: summable_cvg.
 apply: ler_etlim. apply: is_cvg_normv. apply: summable_cvg. apply: summable_cvg.
 move=>n; rewrite /psum/mmap. apply: normv_sum.
 Qed.
+Local Hint Resolve smnorm_ler_abs : core.
 
 Lemma snondecreasing_fset_norm_is_cvg (J : choiceType) (f : {fset J} -> {summable I -> V}) (b : C) :
   nondecreasing_fset f -> (forall i, `|f i| <= b) -> cvg (f @ totally).
