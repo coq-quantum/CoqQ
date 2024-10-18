@@ -370,7 +370,7 @@ Qed.
 Lemma fsem_local c : exists E : 'QO[msys]_(fvars c), fsem c = liftfso E.
 Proof.
 elim: c=>[||T x v|T x U|c1 [E1 P1] c2 [E2 P2]|T F x M br IH|T x M b c [E P]] =>/=.
-- by exists [QO of 0]; rewrite/= fsemE linear0.
+- by exists (QOperation.clone _ _ 0 _); rewrite/= fsemE linear0.
 - by exists \:1; rewrite/= fsemE liftfso1.
 - by exists (initialso (tv2v x v)); rewrite fsemE.
 - by exists (formso (tf2f x x U)); rewrite fsemE.

@@ -1,9 +1,9 @@
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra.
 
-Require Import mcextra mcaextra notation.
+Require Import mcextra mcaextra notation convex.
 Require Import hermitian quantum inhabited qreg qtype.
-From quantum.example.qlaws Require Import basic_def convex circuit nondeterministic.
+From quantum.example.qlaws Require Import basic_def circuit nondeterministic.
 
 Local Notation C := hermitian.C.
 Local Open Scope ring_scope.

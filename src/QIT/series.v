@@ -508,7 +508,7 @@ Local Open Scope classical_set_scope.
 Local Notation R := hermitian.R.
 Local Notation C := hermitian.C.
 
-Local Notation r2cC := [rmorphism of real_complex R].
+Local Notation r2cC := (GRing.RMorphism.clone _ _ (real_complex R) _).
 Local Notation c2rC := (@complex.Re R).
 
 Section exponential_series_cvg.

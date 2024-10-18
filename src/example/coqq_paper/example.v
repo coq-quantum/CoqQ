@@ -987,7 +987,7 @@ Variable (n : nat). (* control system *)
 Variable (xy : 'QReg['I_n * T]).
 Notation x := <{xy.1}>.
 Notation y := <{xy.2}>.
-Let eigUn m : ((U%:VF ^+ m)^A)%VF phi = expip (- (2%:R * theta * m%:R)) *: phi.
+#[local] Lemma eigUn m : ((U%:VF ^+ m)^A)%VF phi = expip (- (2%:R * theta * m%:R)) *: phi.
 Proof.
 apply/eqP; rewrite unitaryf_sym/= linearZ/=.
 elim: m=>[|m/eqP IH]; first by rewrite expr0 lfunE/= mulr0 oppr0 expip0 scale1r.
@@ -1044,7 +1044,7 @@ rewrite -mulrnBl mulrC -mulrA [in LHS]mulr_natl cos2x_sin opprB addrC addrNK.
 by rewrite -mulr_natl -(mulr_natl (_ * _)) mulrA -expr2 -exprMn sqrtr_sqr (mulrC a).
 Qed.
 
-Let foo5 a : a%:R - theta * n.+1%:R =  (a%:R / n.+1%:R - theta) * n.+1%:R.
+#[local] Lemma foo5 a : a%:R - theta * n.+1%:R =  (a%:R / n.+1%:R - theta) * n.+1%:R.
 Proof. by rewrite mulrBl mulfVK//. Qed.
 
 Lemma c_approx (a : 'I_n.+1) : 
@@ -1260,10 +1260,10 @@ HB.instance Definition _ := isUnitaryLf.Build _ FG FG_unitary.
 
 Lemma cardH : #|H|%:R != 0 :> C.
 Proof. by rewrite pnatr_eq0 lt0n_neq0// cardG_gt0. Qed.
-Let cardH := cardH.
+Local Hint Resolve cardH : core.
 Lemma cardZZ : #|G|%:R != 0 :> C.
 Proof. rewrite pnatr_eq0 lt0n_neq0//; by move: (cardg_gt0 G). Qed.
-Let cardZZ := cardZZ.
+Local Hint Resolve cardZZ : core.
 
 Lemma FG_H_state : FG H_state = HC_state.
 Proof.
@@ -1329,7 +1329,7 @@ Lemma inr i : i \in [set rcoset H x0 | x0 : G] -> (i = H :* (repr i))%g.
 Proof. by move/imsetP=>[z Pz Pi]; rewrite Pi rcosetE rcoset_repr. Qed.
 
 Let i0 := [ ffun i : 'I_n.+1 => ord0] : {dffun forall i : 'I_n.+1, 'I_(fn i).+2}.
-Lemma Di0 i : charZZ i i0 = 1.
+#[local] Lemma Di0 i : charZZ i i0 = 1.
 Proof. by rewrite/charZZ big1// =>k _; rewrite ffunE mulr0 mul0r expip0. Qed.
 
 Let vf : 'Ht ({qffun forall i, 'I_(fn i).+1} * 'I_m) := 
@@ -1378,7 +1378,7 @@ Proof. by rewrite normC_def -expipNC -expipD subrr expip0 sqrtC1. Qed.
 Lemma charZZ_norm (i j : G) : `|charZZ i j| = 1.
 Proof. by rewrite /charZZ normr_prod big1// =>k _; rewrite expip_norm. Qed.
 
-Let H_rcoset_card : 
+#[local] Lemma H_rcoset_card : 
   #|[set rcoset H x0 | x0 : G]|%:R = #|G|%:R / #|H|%:R :> C.
 Proof. by apply/(@mulfI _ #|H|%:R)=>//; rewrite -natrM mulrC mulfVK// LagrangeA. Qed.
 
@@ -1428,11 +1428,10 @@ Qed.
 
 Lemma HSP_no_while : no_while HSP.
 Proof. by rewrite/= !no_while_for. Qed.
-Let HSP_no_while := HSP_no_while.
+Local Hint Resolve HSP_no_while : core.
 Lemma HSP_is_valid : cmd_valid HSP.
 Proof. by rewrite /HSP; tac_qwhile_auto. Qed.
 Canonical HSP_valid := WF_CMD HSP_is_valid.
-(* Let HSP_valid := HSP_valid. *)
 
 Lemma disy : [disjoint mset x & mset y]. Proof. by tac_qwhile_auto. Qed.
 
@@ -1452,7 +1451,7 @@ Definition PX (i : 'I_m.+1) :=
 
 Lemma cardPX : #|PX| = #|[set rcoset H x0 | x0 : G]|.
 Proof.
-suff : #|[finType of {i : X | PX i}]| = #|[finType of {i | i \in [set rcoset H x0 | x0 : G]}]|.
+suff : #|Finite.clone {i : X | PX i} _| = #|Finite.clone {i | i \in [set rcoset H x0 | x0 : G]} _|.
 by rewrite !card_sig.
 pose H1 (j : {i : X | PX i}) := sigW (existsP (projT2 j)).
 have H2 (j : {i : X | PX i}) : projT1 (H1 j) \in [set rcoset H x0 | x0 : G].
