@@ -9,8 +9,7 @@ From quantum.external Require Import complex.
 (* several lemma in classical_sets and finset have the same name. *)
 
 Require Import mcextra mcaextra notation.
-Require Import hermitian quantum.
-Import Order.TTheory GRing.Theory Num.Theory Num.Def HermitianTopology.
+Import Order.TTheory GRing.Theory Num.Theory Num.Def.
 
 (****************************************************************************)
 (*                  A simple formalization of Convex hulls                  *)
@@ -22,11 +21,8 @@ Import Order.TTheory GRing.Theory Num.Theory Num.Def HermitianTopology.
 (*   A :o B = {a :o b | a \in A & b \in B}                                  *)
 (* ------------------------------------------------------------------------ *)
 (* Show that conv(A + B) = conv A + conv B;                                 *)
-(*           conv (A \o B) = conv (conv A \o conv B)                        *)
-(*           conv (A :o B) = conv (conv A :o conv B)                        *)
 (****************************************************************************)
 
-Local Notation C := hermitian.C.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -59,10 +55,8 @@ Lemma eq_set1 T (a b : T) :
   ([set a] = [set b])%classic -> a = b.
 Proof. by move=>/predeqP/(_ a)/=[] + _; apply. Qed.
 
-Section Convex.
-
 Section ConvexSet.
-Variable (V : lmodType C).
+Variable (C : numFieldType) (V : lmodType C).
 Definition conv (S : set V) :=
   [set v : V | exists (F : finType) (c : F -> C) (f : F -> V), 
     (forall i, 0 <= c i <= 1) /\ (\sum_i c i = 1) 
@@ -137,9 +131,8 @@ Qed.
 End ConvexSet.
 
 Section ConvexLinear.
-Variable (U V : lmodType C).
 
-Lemma conv_linear (f : {linear U -> V}) (S : set U) :
+Lemma conv_linear (C : numFieldType) (U V : lmodType C) (f : {linear U -> V}) (S : set U) :
   (conv (f @` S) = f @` (conv S))%classic.
 Proof.
 apply/seteqP; split=>x /=.
@@ -161,7 +154,8 @@ Lemma ler_conj (R : numClosedFieldType) (a b : R) :
   (a^* <= b^*) = (a <= b).
 Proof. by rewrite -subr_ge0 -rmorphB conjC_ge0 subr_ge0. Qed.
 
-Lemma conv_antilinear (f : {linear U -> V | Num.conj_op \; *:%R}) (S : set U) :
+Lemma conv_antilinear (C : numClosedFieldType) (U V : lmodType C) 
+  (f : {linear U -> V | Num.conj_op \; *:%R}) (S : set U) :
   (conv (f @` S) = f @` (conv S))%classic.
 Proof.
 apply/seteqP; split=>x /=.
@@ -185,14 +179,12 @@ Qed.
 
 End ConvexLinear.
 
-Section ConvexAlgebra.
-
 Section SetAdd.
-Variable (U : lmodType C).
+Variable (R : numFieldType) (U : lmodType R).
 
 Definition set_add (A B : set U) :=
   [set a + b | a in A & b in B].
-Definition set_scale (c : C) (A : set U) :=
+Definition set_scale (c : R) (A : set U) :=
   [set c *: a | a in A].
 Infix "`*:`" := set_scale (at level 40).
 
@@ -409,7 +401,7 @@ exists (b *: x); first by exists x.
 by rewrite scalerDl.
 Qed.
 
-Lemma conv_scaleDl (a b : C) A : 0 <= a -> 0 <= b ->
+Lemma conv_scaleDl (a b : R) A : 0 <= a -> 0 <= b ->
   (a + b) `*:` conv A = a `*:` conv A + b `*:` conv A.
 Proof.
 move=>Pa Pb; apply/seteqP; split; first by apply: set_scaleDl_le.
@@ -434,7 +426,7 @@ Qed.
 End SetAdd.
 Infix "`*:`" := set_scale (at level 40).
 
-Lemma set_add_map (U V : lmodType C) (f : {additive U -> V}) (A B : set U) :
+Lemma set_add_map (R : numFieldType) (U V : lmodType R) (f : {additive U -> V}) (A B : set U) :
   f @` (A + B) = (f @` A) + (f @` B).
 Proof.
 apply/seteqP; split=>?/=.
@@ -445,7 +437,7 @@ by exists a=>//; exists b. by rewrite raddfD.
 Qed.
 
 Section SetComp.
-Variable (U : vectType C).
+Variable (R : numFieldType) (U : vectType R).
 
 Definition set_comp (A B : set 'End(U)) :=
   [set a \o b | a in A & b in B].
