@@ -144,7 +144,7 @@ HB.instance Definition _ (R : numDomainType) (V : normedModType R) :=
   isVNorm.Build R V _ (@Num.Theory.ler_normD _ V) (@Num.Theory.normr0_eq0 _ V) (@normrZ _ V).
 
 Lemma mx_normEV (K: numDomainType) p q : 
-  (@mx_norm _ _ _ : 'M[K]_(p.+1,q.+1) -> K) = (@Num.Def.normr _ _).
+  (@mx_norm _ _ _ : 'M[K]_(p,q) -> K) = (@Num.Def.normr _ _).
 Proof. by apply/funext. Qed.
 
 Lemma ball_dim0 (K: numFieldType) m n (x : 'M[K]_(m,n)) e y : 
@@ -487,12 +487,10 @@ exact: mnorm_ubounded_ND.
 Qed.
 
 Let cu := projT1 (cid2 mnorm_ubounded).
-Let cu_gt0 : cu > 0.
-Proof. by move: (projT2 (cid2 mnorm_ubounded))=>[]. Qed.
-Let cuP : forall x, mnorm x <= cu * mx_norm x.
-Proof. by move: (projT2 (cid2 mnorm_ubounded))=>[]. Qed.
+Let cu_gt0 := let: conj A _ := (projT2 (cid2 mnorm_ubounded)) in A.
+Let cuP := let: conj _ A := (projT2 (cid2 mnorm_ubounded)) in A.
 Let cuPV : forall x, mnorm x / cu <= mx_norm x.
-Proof. by move=>x; rewrite ler_pdivrMr// mulrC. Qed.
+Proof. by move=>x; rewrite ler_pdivrMr// mulrC. Defined.
 
 Lemma open_mnorm_gt (y : R) : open [set x : M | mnorm x > y].
 Proof.
@@ -614,7 +612,7 @@ Section ExtNumInternal.
 Context {R: realType} {C : extNumType R}.
 
 #[export, non_forgetful_inheritance]
-HB.instance Definition _ := NormedModule.copy C [numFieldType of C].
+HB.instance Definition _ := NormedModule.copy C (Num.NumField.clone C _).
 
 Local Notation r2c := (@r2c R C).
 Local Notation c2r := (@c2r R C).
@@ -722,6 +720,7 @@ Proof. by move=>P1 P2 P3; move: (extNum_compact_minmax P1 P2 P3)=>[]. Qed.
 Lemma extNum_complete (F : set_system C) : ProperFilter F -> cauchy F -> cvg F.
 Proof. apply: bounded_compact_complete. exact: extNum_bounded_compact. Qed.
 
+#[export, non_forgetful_inheritance]
 HB.instance Definition _ := Uniform_isComplete.Build C (@extNum_complete).
 
 Lemma ethausdorff : hausdorff_space C. Proof. apply: norm_hausdorff. Qed.
@@ -1816,12 +1815,10 @@ exact: mnorm_lbounded_ND.
 Qed.
 
 Let cl := projT1 (cid2 mnorm_lbounded).
-Let cl_gt0 : cl > 0.
-Proof. by move: (projT2 (cid2 mnorm_lbounded))=>[]. Qed.
-Let clP : forall x, cl * mx_norm x <= mnorm x.
-Proof. by move: (projT2 (cid2 mnorm_lbounded))=>[]. Qed.
+Let cl_gt0 := let: conj A _ := (projT2 (cid2 mnorm_lbounded)) in A.
+Let clP := let: conj _ A := (projT2 (cid2 mnorm_lbounded)) in A.
 Let clPV : forall x, mx_norm x <= mnorm x / cl.
-Proof. by move=>x; rewrite ler_pdivlMr// mulrC. Qed.
+Proof. by move=>x; rewrite ler_pdivlMr// mulrC. Defined.
 
 Lemma compact_mnorm_le (y : C) : compact [set x : M | mnorm x <= y].
 Proof.
@@ -2901,8 +2898,10 @@ Arguments bijective_of_mx_is_cvgnE [R C V m n f u].
 Arguments bijective_to_mx_limnE [R C V m n f u].
 Arguments bijective_of_mx_limnE [R C V m n f u].
 
+#[non_forgetful_inheritance]
 HB.instance Definition _ (R : realType) (C : extNumType R) (V : finNormedModType C) :=
   Uniform_isComplete.Build V (@V_complete R C V).
+#[non_forgetful_inheritance]
 HB.instance Definition _ (R : realType) (C : extNumType R) (V : vorderFinNormedModType C) :=
   Uniform_isComplete.Build V (@V_complete R C V).
 
@@ -3479,7 +3478,7 @@ Let SV := [set x : V | exists a y z, 0 <= a <= 1 /\
 ((0 : V) ⊑ y /\ `|y| = 1) /\ ((0 : V) ⊑ z /\ `|z| = 1) /\ a *: y + (1-a) *: z = x].
 Let SA := [set x : C | exists a y z, 0 <= a <= 1 /\ 
 ((0 : V) ⊑ y /\ `|y| = 1) /\ ((0 : V) ⊑ z /\ `|z| = 1) /\ `|a *: y + (1-a) *: z| = x].
-Let SA_SV : SA = (fun x => `|x|) @` SV.
+#[local] Lemma SA_SV : SA = (fun x => `|x|) @` SV.
 Proof.
 apply/funext=>x/=; rewrite propeqE; split.
 move=>[a[y[z[Pa[Py[Pz P]]]]]]; exists (a *: y + (1 - a) *: z)=>//;
@@ -3499,19 +3498,23 @@ rewrite -lerBlDr; apply/(le_trans (lerB_dist _ _)).
 by rewrite !ger0_norm//; apply: (le_trans P1).
 Qed.
 
-Let compact_SV : compact SV.
+#[local] Lemma compact_SV : compact SV.
 Proof.
-rewrite /SV (_ : mkset _ = (fun x => x None *: x (Some true) + (1 - x None) *: x (Some false)) @` [set f : product_topology_def _ | 
+rewrite /SV (_ : mkset _ = (fun x => x None *: x (Some true) + 
+  (1 - x None) *: x (Some false)) @` [set f : product_topology_def _ | 
   (forall i : option bool, @TA i (f i))]); last first.
-apply/funext=>x/=; rewrite propeqE; split.
-move=>[a[y[z[Pa[Py[Pz P]]]]]]; exists ((fun i : option bool => match i with 
-  | None => a | Some true => y | Some false => z end) : forall i, TT i)=>//.
-by case=>//=; case.
-move=>[t Pt1 Pt2]; exists (t None); exists (t (Some true)); exists (t (Some false)).
-split; first by apply: (Pt1 None). split; last split=>//; apply: (Pt1 (Some _)).
-
+  apply/funext=>x/=; rewrite propeqE; split.
+    move=>[a[y[z[Pa[Py[Pz P]]]]]].
+    exists ((fun i : option bool => match i with | None => a 
+      | Some true => y | Some false => z end) : forall i, TT i)=>//.
+    by case=>//=; case.
+  move=>[t Pt1 Pt2]; exists (t None); exists (t (Some true)); exists (t (Some false)).
+  split; first by apply: (Pt1 None).
+  split; last split=>//; apply: (Pt1 (Some _)).
 apply: continuous_compact; last first.
-apply: tychonoff; case=>/=. move=>_; apply: compact_ge0_norm1. apply: compact_citv.
+  apply: tychonoff; case=>/=[_|];
+    first by apply: compact_ge0_norm1.
+  apply: compact_citv.
 move=>x; apply: cvgD; apply: cvgZ.
 3: apply: cvgB; first by apply: cvg_cst.
 all: move: x; apply: continuous_subspaceT.
@@ -3520,13 +3523,13 @@ apply: (@proj_continuous _ TT (Some true)).
 apply: (@proj_continuous _ TT (Some false)).
 Qed.
 
-Let compact_SA : compact SA.
+#[local] Lemma compact_SA : compact SA.
 Proof.
 rewrite SA_SV; apply: (continuous_compact _ compact_SV).
 apply/continuous_subspaceT/norm_continuous.
 Qed.
 
-Let not_SA0 : ~ SA 0.
+#[local] Lemma not_SA0 : ~ SA 0.
 Proof.
 move=>[a[y[z[/andP[Pa1 Pa2][[y_ge0 +][[z_ge0 +]]]]]]]/eqP; rewrite normrE addv_ss_eq0.
 rewrite !scaler_eq0 -[y == 0]normr_eq0 -[z == 0]normr_eq0=>->->.
@@ -3534,7 +3537,7 @@ by rewrite !oner_eq0 !orbF=>/andP[]/eqP->; rewrite subr0 oner_eq0.
 by apply/orP; left; rewrite !scalev_ge0// subr_ge0.
 Qed.
 
-Let SA_ge0 (x : C) : SA x -> x > 0.
+#[local] Lemma SA_ge0 (x : C) : SA x -> x > 0.
 Proof.
 rewrite lt_def=>P1; apply/andP; split.
 by apply/negP=>/eqP Px; apply: not_SA0; rewrite -Px.
@@ -3559,7 +3562,8 @@ have Ps1: SA 1.
   by apply/andP; split. 1,3: by rewrite scalev_ge0// ltW. 1,2: by apply: Px.
   by rewrite scale0r add0r subr0 scale1r Px.
 have /cid2[c Pc1 Pc2]: exists2 x : C, SA x & forall y : C, SA y -> x <= y.
-  by apply: extNum_compact_min=>[i/SA_ge0/=/gtr0_real//||]; [apply: compact_SA | exists 1].
+  by apply: extNum_compact_min=>[i/SA_ge0/=/gtr0_real//||]; 
+    [apply: compact_SA | exists 1].
 have cle1 : c <= 1 by apply: Pc2.
 exists c; split=>[|X Y]; first by apply/andP; split=>//; apply: SA_ge0.
 rewrite 2 !le_eqVlt=>/andP[]/orP[/eqP<- _|X_gt0/orP[/eqP<-|Y_gt0]].
@@ -3626,6 +3630,7 @@ rewrite (_ : mkset _ = [set x : R | x \in `[-a,a]]); first apply: segment_compac
 by rewrite predeqE=>x/=; rewrite itv_boundlr/= [in X in _ <-> X]/<=%O/= Num.Theory.ler_norml.
 Qed.
 
+#[non_forgetful_inheritance]
 HB.instance Definition _ := R_extNumMixin.
 
 End R_extNumType.

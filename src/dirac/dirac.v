@@ -2299,6 +2299,7 @@ Proof. by rewrite dotd_mul/= nsd_innerM. Qed.
 
 Lemma onbd_ns i : (f i)^A \o (f i) = 1%:D.
 Proof. by rewrite onb_innerM eqxx. Qed.
+#[non_forgetful_inheritance]
 HB.instance Definition _ i := isNSDirac.Build L H S (f i) is_ketdirac (@onbd_ns i).
 
 Lemma ketns_innerM (v : 'NS[H]_S) : '|v>^A \o '|v> = 1%:D.
