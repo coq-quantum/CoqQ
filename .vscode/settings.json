@@ -1,0 +1,5 @@
+{
+    "aide.convertLanguagePairs": {
+        "coq": "txt 提炼出所有新定义的Definition和Lemma的名字并用反引号`前后注明，以空格分隔"
+    }
+}
