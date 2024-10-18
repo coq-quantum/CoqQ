@@ -10,10 +10,10 @@ Require Import -(notations)Setoid.
 (* topology and setoid has notation conflicts *)
 (* several lemma in classical_sets and finset have the same name. *)
 
-Require Import mcextra mcaextra notation mxpred extnum ctopology summable.
+Require Import mcextra mcaextra notation mxpred extnum ctopology summable convex.
 Require Import hermitian quantum hspace hspace_extra inhabited prodvect tensor qreg qmem cpo qtype.
 From quantum.dirac Require Import hstensor.
-From quantum.example.qlaws Require Import basic_def convex circuit.
+From quantum.example.qlaws Require Import basic_def circuit.
 Import Order.TTheory GRing.Theory Num.Theory Num.Def HermitianTopology.
 Import DefaultQMem.Exports.
 
@@ -39,6 +39,7 @@ Unset SsrOldRewriteGoalsOrder.
 (****************************************************************************)
 Section SetCompso.
 Variable (U : chsType).
+Local Open Scope classical_set_scope.
 
 Definition set_compso (A B : set 'SO(U)) :=
   [set a :o b | a in A & b in B].
@@ -185,10 +186,8 @@ apply/seteqP; split.
     by rewrite/= linear_sumr.
 by apply/conv_le_hom/set_compso_le; apply/conv_le.
 Qed.
-End SetCompso.
 
-End ConvexAlgebra.
-End Convex.
+End SetCompso.
 
 Infix "`*:`" := set_scale (at level 40) : lfun_scope.
 Infix "`\o`" := set_comp (at level 50) : lfun_scope.
@@ -813,7 +812,7 @@ Qed.
 Lemma init_circuitK T (x : 'QReg[T]) phi (u : ucmd_) (sc : 'FU('Ht T)) :
   usem u = liftf_lf (tf2f x x sc) -> 
   <{[ ([x] := phi) ;; ([cir u ]) ]}> =c
-    <{[ [x] := [NS of sc (phi : 'Ht T)] ]}>.
+    <{[ [x] := NormalState.clone _ (sc (phi : 'Ht T)) _ ]}>.
 Proof.
 rewrite eq_fsem.unlock !fsemE image2_set1=>->; f_equal.
 rewrite -liftfso_formso -liftfso_comp;
@@ -823,7 +822,7 @@ Qed.
 
 Lemma init_unitaryK T (x : 'QReg[T]) phi (u : 'FU('Ht T)) :
     <{[ ([x] := phi) ;; ([cir [x] *= u ]) ]}> =c 
-      <{[ [x] := [NS of u (phi : 'Ht T)] ]}>.
+      <{[ [x] := NormalState.clone _ (u (phi : 'Ht T)) _ ]}>.
 Proof. by rewrite -(init_circuitK _ (u := <{[ [x] *= u ]}>))// usemE. Qed.
 
 Lemma init_unitaryKP T (x : 'QReg[T]) (phi v : 'NS) (u : 'FU('Ht T)) :
@@ -889,7 +888,7 @@ Lemma init_qifFK (x : qreg Bool) (psi : 'NS('Ht Bool))
       <{[ ([x] := phi false) ;; ([cir c0 ]) ]}>.
 Proof.
 move=>P; rewrite qif_sym init_qifTK//=.
-suff ->: (init_ x ([ONB of onb_swap phi] true)) =c (init_ x (phi false)) by [].
+suff ->: (init_ x ((ONB.clone _ _ (onb_swap phi) _)true)) =c (init_ x (phi false)) by [].
 by apply eq_init=>/=.
 Qed.
 
@@ -1744,7 +1743,7 @@ Add Parametric Morphism T (q : qreg T) M : (@while_ T q M)
   with signature eq_fsem ==> refine_cmd as refine_eq_cmd_while.
 Proof.
 move=>x y Pxy; rewrite refine_cmd.unlock.
-apply: (subset_trans _ (@conv_le _ _)).
+apply: (subset_trans _ (@conv_le _ _ _)).
 have: <{[M[q] * x]}> =c <{[M[q] * y]}> by rewrite Pxy.
 rewrite eq_fsem.unlock=>->; apply subset_refl.
 Qed.
@@ -1796,7 +1795,7 @@ Lemma refine_ifG T F (q : qreg T) (M : 'QM(F;'Ht T)) (f g : F -> cmd_) :
 Proof.
 rewrite refine_cmd.unlock=>Pi.
 rewrite !fsem_condE2 -conv_sum; apply/set_sum_le=>i _.
-rewrite -conv_compso conv1; apply/(subset_trans _ (@conv_le _ _)).
+rewrite -conv_compso conv1; apply/(subset_trans _ (@conv_le _ _ _)).
 by apply/set_compso_ler.
 Qed.
 
@@ -1900,7 +1899,7 @@ have -> : liftfso (initialso (tv2v x phi))
   by rewrite mulrC !linearZ/=.
 rewrite -!set_scalex -!set_compsoZr !set_compsoZl -set_compsoxDr.
 rewrite -conv_compso conv1; 
-apply/(subset_trans _ (@conv_le _ _))/set_compso_ler.
+apply/(subset_trans _ (@conv_le _ _ _))/set_compso_ler.
 have P1: 0 <= s0 by rewrite /s0 psdf_trlf.
 have P2: 0 <= s1 by rewrite /s1 psdf_trlf.
 have P3: s0 = 1 - s1.
