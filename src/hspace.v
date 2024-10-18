@@ -8,7 +8,7 @@ From mathcomp.analysis Require Import reals.
 From quantum.external Require Import complex spectral.
 
 Require Import mcextra mcaextra notation hermitian.
-Require Import mxpred ctopology quantum orthomodular.
+Require Import mxpred ctopology svd mxnorm quantum orthomodular.
 
 (************************************************************************)
 (* This file define subspace of Hilbert space and its theory            *)
@@ -587,7 +587,7 @@ Notation "\Dim U" := (dimh U) (at level 10, U at level 8, format "\Dim  U").
 Section VS2Proj.
 Variable (H : chsType).
 
-Let memvK v (U : {vspace H}) : (v \in U) = (v2r v <= vs2mx U)%MS.
+#[local] Lemma memvK v (U : {vspace H}) : (v \in U) = (v2r v <= vs2mx U)%MS.
 Proof. by rewrite -genmxE. Qed.
 
 Lemma vs2hs_proj (U : {vspace H}) : mx2h (cosuppmx (h2vU *m (vs2mx U)^T)) \is projlf.

@@ -337,7 +337,7 @@ Reserved Notation "''Bra_' ( S )" (at level 8). (* only parsing *)
 Reserved Notation "''Bra[' H ]_ S"    (at level 8, S at level 2). (* only parsing *)
 Reserved Notation "''Bra[' H ]_ ( S )"     (at level 8). (* only parsing *)
 
-Reserved Notation "'\1_' S" (at level 10, S at next level, format "\1_ S").
+Reserved Notation "'\1_' S" (at level 8, S at level 2, format "\1_ S").
 (* Reserved Notation " '\tr_(' q ) e " (at level 10, q at next level).  *)
 Reserved Notation "c %:D" (at level 2, left associativity, format "c %:D").
 Reserved Notation " 'o%D' " (at level 0).
