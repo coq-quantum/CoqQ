@@ -335,7 +335,7 @@ Qed.
 End Cast2.
 
 Section Cast3.
-Variable (R: ringType).
+Variable (R : ringType).
 
 Lemma castmx_mul p q r p' q' r' (eqq : q = q') (eqp : p = p') (eqr : r = r') 
   (A : 'M[R]_(p,q)) (B : 'M[R]_(q,r)) :

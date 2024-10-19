@@ -47,11 +47,11 @@ End BilinearWrap.
 End BilinearWrap.
 
 (* similar to linear, using Bilinear.type directly instead of Bilinear.map *)
-Notation "{ 'bilinear' U '->' V '->' W '|' s '&' s' }" := 
-  (@Bilinear.type _ U%type V%type W%type s s')
+Notation "{ 'bilinear' U '->' V '->' W '|' s '&' t }" := 
+  (@Bilinear.type _ U%type V%type W%type s t)
   (at level 0, U at level 97, V at level 98, W at level 99, 
-  format "{ 'bilinear'  U  ->  V  ->  W  |  s  &  s' }") : ring_scope.
-Notation "{ 'bilinear' U '->' V  '->'  W '|'  s }" := 
+  format "{ 'bilinear'  U  ->  V  ->  W  |  s  &  t }") : ring_scope.
+Notation "{ 'bilinear' U '->' V  '->'  W '|' s }" := 
   (@Bilinear.type _ U%type V%type W%type s.1 s.2)
   (at level 0, U at level 97, V at level 98, W at level 99, 
   format "{ 'bilinear'  U  ->  V  ->  W  |  s }") : ring_scope.
@@ -205,11 +205,6 @@ Lemma conjCN1 : (-1 : C)^* = -1. Proof. by rewrite rmorphN conjC1. Qed.
 Lemma oppcK (x : C) : - (- x) = x. Proof. exact: opprK. Qed.
 Definition sign_simp := (conjC0, conjC1, conjCN1, mulN1r, mulrN1, 
   mulNr, mulrN, mulr1, mul1r, invrN, oppcK, addNr, addrN).
-Lemma split2c (x : C) : x / 2%:R + x / 2%:R = x.
-Proof. by rewrite -mulr2n -mulr_natr mulfVK// pnatr_eq0. Qed.
-Lemma split21 : (2%:R : C)^-1 + (2%:R : C)^-1 = 1.
-Proof. by rewrite -[RHS]split2c mul1r. Qed.
-Definition split2 := (split21, split2c).
 
 Lemma sqrtCV_nat (x : nat) n :
   (sqrtC ((x%:R : C) ^+ n)) ^-1 = sqrtC (x%:R ^-n).
@@ -226,6 +221,21 @@ Proof. by case: n=>[|n]; rewrite ?expr0 ?sqrtC1// rootCX// ler0n. Qed.
 Lemma sqrtCNX_nat (x : nat) n :
   sqrtC ((x%:R : C) ^- n) = sqrtC x%:R ^- n.
 Proof. by rewrite rootCV// ?sqrtCX_nat// exprn_ge0// ler0n. Qed.
+
+(* TODO : move to mcaextra *)
+Definition directc (c : C) := if c == 0 then 1 else c / `|c|.
+
+Lemma directc_norm c : `| directc c | = 1.
+Proof.
+rewrite /directc; case: eqP=>[|/eqP Pc]; first by rewrite normr1.
+by rewrite normrM normfV normr_id mulfV// normr_eq0.
+Qed.
+
+Lemma norm_directcE c : `|c| = c / (directc c).
+Proof.
+rewrite /directc; case: eqP=>[->|/eqP Pc]; first by rewrite normr0 mul0r.
+by rewrite invfM mulVKf// invrK.
+Qed.
 
 Lemma invf_prod (F : fieldType) I (r : seq I) (P : pred I) (f : I -> F) :
   ((\prod_(i <- r | P i) (f i))^-1 = \prod_(i <- r | P i) (f i)^-1)%R.
