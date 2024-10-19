@@ -2222,14 +2222,12 @@ by move: P1=>[]M PM; exists M=>N1 N2; under eq_bigr do under eq_bigr do rewrite 
 move: (foo3 Pa)=>[] P3 P4.
 
 split; last by move=>i; apply: is_cvg_sum_apply=>j _; apply: P2.
-
-Admitted.
-(*
-apply/cauchy_cvgP/cauchy_ballP=>e egt0; rewrite near_simpl.
+apply/(@cauchy_cvgP (arrow_uniform_type nat R)).
+apply/cauchy_ballP=>e egt0; rewrite near_simpl.
 move: P4=>/cauchy_cvgP/cauchy_ballP/(_ _ egt0); rewrite near_simpl.
 move=>[][]/=a b[][N1] _ PN1[]N2 _ PN2 PN.
-exists ([set n | (max N1 N2 <= n)%N] , [set n | (max N1 N2 <= n)%N])=>//=.
-split; by exists (max N1 N2).
+exists ([set n | (maxn N1 N2 <= n)%N] , [set n | (maxn N1 N2 <= n)%N])=>//=.
+split; by exists (maxn N1 N2).
 move=>[m n]/=[].
 wlog le_ij: m n / (n <= m)%N => [th_sym|].
 case: (orP (leq_total m n))=>/th_sym// + Pi Pj; move=>/(_ Pj Pi); apply: ball_sym.
@@ -2243,7 +2241,6 @@ apply: ler_sum=>??. apply: etlimn_ge_near. apply: P3.
 exists k=>// l/= Pk; apply/(le_trans (ler_norm_sum _ _ _)).
 by rewrite -subr_ge0 sub_series Pk sumr_ge0.
 Qed.
-*)
 
 Lemma series2_limnl R (f : nat -> nat -> R) :
     (exists M, forall N1 N2, \sum_(0 <= i < N1)\sum_(0 <= j < N2) `|f i j| <= M)
@@ -2332,10 +2329,8 @@ have P1': exists M, forall Si Sj, pseries (fun i : I => \`| (fun i j => `|f i j|
 move: (pseries_ubounded_cvg P1')=>[] _ [] P3 [] _ [] P4 _.
 
 split; last by move=>i; apply: is_cvg_sum_apply=>j _; apply: P2.
-
-Admitted.
-(*
-apply/cauchy_cvgP/cauchy_ballP=>e egt0; rewrite near_simpl.
+apply/(@cauchy_cvgP (arrow_uniform_type {fset J} V)).
+apply/cauchy_ballP=>e egt0; rewrite near_simpl.
 move: P4=>/cauchy_cvgP/cauchy_ballP/(_ _ egt0); rewrite near_simpl.
 move=>[][]/=a b[][Si1] _ PSi1[]Si2 _ PSi2 PSi.
 exists ([set S1 | (Si1 `|` Si2 `<=` S1)%fset] , [set S2 | (Si1 `|` Si2 `<=` S2)%fset])=>//=.
@@ -2356,7 +2351,6 @@ by apply: sumr_ge0=>??; apply: etlim_ge=>[|?]; [apply: P3| apply: sumr_ge0].
 apply: ler_sum=>??. apply: etlim_ge_near. apply: P3. 
 exists Sj=>// Sj'/=; by apply/psum_ler.
 Qed.
-*)
 
 Lemma pseries2_exchange_lim I J V (f : I -> J -> V) :
     (exists M, forall Si Sj, pseries (fun i j => `|f i j|) Si Sj <= M) ->
