@@ -23,7 +23,6 @@ xx
 - Move convex.v from example to src except Section SetCompso which to src/example/qlaws/nondeterministic.v
 - Move the theories about matrix norms from src/mxpred.v to a new file src/mxnorm.v, the latter is developed as well.
 
-
 ### convex.v
 
 #### Removed
@@ -87,6 +86,7 @@ xx
 - lemmas `col''K`, `row''K`, `col_col''`, `col_col''0`, `row_row''`, `row_row''0`, `tr_col''`, `tr_row''`, `col'_col''`, `map_col''`, `map_row''`, `mulmx_colrow''`, `split2r`, `split2l, `split2`
 
 #### Changed
+
 - generalized lemma `mulmx_rowcol` so that the dimension of matrix B is more flexible
 - generalized lemma `widen_ord_inj` so that m can be any nat no less than n
 
@@ -180,6 +180,22 @@ xx
 - definitions `set_compso`
 - lemmas `set_compso1l`, `set_compso1r`, `set_compsoA`, `set_compsoxl`, `set_compsoxr`, `set_compso_le`, `set_compso_lel`, `set_compso_ler`, `set_compso0l`, `set_compso0r`, `set_compsoDl`, `set_compsoDr`, `set_compsoxDl`, `set_compsoxDr`, `set_compsoZl`, `set_compsoZr`, `conv_compso`, 
 - notations ``*:``, ``\o``, ``:o``
+
+### quantum.v
+
+#### Added
+
+- lemmas `isolf_le_dim`, `schnormUl_eq_dim`, `schnormUr_eq_dim`, `reindex_mxtens_index`, `reindex_mxtens_unindex`, `schnorm_spectral`, `schnorm_tens`
+
+#### Removed
+
+- lemmas `mxrank_conj`, `psdmx1`, `obsmx0`, `obsmx1`
+- lemmas `schattennormUl_eq_dim`, `schattennormUr_eq_dim`, `pnorm_tens`, `pnorm_col_perm`, `schattennorm_spectral`, `schattennorm_tens`, `mx_norm_col_perm1`
+- lemmas `i2norm_unitary_nontrivial`, `fbnorm_trnorm`, `isolf_eq_dim`
+
+#### Changed
+
+- specialized from any numClosedFieldType T (or R) to hermitian.C: `trnorm_ptrace1_le`, `denmx_tens`, `i2normUl_eq_dim`, `i2normUr_eq_dim`, `map_mx_svd_d_exdl`, `diag_mx_tens`, `spectral_tens`, `mx_norm_col_perm`, `mx_norm_dmul`, `mx_norm_cast`, `mx_norm_row`, `mx_norm_svd_d_exdl`, `mx_normr1E1`, `mx_normr1E`, `i2norm_spectral`, `mx_norm_tens`, `i2norm_tens`
 
 ### svd.v
 
