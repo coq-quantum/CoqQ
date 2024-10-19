@@ -133,6 +133,40 @@ Arguments r2v_bij {R V}.
 Arguments f2mx_bij {R U V}.
 Arguments vecthom_bij {R U V}.
 
+Section Etrans.
+Variable (T : eqType).
+Implicit Type (p q r t: T).
+
+Lemma esym_erefl p : erefl p = esym (erefl p). Proof. by []. Qed.
+
+Lemma etrans_esym p q (eqpq : p = q) :
+  etrans eqpq (esym eqpq) = erefl p.
+Proof. by case: q / eqpq=>/=. Qed.
+
+Lemma etrans_erefl p q (eqpq : p = q) :
+  etrans (erefl _) eqpq = eqpq.
+Proof. by case: q / eqpq=>/=. Qed.
+
+Lemma etrans_ereflV p q (eqpq : p = q) :
+  etrans eqpq (erefl _) = eqpq.
+Proof. by case: q / eqpq=>/=. Qed.
+
+Lemma etrans_esymV p q (eqpq : p = q) :
+  etrans (esym eqpq) eqpq = erefl q.
+Proof. by case: q / eqpq=>/=. Qed.
+
+Lemma esym_etrans p q r (eqpq : p = q) (eqqr : q = r) :
+  esym (etrans eqpq eqqr) = etrans (esym eqqr) (esym eqpq).
+Proof. by case: r / eqqr; case: q /eqpq. Qed.
+
+Definition etransE := (etrans_esym, etrans_esymV, etrans_ereflV, etrans_erefl, esymK).
+
+Lemma etransA p q r t (eqpq : p = q) (eqqr : q = r) (eqrt : r = t) :
+  etrans eqpq (etrans eqqr eqrt) = etrans (etrans eqpq eqqr) eqrt.
+Proof. apply: eq_irrelevance. Qed.
+
+End Etrans.
+
 Section MxCast.
 Variable (R: ringType).
 
@@ -267,40 +301,6 @@ rewrite castmx_id !cast_ord_id.
 Qed.
 
 End MxCast.
-
-Section Etrans.
-Variable (T : eqType).
-Implicit Type (p q r t: T).
-
-Lemma esym_erefl p : erefl p = esym (erefl p). Proof. by []. Qed.
-
-Lemma etrans_esym p q (eqpq : p = q) :
-  etrans eqpq (esym eqpq) = erefl p.
-Proof. by case: q / eqpq=>/=. Qed.
-
-Lemma etrans_erefl p q (eqpq : p = q) :
-  etrans (erefl _) eqpq = eqpq.
-Proof. by case: q / eqpq=>/=. Qed.
-
-Lemma etrans_ereflV p q (eqpq : p = q) :
-  etrans eqpq (erefl _) = eqpq.
-Proof. by case: q / eqpq=>/=. Qed.
-
-Lemma etrans_esymV p q (eqpq : p = q) :
-  etrans (esym eqpq) eqpq = erefl q.
-Proof. by case: q / eqpq=>/=. Qed.
-
-Lemma esym_etrans p q r (eqpq : p = q) (eqqr : q = r) :
-  esym (etrans eqpq eqqr) = etrans (esym eqqr) (esym eqpq).
-Proof. by case: r / eqqr; case: q /eqpq. Qed.
-
-Definition etransE := (etrans_esym, etrans_esymV, etrans_ereflV, etrans_erefl, esymK).
-
-Lemma etransA p q r t (eqpq : p = q) (eqqr : q = r) (eqrt : r = t) :
-  etrans eqpq (etrans eqqr eqrt) = etrans (etrans eqpq eqqr) eqrt.
-Proof. apply: eq_irrelevance. Qed.
-
-End Etrans.
 
 Lemma nth_tnth (R: ringType) n (t: n.-tuple R) i (ltin : (i < n)%N) :
   t`_i = t~_(Ordinal ltin).
