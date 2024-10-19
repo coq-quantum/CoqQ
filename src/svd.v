@@ -45,9 +45,11 @@ Import Order.Theory GRing.Theory Num.Theory Num.Def.
 (*        csvd_u A is a m * r matrix with normalized and pairwise orthogonal  *)
 (*                 column vectors, i.e., (csvd_u A)^*t is semi-unitary        *)
 (*                 matrices, or, (csvd_u A)^*t *m (csvd_u A) = 1%:M           *)
-(*        csvd_v A is a n * r matrix, such that (csvd_v A)^*t is              *)(*                 semi-unitary                                               *)
+(*        csvd_v A is a n * r matrix, such that (csvd_v A)^*t is              *)
+(*                 semi-unitary                                               *)
 (*        csvd_d A is a 1 * r row vector with non-zero singular values        *)
-(*                 ordered nonincreasingly                                    *)(*    technically, we allow r if provided \rank A = r instead of using        *)
+(*                 ordered nonincreasingly                                    *)
+(*    technically, we allow r if provided \rank A = r instead of using        *)
 (*      \rank A directly as dimensions, to avoid unnecessary type casts.      *)
 (******************************************************************************)
 
