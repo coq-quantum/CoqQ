@@ -1,5 +1,5 @@
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect all_algebra.
+From mathcomp Require Import all_ssreflect all_algebra perm fingroup.
 (* From mathcomp.analysis Require Import reals. *)
 (* From mathcomp.real_closed Require Import complex. *)
 From quantum.external Require Import complex.
@@ -207,6 +207,82 @@ Proof. by rewrite permE /perm_ord_fun/= cast_ord_comp cast_ord_id splitEr. Qed.
 End perm_ord.
 
 Section MxCast.
+Section Cast1.
+Variable (T T1 T2 : Type).
+
+Lemma castmx_inj p q p' q' (eqpq : (p = p') * (q = q')) :
+  injective (@castmx T _ _ _ _ eqpq).
+Proof. 
+by case: eqpq=>eqp eqq; case: p' / eqp; case: q' / eqq=>x y; rewrite !castmx_id.
+Qed.
+
+Lemma castmx_cst_diag (f : forall m, 'M[T1]_m -> T2) m n 
+  (eqmn : (m = n)) (A : 'M[T1]_m) :
+  f _ (castmx (eqmn,eqmn) A) = f _ A.
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_cst_rv (f : forall m, 'rV[T1]_m -> T2) m n 
+  (eqmn : (m = n)) (A : 'rV[T1]_m) :
+  f _ (castmx (erefl _,eqmn) A) = f _ A.
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_cst_cv (f : forall m, 'cV[T1]_m -> T2) m n 
+  (eqmn : (m = n)) (A : 'cV[T1]_m) :
+  f _ (castmx (eqmn,erefl _) A) = f _ A.
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_cst_mx (f : forall m n, 'M[T1]_(m,n) -> T2) m n p q 
+  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
+  f _ _ (castmx eqmn A) = f _ _ A.
+Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_diag (f : forall m, 'M[T1]_m -> 'M[T2]_m) m n 
+  (eqmn : (m = n)) (A : 'M[T1]_m) :
+  f _ (castmx (eqmn,eqmn) A) = castmx (eqmn,eqmn) (f _ A).
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_mx (f : forall m n, 'M[T1]_(m,n) -> 'M[T2]_(m,n)) m n p q 
+  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
+  f _ _ (castmx eqmn A) = castmx eqmn (f _ _ A).
+Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_rv (f : forall m, 'rV[T1]_m -> 'rV[T2]_m) m n 
+  (eqmn : (m = n)) (A : 'rV[T1]_m) :
+  f _ (castmx (erefl _,eqmn) A) = castmx (erefl _,eqmn) (f _ A).
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_cv (f : forall m, 'cV[T1]_m -> 'cV[T2]_m) m n 
+  (eqmn : (m = n)) (A : 'cV[T1]_m) :
+  f _ (castmx (eqmn,erefl _) A) = castmx (eqmn,erefl _) (f _ A).
+Proof. by case: n/eqmn; rewrite castmx_id. Qed.
+
+Lemma castmx_mx_mxT (f : forall m n, 'M[T1]_(m,n) -> 'M[T2]_(n,m)) m n p q 
+  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
+  f _ _ (castmx eqmn A) = castmx (eqmn.2,eqmn.1) (f _ _ A).
+Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
+
+Lemma cast_qualifier_diag p p' (eqp : p = p') (P : forall p, qualifier 0 'M[T]_p) 
+  (A : 'M[T]_p) : ((castmx (eqp,  eqp) A) \is P p') = (A \is P p).
+Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
+
+Lemma cast_qualifier_rv p p' (eqp : p = p') (P : forall p, qualifier 0 'rV[T]_p) 
+  (A : 'rV[T]_p) : ((castmx (erefl _, eqp) A) \is P p') = (A \is P p).
+Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
+
+Lemma cast_qualifier_cv p p' (eqp : p = p') (P : forall p, qualifier 0 'cV[T]_p) 
+  (A : 'cV[T]_p) : ((castmx (eqp, erefl _) A) \is P p') = (A \is P p).
+Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
+
+Lemma cast_qualifier_mx p q p' q' (eqpq : (p = p') * (q = q')) 
+  (P : forall p q, qualifier 0 'M[T]_(p,q)) (A : 'M[T]_(p,q)) :
+  (castmx eqpq A \is P p' q') = (A \is P p q).
+Proof.
+by case: eqpq=>eqp eqq; case : p' / eqp P A; 
+case: q' / eqq=>P A; rewrite castmx_id.
+Qed.
+
+End Cast1.
+
 Variable (R: ringType).
 
 Lemma castmx_mul p q r p' q' r' (eqq : q = q') (eqp : p = p') (eqr : r = r') 
@@ -224,77 +300,6 @@ Lemma castmx_mull m n p p' (eqp : p = p')
   (A: 'M[R]_(p,m)) (B: 'M_(m,n)) :
   castmx (eqp, erefl _) A *m B = castmx (eqp, erefl _) (A *m B).
 Proof. by case: p' / eqp; rewrite !castmx_id. Qed.
-
-Lemma castmx_inj T p q p' q' (eqpq : (p = p') * (q = q')) :
-  injective (@castmx T _ _ _ _ eqpq).
-Proof. 
-by case: eqpq=>eqp eqq; case: p' / eqp; case: q' / eqq=>x y; rewrite !castmx_id.
-Qed.
-
-Lemma castmx_cst_diag T1 T2 (f : forall m, 'M[T1]_m -> T2) m n 
-  (eqmn : (m = n)) (A : 'M[T1]_m) :
-  f _ (castmx (eqmn,eqmn) A) = f _ A.
-Proof. by case: n/eqmn; rewrite castmx_id. Qed.
-
-Lemma castmx_cst_rv T1 T2 (f : forall m, 'rV[T1]_m -> T2) m n 
-  (eqmn : (m = n)) (A : 'rV[T1]_m) :
-  f _ (castmx (erefl _,eqmn) A) = f _ A.
-Proof. by case: n/eqmn; rewrite castmx_id. Qed.
-
-Lemma castmx_cst_cv T1 T2 (f : forall m, 'cV[T1]_m -> T2) m n 
-  (eqmn : (m = n)) (A : 'cV[T1]_m) :
-  f _ (castmx (eqmn,erefl _) A) = f _ A.
-Proof. by case: n/eqmn; rewrite castmx_id. Qed.
-
-Lemma castmx_cst_mx T1 T2 (f : forall m n, 'M[T1]_(m,n) -> T2) m n p q 
-  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
-  f _ _ (castmx eqmn A) = f _ _ A.
-Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
-
-Lemma castmx_mx_diag T1 T2 (f : forall m, 'M[T1]_m -> 'M[T2]_m) m n 
-  (eqmn : (m = n)) (A : 'M[T1]_m) :
-  f _ (castmx (eqmn,eqmn) A) = castmx (eqmn,eqmn) (f _ A).
-Proof. by case: n/eqmn; rewrite castmx_id. Qed.
-
-Lemma castmx_mx_mx T1 T2 (f : forall m n, 'M[T1]_(m,n) -> 'M[T2]_(m,n)) m n p q 
-  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
-  f _ _ (castmx eqmn A) = castmx eqmn (f _ _ A).
-Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
-
-Lemma castmx_mx_rv T1 T2 (f : forall m, 'rV[T1]_m -> 'rV[T2]_m) m n 
-  (eqmn : (m = n)) (A : 'rV[T1]_m) :
-  f _ (castmx (erefl _,eqmn) A) = castmx (erefl _,eqmn) (f _ A).
-Proof. by case: n/eqmn; rewrite castmx_id. Qed.
-
-Lemma castmx_mx_cv T1 T2 (f : forall m, 'cV[T1]_m -> 'cV[T2]_m) m n 
-  (eqmn : (m = n)) (A : 'cV[T1]_m) :
-  f _ (castmx (eqmn,erefl _) A) = castmx (eqmn,erefl _) (f _ A).
-Proof. by case: n/eqmn; rewrite castmx_id. Qed.
-
-Lemma castmx_mx_mxT T1 T2 (f : forall m n, 'M[T1]_(m,n) -> 'M[T2]_(n,m)) m n p q 
-  (eqmn : (m = n) * (p = q)) (A : 'M[T1]_(m,p)) :
-  f _ _ (castmx eqmn A) = castmx (eqmn.2,eqmn.1) (f _ _ A).
-Proof. by case: eqmn=>a b; case: n/a; case: q/b; rewrite castmx_id. Qed.
-
-Lemma cast_qualifier_diag T p p' (eqp : p = p') (P : forall p, qualifier 0 'M[T]_p) 
-  (A : 'M[T]_p) : ((castmx (eqp,  eqp) A) \is P p') = (A \is P p).
-Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
-
-Lemma cast_qualifier_rv T p p' (eqp : p = p') (P : forall p, qualifier 0 'rV[T]_p) 
-  (A : 'rV[T]_p) : ((castmx (erefl _, eqp) A) \is P p') = (A \is P p).
-Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
-
-Lemma cast_qualifier_cv T p p' (eqp : p = p') (P : forall p, qualifier 0 'cV[T]_p) 
-  (A : 'cV[T]_p) : ((castmx (eqp, erefl _) A) \is P p') = (A \is P p).
-Proof. by case: p' / eqp A P =>A P; rewrite castmx_id. Qed.
-
-Lemma cast_qualifier_mx T p q p' q' (eqpq : (p = p') * (q = q')) 
-  (P : forall p q, qualifier 0 'M[T]_(p,q)) (A : 'M[T]_(p,q)) :
-  (castmx eqpq A \is P p' q') = (A \is P p q).
-Proof.
-by case: eqpq=>eqp eqq; case : p' / eqp P A; 
-case: q' / eqq=>P A; rewrite castmx_id.
-Qed.
 
 Definition castmx_funE := (castmx_cst_diag, castmx_cst_rv, castmx_cst_cv, 
   castmx_cst_mx, castmx_mx_diag, castmx_mx_mx, castmx_mx_rv, castmx_mx_cv,
