@@ -818,6 +818,68 @@ apply: (ler0_derive1_nincr (f := fun p => p^-1 *
   by rewrite derivable1_diffP=>/differentiable_continuous.
 Qed.
 
+Lemma lpnormrc_is_cvg (m n : nat) (A : 'M[C]_(m,n)) :
+  cvgn (fun k : nat => lpnormrc k.+1%:R A).
+Proof.
+apply: (etnonincreasing_is_cvgn (M := 0))=>//.
+by move=>k1 k2 Pk; apply: lpnormrc_nincr; rewrite ler1Sn/= ler_nat ltnS.
+Qed.
+
+Lemma lpnormrc_limn_ge (m n : nat) (A : 'M[C]_(m,n)) :
+  lpnormrc 0 A <= limn (fun k : nat => lpnormrc k.+1%:R A).
+Proof.
+apply: etlimn_ge. apply: lpnormrc_is_cvg.
+move=>k; rewrite lpnormrc.unlock ltr01 ltrn1/=.
+apply/bigmax_leP=>/=; split=>// i _.
+apply: (le_trans (y := ``|A i.1 i.2| `^ k.+1%:R `^ k.+1%:R^-1)).
+  by rewrite -powRrM mulfV ?powRr1.
+rewrite ge0_ler_powR// ?nnegrE// ?sumr_ge0//.
+by rewrite (bigD1 i)//= lerDl sumr_ge0// =>? _; apply: powR_ge0.
+Qed.
+
+Lemma lpnormrc_limn_le (m n : nat) (A : 'M[C]_(m,n)) :
+  limn (fun k : nat => lpnormrc k.+1%:R A) <= lpnormrc 0 A.
+Proof.
+have [/eqP -> | PA] := boolP (A == 0).
+  under eq_lim do rewrite lpnormrc0.
+  by rewrite lim_cst// lpnormrc0.
+have P1 : 0 < \big[Order.max/0]_i ``|A i.1 i.2|.
+  rewrite lt_def; apply/andP; split.
+  move: PA; apply contraNN=>/eqP P; apply/eqP/matrixP=>i j.
+  move: P; rewrite (bigD1 (i,j))//= mxE =>P1.
+  by apply/eqP; rewrite -normrc_le0 -P1 le_max lexx.
+  by apply/bigmax_geP; left.
+have P2 : 0 < ((m * n)%:R : R). rewrite ltr0n lt0n muln_eq0.
+  by move: PA; apply: contraNN=>P; rewrite mx_dim0_cond.
+have P3: cvgn (fun x : nat => (m * n)%:R `^ x.+1%:R^-1 * \big[maxr/0]_i ``| A i.1 i.2 |).
+  apply: is_cvgM; last by apply: is_cvg_cst.
+  by apply/cvg_ex; exists 1; move: (powR1n_limn P2); rewrite -cvg_shiftS/=.
+apply: (le_trans (y := limn (fun k : nat => 
+  ( (m * n)%:R `^ k.+1%:R ^-1 *  (\big[Order.max/0]_i ``|A i.1 i.2|))))).
+apply: ler_etlimn=>[|//|]. apply: lpnormrc_is_cvg.
+move=>k; rewrite lpnormrc.unlock ltrn1/=.
+apply: (le_trans (y := (\sum_(i : 'I_m * 'I_n) 
+  (\big[maxr/0]_i ``| A i.1 i.2 |) `^ k.+1%:R) `^ k.+1%:R^-1)).
+rewrite ge0_ler_powR//= ?nnegrE ?sumr_ge0//.
+  apply ler_sum=>i _; rewrite ge0_ler_powR//= ?nnegrE//; 
+  apply/bigmax_geP; by [left | right; exists i].
+by rewrite sumr_const -mulr_natl card_prod !card_ord 
+  powRM// -powRrM mulfV//= powRr1// ltW.
+rewrite lpnormrc.unlock ltr01 limM.
+by rewrite lim_cst//; move: (powR1n_limn P2); 
+  rewrite -cvg_shiftS/==>/cvg_lim->//; rewrite mul1r.
+by apply/cvg_ex; exists 1; move: (powR1n_limn P2); rewrite -cvg_shiftS/=.
+apply: is_cvg_cst.
+Qed.
+
+Lemma lpnormrc_cvg (m n : nat) (A : 'M[C]_(m,n)) :
+  (fun k => lpnormrc k.+1%:R A) @ \oo --> lpnormrc 0 A.
+Proof.
+rewrite cvgn_limnE//; split; last by apply: lpnormrc_is_cvg.
+apply/le_anti/andP; split.
+apply/lpnormrc_limn_le. apply/lpnormrc_limn_ge.
+Qed.
+
 Lemma lpnormrc_gep0 p (m n : nat) (A : 'M[C]_(m,n)) :
   lpnormrc 0 A <= lpnormrc p A.
 Proof.
