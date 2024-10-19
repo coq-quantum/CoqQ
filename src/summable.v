@@ -2209,6 +2209,8 @@ by split.
 Unshelve. end_near.
 Qed.
 
+Import ArrowAsUniformType.
+
 Lemma foo4 R (f : nat -> nat -> R) :
   (exists M, forall N1 N2, \sum_(0 <= i < N1)\sum_(0 <= j < N2) `|f i j| <= M) ->
     cvgn (series2 f : nat -> nat -> R) /\

@@ -42,6 +42,12 @@ xx
 - definitions `lowner_mxcporder`, `D2M`, `Denmx0`, `Dlub`
 - lemmas `form_nng_neq0`, `Cnng_open`, `psdmx_closed`, `trnorm_add_eq`, `cmxnondecreasing_opp`, `cmxnonincreasing_opp`, `cmxlbounded_by_opp`, `cmxubounded_by_opp`, `ltcmx_def`, `subcmx_gt0`, `cmxcvgn_trnorm`, `is_cmxcvgn_trnorm`, `cmxlimn_trnorm`, `cmxnondecreasing_is_cvgn`, `cmxnonincreasing_is_cvgn`, `cmxopen_nge0`, `cmxopen_nge`, `cmxopen_nle0`, `cmxopen_nle`, `cmxclosed_ge`, `cmxclosed_le`, `cmxlimn_ge_near`, `cmxlimn_le_near`, `ler_cmxlimn_near`, `cmxlimn_ge`, `cmxlimn_le`, `ler_cmxlimn`, `cmxnondecreasing_cvgn_le`, `cmxnonincreasing_cvgn_ge`, `trace_continuous`, `bijective_to_cmx_continuous`, `bijective_of_cmx_continuous`, `bijective_to_cmx_cvgnE`, `bijective_of_cmx_cvgnE`, `bijective_to_cmx_is_cvgnE`, `bijective_of_cmx_is_cvgnE`, `bijective_to_cmx_limnE`, `bijective_of_cmx_limnE`, `linear_to_cmx_continuous`, `linear_to_cmx_continuousP`, `linear_of_cmx_continuous`, `linear_of_cmx_continuousP`, `closed_letr`, `closed_getr`, `closed_eqtr`, `cmxcvgn_trace`, `is_cmxcvgn_trace`, `cmxlimn_trace`, `closed_denmx`, `closed_obsmx`, `closed_to_cmx_linearP`, `closed_to_cmx_linear`, `open_to_cmx_linearP`, `open_to_cmx_linear`, `closed_of_cmx_linearP`, `closed_of_cmx_linear`, `open_of_cmx_linearP`, `open_of_cmx_linear`, `denmx0`, `limn_denmx`, `Dlub_lub`, `Dlub_ub`, `Dlub_least`
 
+### hstensor.v
+
+#### Removed
+
+- lemmas `leso01`, `qc_neq0`, `qc_gt0`, `idso_neq0`, `ltso01`, `so_neq0P`, `psdlf_decomp`, `ge0_krausE`, `gtf0_trlfP`
+
 ### majorization.v
 
 #### Added
@@ -186,6 +192,7 @@ xx
 #### Added
 
 - lemmas `isolf_le_dim`, `schnormUl_eq_dim`, `schnormUr_eq_dim`, `reindex_mxtens_index`, `reindex_mxtens_unindex`, `schnorm_spectral`, `schnorm_tens`
+- lemmas `leso01`, `qc_neq0`, `qc_gt0`, `idso_neq0`, `ltso01`, `so_neq0P`, `psdlf_decomp`, `ge0_krausE`, `gtf0_trlfP`
 
 #### Removed
 

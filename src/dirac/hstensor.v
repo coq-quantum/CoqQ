@@ -3793,30 +3793,11 @@ Qed.
 Lemma liftso1 S T (sub : S :<=: T) : liftso sub \:1 = \:1.
 Proof. by rewrite /liftso tenso11 castso1. Qed.
 
-Lemma leso01 (U : chsType) : (0 : 'SO) ⊑ (\:1 : 'SO(U)). Proof. by apply/cp_geso0. Qed.
-Lemma qc_neq0 (U V: chsType) (E : 'QC(U,V)) : (E : 'SO) != 0.
-Proof.
-apply/eqP=>P; move: P=>/(f_equal (@dualso _ _))/superopP/(_ \1)/eqP.
-by rewrite dualso0 qu1_eq1 soE oner_eq0.
-Qed.
-Lemma qc_gt0 (U V: chsType) (E : 'QC(U,V)) : (0 : 'SO) ⊏ E.
-Proof. by rewrite lt_def qc_neq0 cp_geso0. Qed.
-Lemma idso_neq0 (U : chsType) : (\:1 : 'SO(U)) != 0. Proof. exact: qc_neq0. Qed.
-Lemma ltso01 (U : chsType) : (0 : 'SO(U)) ⊏ \:1. Proof. exact: qc_gt0. Qed.
-
 Lemma tenso_ge0 S T (f : 'SO[H]_S) (g : 'SO[H]_T) :
   [disjoint S & T] -> (0 :'SO) ⊑ f -> (0 :'SO) ⊑ g -> (0 :'SO) ⊑ f :⊗ g.
 Proof.
 move=>P1 /geso0_cpP Pf /geso0_cpP Pg; apply/geso0_cpP.
 move: (tenso_cp P1 (CPMap_Build Pf) (CPMap_Build Pg))=>//.
-Qed.
-
-Lemma so_neq0P (U V : chsType) (E : 'SO(U,V)) : 
-  reflect (exists f, E f != 0) (E != 0).
-Proof.
-apply/(iffP negP); rewrite not_existsP; apply contra_not.
-by move=>P; apply/eqP/superopP=>u; move: (P u)=>/negP; rewrite negbK soE=>/eqP.
-by move=>/eqP-> x; rewrite soE/= eqxx.
 Qed.
 
 Lemma tenso_eq0 S T (dis : [disjoint S & T]) (f : 'SO[H]_S) (g : 'SO[H]_T) :
@@ -3829,35 +3810,7 @@ by rewrite -tenso_correct// !soE tenf_eq0// Pv/==>/eqP.
 by move=>/orP[/eqP->|/eqP->]; rewrite ?linear0l ?linear0r eqxx.
 Qed.
 
-Lemma psdlf_decomp (U : chsType) (f : 'End(U)): f \is psdlf -> 
-  exists (v : 'I_(dim U) -> U), f = \sum_i [> v i ; v i <].
-Proof.
-rewrite qualifE=>/diag_decomp_absorb.
-set v := fun k => sqrtC (eigenval (h2mx f) k) *: eigenvec (h2mx f) k.
-rewrite/==>P. exists (fun k=> c2h (v k)).
-apply/h2mx_inj; rewrite P linear_sum.
-by apply eq_bigr=>i _; rewrite outp.unlock/= mx2hK !c2hK.
-Qed.
-
-Lemma ge0_krausE (U V : chsType) (E : 'SO(U,V)) x : (0:'SO) ⊑ E ->
-  E x = \sum_i ((krausop E i) \o x \o (krausop E i)^A)%VF.
-Proof. by move=>/geso0_cpP P; move: (krausE (CPMap_Build P) x). Qed.
-
 (* tenf_cast1l *)
-
-Lemma gtf0_trlfP (U : chsType) (x : 'End(U)) :
-  reflect (0%:VF ⊑ x /\ \Tr x > 0) (0%:VF ⊏ x).
-Proof.
-rewrite [_ ⊏ x]lt_def; apply/(iffP andP)=>[[P1 P2]|[P1 P2]]; split=>//; last first.
-move: P2; apply/contraTN=>/eqP->; by rewrite linear0 ltxx.
-rewrite lt_def psdlf_trlf ?psdlfE// andbT; move: P1; apply/contraNN=>/eqP.
-rewrite lftrace_baseE=>P4. move: (gef0_formV P2)=>[g Pg].
-have P3 : forall i, true -> (fun i=>[< eb i; x (eb i) >]) i = 0.
-by apply: psumr_eq0P=>// i _; rewrite Pg lfunE adj_dotEr/= ge0_dotp.
-suff: g = 0 by rewrite Pg=>->; rewrite comp_lfun0r.
-apply/(intro_onb eb)=>i/=; rewrite lfunE/=; apply/eqP.
-by rewrite -dotp_eq0 -adj_dotEr -comp_lfunE -Pg; apply/eqP/P3.
-Qed.
 
 Lemma ptenso_rge0 S T (dis : [disjoint S & T]) (x : 'SO[H]_S) (y : 'SO[H]_T) :
   (0 : 'SO) ⊏ x -> ((0 : 'SO) ⊑ x :⊗ y) = ((0 : 'SO) ⊑ y).
