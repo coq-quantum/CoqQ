@@ -147,6 +147,28 @@ xx
 - definitions `dmulmx`, `dexpmx`, `dmxortho`, `dnthrootmx`
 - notations `A .* B`, `A .^+ n`, `A .^-1`, `A .^- n`, `n .-rootdmx`, `A ._|_`
 - lemmas `dmulmxC`, `dmulmxA`, `dmulmxDl`, `dmulmxDr`, `dexpmx0`, `dexpmx1`, `dexpmx2`, `dexpmxS`, `dexpmx0n`, `dexpmx1n`, `dexpmxD`, `dexpmxSr`, `dexprm_inj`, `dmxorthoE`, `dmxorthoC`, `dmxortho_elem`, `dmxorthoP`, `dmxortho_adj`, `dmxortho_dexp`, `dmxortho_inv`, `dmxortho_invn`, `diag_mx_adj`, `diag_mx_dmul`, `expmx_diag`, `dmxortho_root`, `diag_mx_inj`, `normalmx_const`, `spectral_diag_const`, `spectral_diag0`, `spectral_diag1`, `unitarymx1`, `unitarymxZ`, `unitarymxZ_diag`
+- definition `pnorm`
+- lemmas `pnorm_pair`, `pnorm0_eq0`, `pnorm_ge0`, `pnorm_nneg`, `pnormZ`, `pnorm0`, `pnorm0P`, `pnorm_eq0`, `pnorm_triangle`
+- definitions `l1norm`, `l2norm`
+- lemmas `pnorm_trmx`, `pnorm_adjmx`, `pnorm_conjmx`, `pnorm_diag`, `l1norm_ge0`, `l1norm_nneg`, `l2norm_ge0`, `l2norm_nneg`, `l1norm_trmx`, `l1norm_adjmx`, `l1norm_conjmx`, `l1norm_diag`, `l2norm_trmx`, `l2norm_adjmx`, `l2norm_conjmx`, `l2norm_diag`, `dotV_l2norm`, `dot_l2norm`, `l2norm_dotV`, `l2norm_dot`, `l1normE`, `l1norm_triangle`, `l2norm_triangle`, `l2norm_l1norm`, `l1norm_l2norm`, `l2normUl`, `l2normUr`, `l2norm_deltamx`
+- definitions `is_decreasing`, `tsort_s`, `sort_v`
+- lemmas `is_decreasingP`, `geR_total`, `geR_transitive`, `geR_refl`, `size_sort_s`, `tsort_sE`, `all_geR_s`, `all_geR_sort_s`, `sort_s_sorted`, `sort_tsort_perm`, `ltn_ordK`, `perm_exists_sort_t`, `perm_sort_v`, `homo_sort_s`, `sort_v_decreasing`, `sort_exists`, `is_decreasing_sorted_s`, `is_decreasing_sorted`, `col_perm_perm_s`, `col_perm_real`, `is_decreasing_perm`, `poly_prod_perm_seq`, `poly_prod_perm`, `poly_unique_sort`
+- definitions `is_svd_diag`, `cdiag_mx`, `svd_d_exdl`, `svd_d_exdr`
+- lemmas `perm_mx_unitary`, `trC_perm_mx`, `svd_diag_decreasing`, `svd_diag_nneg`, `svd_diag_real`, `svd_diag_ge0`, `is_svd_diagP`, `is_svd_diag_eq0`, `is_svd_diag_neq0`, `sqrt_svd_diag`, `sqr_svd_diag`, `svd_diag_conj`, `svd_diagZ`, `const_svd_diag`, `descreasing_row_vec`, `diag_perm`, `min_idl`, `min_idr`, `minn_id`, `usubmx_mul`, `castmx_usubmx`, `row_mx_cast0`, `col_mx_cast0`, `block_mx_castc0`, `block_mx_cast00`, `map_cdiag_mx`, `cdiag_adjmx`, `cdiag_conjmx`, `cdiag_trmx`, `cdiag_mx_diag`, `svd_d_exdl_inj`, `svd_d_exdr_inj`, `svd_d_exdr_conj`, `big_ord_cast`, `svd_d_exd_sumr`, `svd_d_exd_suml`, `cdiag_mx_mull`, `cdiag_mx_mulr`, `pnorm_cdiag`, `l1norm_cdiag`, `l2norm_cdiag`, `cdiag_mx_is_linear`
+- definitions `svd_u`, `svd_d`, `svd_v`, `svds_d`
+- lemmas `formV_psd`, `form_psd`, `psdmx_form`, `psdmx_formV`, `psdmx_svd`, `dot_dotmxE`, `mulmx_colrow`, `row_diag_mul`, `ord_ltn_ind`, `unitary_dim`, `unitary_ext`, `form_diag_schmidt`, `svd_diag_exd`, `svd_diag_exdl`, `svd_diag_exdr`, `form_diag_schmidt1`, `svd_subproof_lemn`, `svd_subproof`, `svds_d_svd_dl`, `svds_d_svd_dr`, `svd_u_unitarymx`, `svd_v_unitarymx`, `svd_d_svd_diag`, `svd_pE`, `svds_d_svd_diag`, `svdE`, `svdsE`, `polymx_dec`, `char_poly_dec`, `spectral_unique`, `svd_d_spectral_perm`, `svds_d_spectral_perm`, `svd_d_unique`, `svds_d_unique`, `divr_norm_id`, `norm_if_id`, `norm_if_norm`, `svds_d_const`, `svd_d_const`, `svd_d0`, `svds_d0`, `svds_d1`, `svd_d1`, `svd_dZ`, `svds_dZ`, `svd_d_adjmx`, `svds_d_adjmx`, `svd_d_trmx`, `svds_d_trmx`, `svd_d_conjmx`, `svds_d_conjmx`, `svd_d_Ul`, `svds_d_Ul`, `svd_d_Ur`, `svds_d_Ur`, `svd_d_unitary`, `svd_d_unitaryC`, `svd_d_unitaryT`, `svds_d_unitary`, `svd_d_ge0`, `svds_d_ge0`, `svd_cdiagmx`, `svd_diagmx`, `svds_diagmx`
+- lemmas `bigmax_le_elem`, `bigmax_eq_elem`, `bigmax_find`
+- definitions `c0`, `i2norm`
+- lemmas `svd_d_exdr0`, `max_svd_diag_Sn`, `i2norms`, `i2norm_adjmx`, `i2norm_trmx`, `i2norm_conjmx`, `i2norm_n0`, `i2norm_0n`, `i2norm_Sn`, `i2norms_Sn`, `i2norm0_eq0`, `i2norm_ge0`, `i2norm_nneg`, `i2normZ`, `i2norm0`, `i2norm0P`, `i2norm_eq0`, `l2norm_diag_mul`, `l2norm_cdiag_mul`, `i2norm_dotr`, `i2norm_dotl`, `diag_mx_deltaM`, `i2norm_existsr`, `i2norm_existsl`, `i2norm_triangle`, `i2norm1`, `i2norm_const`, `i2normUl`, `i2normUr`, `i2norm_unitary`, `i2norm_l2norm`, `i2normM`, `i2norm_elem`, `i2norm_svd`, `i2norm_svds`
+- lemmas `svd_d_exdr_dmul`, `svd_d_exdl_dmul`, `pnorm_svd_d_exdr`, `pnorm_svd_d_exdl`
+- definition `schattennorm`
+- lemmas `schattennorm_exdr`, `schattennorm_exdl`, `schattennorms`, `schattennorm_adjmx`, `schattennorm_trmx`, `schattennorm_conjmx`, `schattennorm0_eq0`, `schattennorm_ge0`, `schattennorm_nneg`, `schattennormZ`, `schattennorm0`, `schattennorm0P`, `schattennorm_eq0`, `schattennormUl`, `schattennormUr`, `schattennorm_svd`, `schattennorm_svds`
+- definitions `fbnorm`, `trnorm`
+- notations `\fb| M |`, `\tr| M |`
+- lemmas `fbnorm_adjmx`, `fbnorm_conjmx`, `fbnorm_trmx`, `fbnorm0_eq0`, `fbnorm_ge0`, `fbnorm_nneg`, `fbnorm0`, `fbnorm0P`, `fbnorm_eq0`, `fbnormZ`, `fbnormUl`, `fbnormUr`, `fbnorm_svd`, `fbnorm_svds`, `trnorm_adjmx`, `trnorm_conjmx`, `trnorm_trmx`, `trnorm0_eq0`, `trnorm_ge0`, `trnorm_nneg`, `trnorm0`, `trnorm0P`, `trnorm_eq0`, `trnormZ`, `trnormUl`, `trnormUr`, `trnorm_svd`, `trnorm_svds` 
+- lemmas `fbnorm_l2norm`, `fbnorm_trnormV`, `fbnorm_trnorm`, `fbnorm_dotr`, `fbnorm_dotl`, `fbnorm_existsr`, `fbnorm_existsl`, `fbnorm_triangle`, `fbnormM`, `fbnormMl`, `fbnormMr`, `fbnormMV`, `i2norm_fbnorm`
+- definition `i1fun`
+- lemmas `i1funA`, `i1fun_triangle`, `trnorm_svdE`, `tr_mul_diag`, `trnorm_i1funr`, `trnorm_existsr`, `trnorm_triangle`, `trnormMl`, `trnormMr`, `i2norm_trnorm`, `trnorm_ge_tr`, `psdmx_trnorm`, `trnorm_inner`, `form_tr_ge0`, `form_tr_eq0`, `formV_tr_ge0`, `formV_tr_eq0`
 
 ### nondeterministic.v
 
