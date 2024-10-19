@@ -63,6 +63,13 @@ xx
 - lemmas `powR_weak_majorize`, `exp_ln_weak_majorize`, `ln_weak_majorize`, `ln_prod`, `prod_sum_weak_majorize_ln`, `prod_sum_weak_majorize_gt0`, `prod_sum_weak_majorize`, `entropy_majority`, `weak_majorize_sum`, `majority_entropy_le`
 - lemmas `svd_fRE`, `svd_fE`, `svd_fR_nincr`, `svd_fR_ge0`, `svd_fR_nneg`, `svd_fR_gt0`, `svd_fR_eq0`, `svd_fR_pos`. `svd_fR_prodM`, `weak_majorize_svd_fR`, `svd_fR_sumM`, `svd_f_sumM`, `svd_fR_powM`, `svd_fR_fM`
 
+### mcextra.v
+
+#### Added
+
+- definitions `perm_ord_fun`, `perm_ord`
+- lemmas `perm_ord_fun_inj`, `splitEl`, `splitEr`, `ltn_lrshift`, `leq_lrshift`, `perm_ordEl`, `perm_ordEr`
+
 ### mxnorm.v
 
 #### Added

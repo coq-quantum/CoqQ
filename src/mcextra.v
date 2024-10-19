@@ -167,6 +167,45 @@ Proof. apply: eq_irrelevance. Qed.
 
 End Etrans.
 
+Section perm_ord.
+
+Definition perm_ord_fun m n : 'I_(m+n) -> 'I_(m+n) := 
+    (fun i => match fintype.split i with
+              | inl j => (rshift _ j)
+              | inr j => (lshift _ j) end) \o (cast_ord (addnC _ _)).
+Lemma perm_ord_fun_inj m n : injective (@perm_ord_fun m n).
+Proof.
+apply/inj_comp; last by apply/cast_ord_inj.
+move=>i j; case: split_ordP=>c ->; case: split_ordP=>d ->.
+- by move=>/rshift_inj->.
+- by move=>/eqP; rewrite eq_rlshift.
+- by move=>/eqP; rewrite eq_lrshift.
+- by move=>/lshift_inj->.
+Qed.
+Definition perm_ord {m n} : 'S_(m+n) := (perm (@perm_ord_fun_inj m n)).
+
+Lemma splitEl {m n} (k : 'I_n) : split (lshift m k) = inl k.
+Proof. by case: split_ordP=>[?/lshift_inj->//|?/eqP]; rewrite eq_lrshift. Qed.
+
+Lemma splitEr {m n} (k : 'I_m) : split (rshift n k) = inr k.
+Proof. by case: split_ordP=>[?/eqP|?/rshift_inj->//]; rewrite eq_rlshift. Qed.
+
+Lemma ltn_lrshift m n (i : 'I_m) (j : 'I_n) : (lshift n i < rshift m j)%N.
+Proof. by rewrite /=; apply/(leq_trans (n := m))=>//; rewrite leq_addr. Qed. 
+
+Lemma leq_lrshift m n (i : 'I_m) (j : 'I_n) : (lshift n i <= rshift m j)%N.
+Proof. by apply/ltnW/ltn_lrshift. Qed.
+
+Lemma perm_ordEl m n (eqmn : n + m = m + n) (k : 'I_n) :
+  (perm_ord (cast_ord eqmn (lshift m k))) = rshift m k.
+Proof. by rewrite permE /perm_ord_fun/= cast_ord_comp cast_ord_id splitEl. Qed.
+
+Lemma perm_ordEr m n (eqmn : n + m = m + n) (k : 'I_m) :
+  (perm_ord (cast_ord eqmn (rshift n k))) = lshift n k.
+Proof. by rewrite permE /perm_ord_fun/= cast_ord_comp cast_ord_id splitEr. Qed.
+
+End perm_ord.
+
 Section MxCast.
 Variable (R: ringType).
 
