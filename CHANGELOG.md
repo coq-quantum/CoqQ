@@ -133,6 +133,21 @@ xx
 - definitions `lowner_mxcporder`, `D2M`, `Denmx0`, `Dlub`
 - lemmas `denmx0`, `chainD_subproof`, `Dge0_subproof`, `chainD_lb_subproof`, `chainD_ub_subproof`, `limn_denmx`, `Dlub_lub`, `Dlub_ub`, `Dlub_least`
 
+### mxpred.v
+
+#### Added
+
+- lemmas `row_idem`, `adj_row'`, `adj_col'`, `adjmx_row''`, `adjmx_col''`, `adj_block_mx`, `mxrank_conj`, `conjmx_const`
+- lemmas `conjmx_unitary`, `adjmx_unitary`, `row_unitarymx`, `mxrank_mulmxU`, `mxrank_mulUmx`, `mxrank_mulmxUC`, `mxrank_mulUCmx`, `dotmx_row_mx`, `row_mx0_unitarymx`, `row_0mx_unitarymx`, `mxdiag_unitary`, `projmx_tr`
+- lemmas `formV_psd`, `form_psd`, `psdmx1`, `obsmx0`, `obsmx1`, `distvC`, `normv_id`, `normv_le0`, `normv_lt0`
+
+#### Removed
+
+- lemmas `mulmxACA`, `delta_mx_mulEl`, `delta_mx_mulEr`
+- definitions `dmulmx`, `dexpmx`, `dmxortho`, `dnthrootmx`
+- notations `A .* B`, `A .^+ n`, `A .^-1`, `A .^- n`, `n .-rootdmx`, `A ._|_`
+- lemmas `dmulmxC`, `dmulmxA`, `dmulmxDl`, `dmulmxDr`, `dexpmx0`, `dexpmx1`, `dexpmx2`, `dexpmxS`, `dexpmx0n`, `dexpmx1n`, `dexpmxD`, `dexpmxSr`, `dexprm_inj`, `dmxorthoE`, `dmxorthoC`, `dmxortho_elem`, `dmxorthoP`, `dmxortho_adj`, `dmxortho_dexp`, `dmxortho_inv`, `dmxortho_invn`, `diag_mx_adj`, `diag_mx_dmul`, `expmx_diag`, `dmxortho_root`, `diag_mx_inj`, `normalmx_const`, `spectral_diag_const`, `spectral_diag0`, `spectral_diag1`, `unitarymx1`, `unitarymxZ`, `unitarymxZ_diag`
+
 ### nondeterministic.v
 
 #### Added

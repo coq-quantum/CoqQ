@@ -18,7 +18,7 @@ Local Open Scope ring_scope.
 Import Order.Theory GRing.Theory Num.Theory Num.Def.
 
 (******************************************************************************)
-(*                       Predicate and Norms of matrix                        *)
+(*                 Predicate of matrix & Vector Norm/Order                    *)
 (* -------------------------------------------------------------------------- *)
 (* existing qualifier:                                                        *)
 (* qualifier 1: over numDomainType, 'M_(n,m)                                  *)
@@ -81,28 +81,6 @@ Import Order.Theory GRing.Theory Num.Theory Num.Def.
 (*      vorderType R == interface type of lmodType (R : numDomainType)        *)
 (*                      equipped with a vector order                          *)
 (*                      The HB class is VOrder                                *)
-(******************************************************************************)
-(*                             Matrix Norms                                   *)
-(* -------------------------------------------------------------------------- *)
-(* pnorm p : (l^(p+1) norm) (p+1).-root (\sum_(i,j) `|A i j|^+(p+1)           *)
-(* schattennorm p : pnorm p over its singular values                          *)
-(*                  (still lack proofs of triangle inequality)                *)
-(* l1norm := pnorm 1; l2norm := pnorm 2                                       *)
-(* i2norm :  induced 2-norm                                                   *)
-(* fbnorm := schattennorm 2 : Frobenius norm (= l2norm)                       *)
-(* trnorm := schattennorm 1 : trace/nuclear norm                              *)
-(******************************************************************************)
-(*                      Singular Value Decomposition (SVD)                    *)
-(* let A = 'M[R]_(m,n)  R: numClosedFieldType                                 *)
-(*        A = svd_u A *m cdiag_mx (svd_d A) *m (svd_v A)^*t                   *)
-(*    where svd_u A and svd_v A are two square unitary matrices               *)
-(*    (svd_d A) is 'rV[R]_(minn m n), with nonincreasing order of singular    *)
-(*    values; cdiag_mx gives the m * n matrix with diagonal elements of D     *)
-(*    (0 for extendd part, i.e., index out of minn m n)                       *)
-(* let A = 'M[R]_m  R: numClosedFieldType                                     *)
-(*        A = svd_u A *m diag_mx (svds_d A) *m (svd_v A)^*t                   *)
-(******************************************************************************)
-(* Define lowner order of matrices                                            *)
 (******************************************************************************)
 
 Ltac auto_ge0 := repeat match goal with
@@ -389,25 +367,8 @@ by move=>i; rewrite/=; move/eqP/fintype1P: Pi=>[x Px]; rewrite !Px eqxx.
 Qed.
 Arguments big_card1 [T idx op I] i0 [F].
 
-Lemma mulmxACA (R: ringType) m1 m2 m3 m4 m5 
- (M1 :'M[R]_(m1,m2)) (M2 : 'M_(m2,m3)) (M3 : 'M_(m3,m4)) (M4 : 'M_(m4,m5)) :
-  M1 *m M2 *m M3 *m M4 = M1 *m (M2 *m M3) *m M4.
-Proof. by rewrite !mulmxA. Qed.
-
-Lemma delta_mx_mulEl (R: ringType) {m n l} (A : 'M[R]_(m , n)) i (j:'I_l) p q :
-  (A *m delta_mx i j) p q = (j == q)%:R * A p i.
-Proof.
-rewrite mxE (bigD1 i)// big1/= ?mxE ?eqxx/= ?addr0 1?eq_sym 1?mulrC//.
-move=>k /negPf Pk; rewrite mxE Pk/= mulr0//.
-by case: eqP=> _; rewrite ?mulr1 ?mul1r ?mul0r ?mulr0.
-Qed.
-
-Lemma delta_mx_mulEr (R: ringType) {m n l} (A : 'M[R]_(m , n)) (i:'I_l) j p q :
-  (delta_mx i j *m A) p q = (i == p)%:R * A j q.
-Proof.
-rewrite mxE (bigD1 j)// big1/= ?mxE ?eqxx/= ?addr0 1?eq_sym ?andbT//.
-move=>k /negPf Pk; rewrite mxE Pk/= andbF mul0r//.
-Qed.
+Lemma row_idem R m n (M : 'M[R]_(m,n)) i : row 0 (row i M) = row i M.
+Proof. by apply/matrixP=>j k; rewrite !mxE. Qed.
 
 Section ConjAdjmx.
 Variable (R : numClosedFieldType) (m n : nat).
@@ -599,9 +560,39 @@ Lemma adj_col {m n : nat} (M : 'M[R]_(m, n)) i :
   (col i M)^*t = row i M^*t.
 Proof. by rewrite adjmxE tr_col map_row. Qed. 
 
-Lemma mxrank_adj {m n : nat} (M : 'M[R]_(m, n)) :
+Lemma adj_row' {m n : nat} (M : 'M[R]_(m, n)) i :
+  (row' i M)^*t = col' i M^*t.
+Proof. by rewrite adjmxE tr_row' map_col'. Qed.
+
+Lemma adj_col' {m n : nat} (M : 'M[R]_(m, n)) i :
+  (col' i M)^*t = row' i M^*t.
+Proof. by rewrite adjmxE tr_col' map_row'. Qed. 
+
+Lemma adjmx_col'' [m n] j (A : 'M[R]_(m,n.-1)) v :
+  (col'' j A v)^*t = row'' j A^*t v^*t.
+Proof. by rewrite adjmxE tr_col'' map_row''. Qed.
+
+Lemma adjmx_row'' [m n] j (A : 'M[R]_(m.-1,n)) v :
+  (row'' j A v)^*t = col'' j A^*t v^*t.
+Proof. by rewrite adjmxE tr_row'' map_col''. Qed.
+
+Lemma adj_block_mx m n k l (A : 'M[R]_(m,n)) B C (D : 'M_(k,l)) :
+  (block_mx A B C D)^*t = block_mx A^*t C^*t B^*t D^*t.
+Proof. by rewrite adjmxE tr_block_mx map_block_mx -!adjmxE. Qed.
+
+Lemma mxrank_adj [m n] (M : 'M[R]_(m, n)) :
   \rank M^*t = \rank M.
 Proof. by rewrite mxrank_map mxrank_tr. Qed.
+
+Lemma mxrank_conj [m n] (A : 'M[R]_(m,n)) :
+  \rank (A^*m) = \rank A.
+Proof. by rewrite conjmxE mxrank_map. Qed.
+
+Lemma adjmx_const m n a : (const_mx a : 'M[R]_(m,n))^*t = (const_mx a^*).
+Proof. by apply/matrixP=>i j; rewrite !mxE. Qed.
+
+Lemma conjmx_const m n a : (const_mx a : 'M[R]_(m,n))^*m = (const_mx a^*).
+Proof. by apply/matrixP=>i j; rewrite !mxE. Qed.
 
 End ConjAdjmxTheory.
 
@@ -670,6 +661,117 @@ Arguments uintmx {R m n}.
 Arguments boolmx {R m n}.
 Arguments unitarymx {C m n}.
 Arguments normalmx {C n}.
+
+Section rank_extra.
+Variable (C : numClosedFieldType).
+
+(* normalmx unitarymx unitmx already exists *)
+Lemma unitarymxPV m (A : 'M[C]_m) : 
+  reflect (A ^*t *m A = 1%:M) (A \is unitarymx).
+Proof. rewrite -{2}(adjmxK A) adjmxE -trmxC_unitary; apply: unitarymxP. Qed.
+
+Lemma conjmx_unitary m n (U : 'M[C]_(m,n)) :
+  U^*m \is unitarymx = (U \is unitarymx).
+Proof. by rewrite conjC_unitary. Qed.
+
+Lemma adjmx_unitary m (U : 'M[C]_m) :
+  U^*t \is unitarymx = (U \is unitarymx).
+Proof. by rewrite adjmxE trmxC_unitary. Qed.
+
+Lemma mulUmx m n (U : 'M[C]_m) (A B : 'M[C]_(m,n)) : 
+  U \is unitarymx -> U *m A = B <-> A = U ^*t *m B.
+Proof.
+move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
+by split=>[ <-|->]; rewrite mulmxA ?P1 ?P2 mul1mx.
+Qed.
+
+Lemma mulUCmx m n (U : 'M[C]_m) (A B : 'M[C]_(m,n)) : 
+  U \is unitarymx -> U ^*t *m A = B <-> A = U *m B.
+Proof. 
+move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
+by split=>[ <-|->]; rewrite mulmxA ?P1 ?P2 mul1mx.
+Qed.
+
+Lemma mulmxU m n (U : 'M[C]_n) (A B : 'M[C]_(m,n)) :
+  U \is unitarymx -> A *m U = B <-> A = B *m U ^*t.
+Proof.
+move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
+by split=>[ <-|->]; rewrite -mulmxA ?P1 ?P2 mulmx1.
+Qed.
+
+Lemma mulmxUC m n (U : 'M[C]_n) (A B : 'M[C]_(m,n)) :
+  U \is unitarymx -> A *m U ^*t = B <-> A = B *m U.
+Proof.
+move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
+by split=>[ <-|->]; rewrite -mulmxA ?P1 ?P2 mulmx1.
+Qed.
+
+Lemma unitarymxK m n  (U : 'M[C]_(m,n)) : U \is unitarymx -> U *m U ^*t = 1%:M.
+Proof. by move/unitarymxP. Qed.
+
+Lemma unitarymxKV m  (U : 'M[C]_m) : U \is unitarymx -> U ^*t *m U = 1%:M.
+Proof. by move/unitarymxPV. Qed.
+
+Lemma row_unitarymx m n (M : 'M[C]_(m, n)) i :
+  M \is unitarymx -> row i M \is unitarymx.
+Proof.
+move=>/row_unitarymxP/(_ i i) Pi; apply/row_unitarymxP=>j k.
+by rewrite !ord1 !row_idem Pi !eqxx.
+Qed.
+
+Lemma mxrank_mulmxU m n r (A : 'M[C]_(m,n)) (U : 'M[C]_(n,r)) :
+  U \is unitarymx -> \rank (A *m U) = \rank A.
+Proof. by move=>/mxrank_unitary P1; rewrite mxrankMfree// /row_free P1. Qed.
+
+Lemma mxrank_mulUmx m n (U : 'M[C]_m) (A : 'M[C]_(m,n)) :
+  U \is unitarymx -> \rank (U *m A) = \rank A.
+Proof.
+by move=>P; rewrite -mxrank_tr trmx_mul mxrank_mulmxU ?trmx_unitary// mxrank_tr.
+Qed.
+
+Lemma mxrank_mulmxUC m n (A : 'M[C]_(m,n)) (U : 'M[C]_n) :
+  U \is unitarymx -> \rank (A *m U^*t) = \rank A.
+Proof. by move=>P; rewrite mxrank_mulmxU// trmxC_unitary. Qed.
+
+Lemma mxrank_mulUCmx m n r (U : 'M[C]_(m,r)) (A : 'M[C]_(m,n)) :
+  U \is unitarymx -> \rank (U^*t *m A) = \rank A.
+Proof.
+by move=>PU; rewrite -mxrank_tr -mxrank_conj -adjmxTC 
+  adjmxM adjmxK mxrank_mulmxU// mxrank_adj.
+Qed.
+
+Lemma dotmx_row_mx m n (u v : 'rV[C]_m) (w t : 'rV[C]_n) :
+  dotmx (row_mx u w) (row_mx v t) = dotmx u v + dotmx w t.
+Proof.
+rewrite !dotmxE !mxE/= big_split_ord/=; f_equal; apply eq_bigr=>i _;
+by rewrite ?row_mxEl ?row_mxEr mxE tr_row_mx ?col_mxEu ?col_mxEd !mxE.
+Qed.
+
+Lemma row_mx0_unitarymx m n r (U : 'M[C]_(m,n)) :
+  U \is unitarymx -> row_mx U (0 : 'M_(m,r)) \is unitarymx.
+Proof.
+move=>/row_unitarymxP PU; apply/row_unitarymxP=>i j.
+by rewrite !row_row_mx !dotmx_row_mx row0 linear0l addr0.
+Qed.
+
+Lemma row_0mx_unitarymx m n r (U : 'M[C]_(m,n)) :
+  U \is unitarymx -> row_mx (0 : 'M_(m,r)) U \is unitarymx.
+Proof.
+move=>/row_unitarymxP PU; apply/row_unitarymxP=>i j.
+by rewrite !row_row_mx !dotmx_row_mx row0 linear0l add0r.
+Qed.
+
+Lemma mxdiag_unitary m n p q (U : 'M[C]_(m,n)) (V : 'M[C]_(p,q)) :
+  U \is unitarymx -> V \is unitarymx -> block_mx U 0 0 V \is unitarymx.
+Proof.
+move=>/row_unitarymxP PU /row_unitarymxP PV.
+apply/row_unitarymxP=>i j.
+case: (split_ordP i)=>i1 ->; case: (split_ordP j)=>j1 ->;
+by rewrite /block_mx ?rowKu ?rowKd !row_row_mx !dotmx_row_mx ?row0 
+  ?linear0l ?linear0r ?addr0 ?add0r ?eq_lrshift// ?eq_rlshift// ?eq_rshift//.
+Qed.
+
+End rank_extra.
 
 Section EigenDecomposition.
 Variable (C : numClosedFieldType) (n : nat).
@@ -756,11 +858,6 @@ Canonical diagmx_keyed := KeyedQualifier diagmx_key.
 Lemma diagmxP (A : 'M[R]_n) :
   reflect (forall i j, (i != j) -> A i j = 0) (A \is diagmx).
 Proof. by apply is_diag_mxP. Qed.
-
-(* normalmx unitarymx unitmx already exists *)
-Lemma unitarymxPV (A : 'M[R]_n) : 
-  reflect (A ^*t *m A = 1%:M) (A \is unitarymx).
-Proof. rewrite -{2}(adjmxK A) adjmxE -trmxC_unitary; apply: unitarymxP. Qed.
 
 Definition psdmx :=
   [qualify A : 'M[R]_n | (A \is hermmx) && ((spectral_diag A) \is a nnegmx)].
@@ -1137,6 +1234,15 @@ by move: P=>/proj1mx_diagP [x H]; rewrite H mxtrace_diag (bigD1 x)// big1/=
   =>[j /negPf njx|]; rewrite mxE ?njx ?andbF// !eqxx addr0.
 Qed.
 
+Lemma projmx_tr M : 
+  M \is projmx -> \tr M = (\rank M)%:R.
+Proof.
+move=>/projmxP[/hermmx_normal/eigen_dec P1 /boolmxP P2].
+rewrite P1 mxtrace_mulC mulmxA unitarymxKV// mul1mx mxrank_mulmxUC// mxrank_mulUmx//.
+rewrite rank_diagmx mxtrace_diag natr_sum; apply eq_bigr=>i _.
+by move: (P2 ord0 i)=>/orP[/eqP->|/eqP->]; rewrite ?oner_neq0// eqxx.
+Qed.
+
 End MxPredElement.
 End MxPredHierarchy.
 
@@ -1277,6 +1383,24 @@ Proof.
   move=>/psdmx_dot Pm /psdmx_dot Pn. apply/eqP/mx_dot_eq0 =>u. apply le_anti.
   rewrite -oppr_ge0 -linearN/= -mulNmx -mulmxN -!nnegrE. by apply/andP.
 Qed.
+
+Lemma formV_psd p q (M : 'M[R]_(p,q)) : (M ^*t *m M) \is psdmx.
+Proof.
+apply/psdmx_dot=>v; rewrite mulmxA -adjmxM -mulmxA nnegrE trace_mx11 mxE.
+by apply sumr_ge0=>/= i _; rewrite mxE mxE -normCKC exprn_ge0.
+Qed.
+
+Lemma form_psd p q (M : 'M[R]_(p,q)) : (M *m M ^*t) \is psdmx.
+Proof. by rewrite -{1}(adjmxK M) formV_psd. Qed.
+
+Lemma psdmx1 n : (1%:M : 'M[R]_n) \is psdmx.
+Proof. by rewrite -[1%:M]mulmx1 -{1}adjmx1 formV_psd. Qed.
+
+Lemma obsmx0 n : (0 : 'M[R]_n) \is obsmx.
+Proof. by rewrite obsmx_psd_eq psdmx0 subr0 psdmx1. Qed.
+
+Lemma obsmx1 n : (1%:M : 'M[R]_n) \is obsmx.
+Proof. by rewrite obsmx_psd_eq subrr psdmx0 psdmx1. Qed.
 
 Lemma psdmx_tr (n : nat) (A : 'M[R]_n) :
   A^T \is psdmx = (A \is psdmx).
@@ -1707,6 +1831,9 @@ Proof. by rewrite (le_trans (lev_normD _ _)) ?normvN. Qed.
 Lemma lev_distD u v w : `[v-w] <= `[v-u] + `[u-w].
 Proof. by rewrite (le_trans _ (lev_normD _ _)) // addrA addrNK. Qed.
 
+Lemma distvC v w : `[ v - w ] = `[ w - v ].
+Proof. by rewrite -opprB normvN. Qed.
+
 Lemma levB_normD v w : `[v] - `[w] <= `[v+w].
 Proof.
 rewrite -{1}[v](addrK w) lterBDl.
@@ -1722,13 +1849,22 @@ have [ | | _ | _ ] // := @real_leP _ (mnorm v) (mnorm w); last by rewrite levB_d
 1,2: by rewrite realE normv_ge0. by rewrite -(normvN (v-w)) opprB levB_dist.
 Qed.
 
-Lemma normv_sum (I: finType) (r : seq I) (P: pred I) f :
-  mnorm (\sum_(i <- r | P i) f i) <= \sum_(i <- r | P i) mnorm (f i).
+Lemma normv_sum I (r : seq I) (P: pred I) (f : I -> V) :
+  `[ \sum_(i <- r | P i) f i ] <= \sum_(i <- r | P i) `[ f i ].
 Proof.
 elim: r => [|x r IH]; first by rewrite !big_nil normv0.
 rewrite !big_cons. case: (P x)=>//.
 apply (le_trans (lev_normD _ _)). by apply lerD.
 Qed.
+
+Lemma normv_id v : `| `[v] | = `[v].
+Proof. by rewrite ger0_norm// normv_ge0. Qed.
+
+Lemma normv_le0 v : `[v] <= 0 = (v == 0).
+Proof. by rewrite -normv_eq0 eq_le normv_ge0 andbT. Qed.
+
+Lemma normv_lt0 v : `[v] < 0 = false.
+Proof. by rewrite lt_neqAle normv_le0 normv_eq0 andNb. Qed.
 
 Definition cauchy_seqv  (u: nat -> V) := 
   forall e : R, 0 < e -> exists N : nat, 
@@ -2703,213 +2839,6 @@ End BRegVOrderTheory.
 
 (* for singular value decomposition. operations on diagnal elements, 
   such as p-norm of vectors. Schatten norms. Ky Fan norm.*)
-Section MatrixDotOperator.
-Variable (R: numClosedFieldType).
-
-Fact dmulmx_key : unit. Proof. by []. Qed.
-Definition dmulmx {m n} (A B : 'M[R]_(m,n)) := 
-    \matrix[dmulmx_key]_(i,j) (A i j * B i j).
-Notation "A .* B" := (dmulmx A B) 
-  (at level 40, left associativity, format "A  .*  B").
-
-Lemma dmulmxC m n (A B : 'M[R]_(m,n)) : A .* B = B .* A.
-Proof. by apply/matrixP=>i j; rewrite !mxE mulrC. Qed.
-
-Lemma dmulmxA m n (A B C: 'M[R]_(m,n)) : A .* (B .* C) = A .* B .* C.
-Proof. by apply/matrixP=>i j; rewrite !mxE mulrA. Qed.
-
-Lemma dmulmxDl m n (A B C: 'M[R]_(m,n)) :
-  (A + B) .* C = A .* C + B .* C.
-Proof. by apply/matrixP=>i j; rewrite !mxE mulrDl. Qed.
-
-Lemma dmulmxDr m n (A B C: 'M[R]_(m,n)) :
-  A .* (B + C) = A .* B + A .* C.
-Proof. by apply/matrixP=>i j; rewrite !mxE mulrDr. Qed.
-
-Definition dexpmx {m n} (A : 'M[R]_(m,n)) k := map_mx ((@GRing.exp R) ^~ k) A.
-Notation "A .^+ n" := (dexpmx A n) (at level 29, n at next level) : ring_scope.
-Notation "A .^-1" := (map_mx ((@GRing.inv R)) A) (at level 3) : ring_scope.
-Notation "A .^- n" := ((dexpmx A n).^-1) (at level 29, n at next level) : ring_scope.
-
-Lemma dexpmx0 m n (A: 'M[R]_(m,n)) : A .^+ 0 = const_mx 1.
-Proof. by apply/matrixP=>i j; rewrite !mxE expr0. Qed.
-
-Lemma dexpmx1 m n (A: 'M[R]_(m,n)) : A .^+ 1 = A.
-Proof. by apply/matrixP=>i j; rewrite !mxE expr1. Qed.
-
-Lemma dexpmx2 m n (A: 'M[R]_(m,n)) : A .^+ 2 = dmulmx A A.
-Proof. by apply/matrixP=>i j; rewrite !mxE expr2. Qed.
-
-Lemma dexpmxS m n (A: 'M[R]_(m,n)) k : A .^+ k.+1 = A .* (A .^+ k).
-Proof. by apply/matrixP=>i j; rewrite !mxE exprS. Qed.
-
-Lemma dexpmx0n m n k : (0 : 'M[R]_(m,n)) .^+ k = const_mx (k == 0%N)%:R.
-Proof. by apply/matrixP=>i j; rewrite !mxE expr0n. Qed.
-
-Lemma dexpmx1n m n k : (const_mx 1 : 'M[R]_(m,n)) .^+ k = const_mx 1.
-Proof. by apply/matrixP=>i j; rewrite !mxE expr1n. Qed.
-
-Lemma dexpmxD m n (A: 'M[R]_(m,n)) p q : A .^+ (p + q) = A .^+ p .* A .^+ q.
-Proof. by apply/matrixP=>i j; rewrite !mxE exprD. Qed.
-
-Lemma dexpmxSr m n (A: 'M[R]_(m,n)) k : A .^+ k.+1 = A .^+ k .* A.
-Proof. by apply/matrixP=>i j; rewrite !mxE exprSr. Qed.
-
-Lemma dexprm_inj m n k : (0 < k)%N -> {in nnegmx &, injective (@dexpmx m n ^~ k)}.
-Proof.
-move=>kgt0 A B AR BR /matrixP De; apply/matrixP=>i j.
-move: (De i j)=>/eqP; rewrite /dexpmx !mxE eqrXn2//.
-1,2: by apply/nnegmxP. by move=>/eqP.
-Qed.
-
-Definition dmxortho {m n} (A : 'M[R]_(m,n)) := const_mx 1 - (A .* (A .^-1)) .
-
-Lemma dmxorthoE {m n} (A : 'M[R]_(m,n)) : 
-  dmxortho A = const_mx 1 - (A .* (A .^-1)) .
-Proof. by []. Qed.
-
-Lemma dmxorthoC {m n} (A : 'M[R]_(m,n)) : 
-  (A .* (A .^-1)) + dmxortho A = const_mx 1.
-Proof. by rewrite /dmxortho addrC addrNK. Qed.
-
-Lemma dmxortho_elem {m n} (A : 'M[R]_(m,n)) i j :
- (dmxortho A) i j = (A i j == 0)%:R.
-Proof.
-rewrite /dmxortho !mxE; case P: (A i j == 0).
-by move/eqP: P=>->; rewrite mul0r subr0.
-by rewrite mulfV ?P// subrr.
-Qed.
-
-Lemma dmxorthoP {m n} (A : 'M[R]_(m,n)) : A .* (dmxortho A) = 0.
-Proof.
-apply/matrixP=>i j; rewrite mxE dmxortho_elem !mxE.
-by case P: (A i j == 0); [move/eqP: P=>->|]; rewrite ?mul0r ?mulr0.
-Qed.
-
-Lemma dmxortho_adj {m n} (A : 'M[R]_(m,n)) : (dmxortho A) ^*m = (dmxortho A).
-Proof. by apply/matrixP=>i j; rewrite mxE !dmxortho_elem conjC_nat. Qed.
-
-Lemma dmxortho_dexp {m n} (A : 'M[R]_(m,n)) k : 
-  (0 < k)%N -> dmxortho (A .^+ k) = dmxortho A.
-Proof. by move=>P; apply/matrixP=>i j; rewrite !dmxortho_elem !mxE expf_eq0 P. Qed.
-
-Lemma dmxortho_inv {m n} (A : 'M[R]_(m,n)) : dmxortho (A .^-1) = dmxortho A.
-Proof. by apply/matrixP=>i j; rewrite !dmxortho_elem !mxE invr_eq0. Qed.
-
-Lemma dmxortho_invn {m n} (A : 'M[R]_(m,n)) k : 
-  (0 < k)%N -> dmxortho (A .^-k) = dmxortho A.
-Proof. rewrite dmxortho_inv; exact: dmxortho_dexp. Qed.
-
-Lemma diag_mx_adj n (A : 'rV[R]_n) : (diag_mx A)^*t = diag_mx (A ^*m).
-Proof. 
-apply/matrixP=>i j; rewrite !mxE eq_sym. 
-by case: eqP=>[->|_]; rewrite ?mulr1n ?mulr0n ?conjC0.
-Qed.
-
-Lemma diag_mx_dmul n (A B : 'rV[R]_n) : 
-  diag_mx A *m diag_mx B = diag_mx (dmulmx A B).
-Proof.
-apply/matrixP=>i j; rewrite !mxE (bigD1 i)// big1/= ?mxE.
-by move=>k /negPf nki; rewrite !mxE eq_sym nki mulr0n mul0r.
-by case E: (i == j); rewrite ?eqxx ?mulr1n ?mulr0n ?addr0 ?mulr0.
-Qed.
-
-Lemma expmx_diag n (A: 'rV[R]_n.+1) k : (diag_mx A) ^+ k = diag_mx (A .^+ k).
-Proof. 
-elim: k=>[|k IH]; first by rewrite expr0 dexpmx0 diag_const_mx.
-by rewrite exprS IH /GRing.mul/= diag_mx_dmul dexpmxS.
-Qed.
-
-Definition dnthrootmx k {m n} (A: 'M[R]_(m, n)) := map_mx (@nthroot R k) A.
-
-Lemma dmxortho_root {m n} (A : 'M[R]_(m,n)) k : 
-  (0 < k)%N -> dmxortho (dnthrootmx k A) = dmxortho A.
-Proof. by move=>P; apply/matrixP=>i j; rewrite !dmxortho_elem !mxE rootC_eq0. Qed.
-
-Lemma diag_mx_inj n : injective (@diag_mx R n).
-Proof.
-move=>u v /matrixP P; apply/matrixP=>i j.
-by move: (P j j); rewrite !mxE !eqxx !mulr1n !ord1.
-Qed.
-
-Lemma mulUmx m n (U : 'M[R]_m) (A B : 'M[R]_(m,n)) : 
-  U \is unitarymx -> U *m A = B <-> A = U ^*t *m B.
-Proof.
-move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
-by split=>[ <-|->]; rewrite mulmxA ?P1 ?P2 mul1mx.
-Qed.
-
-Lemma mulUCmx m n (U : 'M[R]_m) (A B : 'M[R]_(m,n)) : 
-  U \is unitarymx -> U ^*t *m A = B <-> A = U *m B.
-Proof. 
-move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
-by split=>[ <-|->]; rewrite mulmxA ?P1 ?P2 mul1mx.
-Qed.
-
-Lemma mulmxU m n (U : 'M[R]_n) (A B : 'M[R]_(m,n)) :
-  U \is unitarymx -> A *m U = B <-> A = B *m U ^*t.
-Proof.
-move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
-by split=>[ <-|->]; rewrite -mulmxA ?P1 ?P2 mulmx1.
-Qed.
-
-Lemma mulmxUC m n (U : 'M[R]_n) (A B : 'M[R]_(m,n)) :
-  U \is unitarymx -> A *m U ^*t = B <-> A = B *m U.
-Proof.
-move=>P; move: P {+}P=>/unitarymxP P1 /unitarymxPV P2.
-by split=>[ <-|->]; rewrite -mulmxA ?P1 ?P2 mulmx1.
-Qed.
-
-Lemma unitarymxK m n  (U : 'M[R]_(m,n)) : U \is unitarymx -> U *m U ^*t = 1%:M.
-Proof. by move/unitarymxP. Qed.
-
-Lemma unitarymxKV m  (U : 'M[R]_m) : U \is unitarymx -> U ^*t *m U = 1%:M.
-Proof. by move/unitarymxPV. Qed.
-
-Lemma adjmx_const m a : (a%:M : 'M[R]_m) ^*t = (a^*)%:M.
-Proof.
-apply/matrixP=>i j; rewrite !mxE eq_sym.
-by case: eqP=>_; rewrite ?mulr1n// !mulr0n conjC0.
-Qed.
-
-Lemma normalmx_const m (a : R) : (a%:M : 'M[R]_m) \is normalmx.
-Proof. 
-by apply/normalmxP; rewrite -scalemx1 -!(scalemxAr,scalemxAl) -adjmxE
-  adjmxZ -!(scalemxAl,scalemxAr) mulmx1 mul1mx.
-Qed.
-
-Lemma spectral_diag_const n (a : R) : spectral_diag (a%:M : 'M[R]_n) = const_mx a.
-Proof.
-move: (normalmx_const n a)=>/eigen_dec/esym.
-by rewrite mulmxUC// mulUmx// -{3}scalemx1 -scalemxAl mul1mx 
-  -scalemxAr unitarymxKV// scalemx1 -{2}diag_const_mx=>/diag_mx_inj.
-Qed.
-
-Lemma spectral_diag0 n : spectral_diag (0 : 'M[R]_n) = 0.
-Proof. by rewrite -scalemx0 spectral_diag_const const_mx0. Qed.
-
-Lemma spectral_diag1 n : spectral_diag (1%:M : 'M[R]_n) = const_mx 1.
-Proof. exact: spectral_diag_const. Qed.
-
-Lemma unitarymx1 n : (1%:M : 'M[R]_n) \is unitarymx.
-Proof. by apply/unitarymxP; rewrite mul1mx -adjmxE adjmx_const conjC1. Qed.
-
-Lemma unitarymxZ n a (A : 'M[R]_n) : 
-  `|a| = 1 -> A \is unitarymx -> (a *: A) \is unitarymx.
-Proof.
-move=>P1 /unitarymxP P2; apply/unitarymxP.
-by rewrite -adjmxE adjmxZ -scalemxAr -scalemxAl scalerA P2 -normCKC P1 expr1n scale1r.
-Qed.
-
-Lemma unitarymxZ_diag n (D : 'rV[R]_n) (A : 'M[R]_n) : (forall i, `|D 0 i| = 1) 
-  -> A \is unitarymx -> (diag_mx D *m A) \is unitarymx.
-Proof.
-move=>P1 P2; apply/unitarymxPV; rewrite adjmxM !mulmxA mulmxU// -mulmxA mulUCmx// 
-  mul1mx [RHS]unitarymxK// diag_mx_adj diag_mx_dmul -diag_const_mx.
-by f_equal; apply/matrixP=>i j; rewrite !mxE ord1 -normCKC P1 expr1n.
-Qed.
-
-End MatrixDotOperator.
 
 Notation "A .* B" := (dmulmx A B) (at level 40, left associativity, format "A  .*  B").
 Notation "A .^+ n" := (dexpmx A n) (at level 29, n at next level) : ring_scope.
