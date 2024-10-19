@@ -281,7 +281,58 @@ by case: eqpq=>eqp eqq; case : p' / eqp P A;
 case: q' / eqq=>P A; rewrite castmx_id.
 Qed.
 
+Lemma castmx_usubmx p q r r' (eqr : r = r') (A : 'M[T]_(p+q,r)) :
+  castmx (erefl p, eqr) (usubmx A) =  usubmx (castmx (erefl _, eqr) A).
+Proof. by case: r' / eqr A => A; rewrite !castmx_id. Qed.
+
 End Cast1.
+
+Definition castmx_funE := (castmx_cst_diag, castmx_cst_rv, castmx_cst_cv, 
+  castmx_cst_mx, castmx_mx_diag, castmx_mx_mx, castmx_mx_rv, castmx_mx_cv,
+  castmx_mx_mxT,cast_qualifier_diag,cast_qualifier_rv,cast_qualifier_cv,
+  cast_qualifier_mx).
+
+Section Cast2.
+Variable  (R : nmodType).
+
+Lemma diagmx_cast p p' (eqp : p = p') (A : 'rV[R]_p) :
+  diag_mx (castmx (erefl _, eqp) A) = castmx (eqp, eqp) (diag_mx A).
+Proof. by case: p' / eqp A =>A; rewrite castmx_id. Qed.
+
+Lemma mxdiag_cast m n k l m' n' k' l' (eqmn : (m = m') * (n = n'))
+  (eqkl : (k = k') * (l = l')) (A : 'M[R]_(m,n)) (B : 'M_(k,l)) :
+  block_mx (castmx eqmn A) 0 0 (castmx eqkl B) =
+    castmx (f_equal2 addn eqmn.1 eqkl.1, f_equal2 addn eqmn.2 eqkl.2) (block_mx A 0 0 B).
+Proof.
+case: eqmn=>Pm Pn; case: _ / Pm; case: _ / Pn.
+by case: eqkl=>Pk Pl; case: _ / Pk; case: _ / Pl; rewrite !castmx_id.
+Qed.
+
+Lemma row_mx_cast0 p q (A : 'M[R]_(p,q)) :
+  A = castmx (erefl _, addn0 q) (row_mx A 0).
+Proof.
+apply/esym/(canLR (castmxKV _ _))=>/=.  
+apply/matrixP=>i j. rewrite castmxE/= cast_ord_id esymK mxE -{2}(splitK j).
+case: (fintype.split j)=>a/=; destruct a=>//=.
+f_equal. by apply ord_inj=>/=.
+Qed.
+
+Lemma col_mx_cast0 p q (A : 'M[R]_(p,q)) :
+  A = castmx (addn0 p, erefl _) (col_mx A 0).
+Proof. by apply/trmx_inj; rewrite trmx_cast tr_col_mx trmx0 -row_mx_cast0. Qed.
+
+Lemma block_mx_castr0 p q r (A : 'M[R]_(p,q)) (B : 'M[R]_(p,r)) :
+  (row_mx A B) = castmx (addn0 p, erefl _) (block_mx A B 0 0).
+Proof. by rewrite /block_mx row_mx0 -col_mx_cast0. Qed.
+
+Lemma block_mx_cast00 p q (A : 'M[R]_(p,q)) :
+  A = castmx (addn0 p, addn0 q) (block_mx A 0 0 0).
+Proof. 
+by rewrite -[addn0 p]etrans_ereflV -[addn0 q]etrans_erefl 
+  -castmx_comp -block_mx_castr0 -row_mx_cast0.
+Qed.
+
+End Cast2.
 
 Variable (R: ringType).
 
@@ -300,15 +351,6 @@ Lemma castmx_mull m n p p' (eqp : p = p')
   (A: 'M[R]_(p,m)) (B: 'M_(m,n)) :
   castmx (eqp, erefl _) A *m B = castmx (eqp, erefl _) (A *m B).
 Proof. by case: p' / eqp; rewrite !castmx_id. Qed.
-
-Definition castmx_funE := (castmx_cst_diag, castmx_cst_rv, castmx_cst_cv, 
-  castmx_cst_mx, castmx_mx_diag, castmx_mx_mx, castmx_mx_rv, castmx_mx_cv,
-  castmx_mx_mxT,cast_qualifier_diag,cast_qualifier_rv,cast_qualifier_cv,
-  cast_qualifier_mx).
-
-Lemma diagmx_cast p p' (eqp : p = p') (A : 'rV[R]_p) :
-  diag_mx (castmx (erefl _, eqp) A) = castmx (eqp, eqp) (diag_mx A).
-Proof. by case: p' / eqp A =>A; rewrite castmx_id. Qed.
 
 Lemma castmx_is_linear p q p' q' (eqpq : (p = p') * (q = q')) :
   linear (@castmx R p q p' q' eqpq).

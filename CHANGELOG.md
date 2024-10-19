@@ -69,6 +69,7 @@ xx
 
 - definitions `perm_ord_fun`, `perm_ord`
 - lemmas `perm_ord_fun_inj`, `splitEl`, `splitEr`, `ltn_lrshift`, `leq_lrshift`, `perm_ordEl`, `perm_ordEr`
+- lemmas `castmx_usubmx`, `mxdiag_cast`, `row_mx_cast0`, `col_mx_cast0`, `block_mx_castr0`, `block_mx_cast00`
 
 ### mxnorm.v
 
