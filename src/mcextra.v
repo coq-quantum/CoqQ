@@ -334,6 +334,7 @@ Qed.
 
 End Cast2.
 
+Section Cast3.
 Variable (R: ringType).
 
 Lemma castmx_mul p q r p' q' r' (eqq : q = q') (eqp : p = p') (eqr : r = r') 
@@ -362,13 +363,40 @@ Qed.
 HB.instance Definition _ p q p' q' (eqpq : (p = p') * (q = q')) := 
   GRing.isLinear.Build R _ _ _ (@castmx R p q p' q' eqpq) (@castmx_is_linear p q p' q' eqpq).
 
+Lemma row_mx_perm m n r (A : 'M[R]_(m,n)) (B : 'M_(m,r)) :
+  (row_mx A B) = castmx (erefl, addnC _ _) ((row_mx B A) *m perm_mx perm_ord^-1).
+Proof.
+apply/matrixP=>i j; rewrite castmxE -col_permE/= cast_ord_id !mxE.
+by case: split_ordP=>k ->; rewrite ?perm_ordEl ?perm_ordEr ?splitEl// splitEr.
+Qed.
+
+Lemma col_mx_perm m n r (A : 'M[R]_(m,n)) (B : 'M_(r,n)) :
+  (col_mx A B) = castmx (addnC _ _, erefl) (perm_mx perm_ord *m (col_mx B A)).
+Proof.
+apply/matrixP=>i j; rewrite castmxE -row_permE/= cast_ord_id !mxE.
+by case: split_ordP=>k ->; rewrite ?perm_ordEl ?perm_ordEr ?splitEl// splitEr.
+Qed.
+
+Lemma block_mx_perm m n k l (A : 'M[R]_(m,n)) B D (E : 'M_(k,l)) :
+  block_mx A B D E = castmx (addnC _ _, addnC _ _) 
+    (perm_mx perm_ord *m (block_mx E D B A) *m perm_mx perm_ord^-1).
+Proof.
+by rewrite -(castmx_mul erefl) -col_mx_perm mul_col_mx !castmx_mulr -!row_mx_perm.
+Qed.
+End Cast3.
+
+End MxCast.
+
+Section MxMul.
+Variable (R: ringType).
+
 Lemma scalemx0 n : (0%:M : 'M[R]_n) = 0.
 Proof. by apply/matrixP=>i j; rewrite !mxE mul0rn. Qed.
 
 Lemma const_mx0 m n : (const_mx 0 : 'M[R]_(m,n)) = 0.
 Proof. by apply/matrixP=>i j; rewrite !mxE. Qed.
 
-Lemma mulmx_rowcol p q (A : 'M[R]_(p,q)) (B : 'M[R]_(q,p)) i j : 
+Lemma mulmx_rowcol p q r (A : 'M[R]_(p,q)) (B : 'M[R]_(q,r)) i j : 
   (A *m B) i j = (row i A *m col j B) 0 0.
 Proof. by rewrite !mxE; apply eq_bigr=>k _; rewrite !mxE. Qed.
 
@@ -386,7 +414,132 @@ by case: eqmn=> eqm eqn; case: m' / eqm i; case: n' / eqn j=>i j;
 rewrite castmx_id !cast_ord_id.
 Qed.
 
-End MxCast.
+Lemma mulmxACA m1 m2 m3 m4 m5 
+ (M1 :'M[R]_(m1,m2)) (M2 : 'M_(m2,m3)) (M3 : 'M_(m3,m4)) (M4 : 'M_(m4,m5)) :
+  M1 *m M2 *m M3 *m M4 = M1 *m (M2 *m M3) *m M4.
+Proof. by rewrite !mulmxA. Qed.
+
+Lemma delta_mx_mulEl {m n l} (A : 'M[R]_(m , n)) i (j:'I_l) p q :
+  (A *m delta_mx i j) p q = (j == q)%:R * A p i.
+Proof.
+rewrite mxE (bigD1 i)// big1/= ?mxE ?eqxx/= ?addr0 1?eq_sym 1?mulrC//.
+move=>k /negPf Pk; rewrite mxE Pk/= mulr0//.
+by case: eqP=> _; rewrite ?mulr1 ?mul1r ?mul0r ?mulr0.
+Qed.
+
+Lemma delta_mx_mulEr {m n l} (A : 'M[R]_(m , n)) (i:'I_l) j p q :
+  (delta_mx i j *m A) p q = (i == p)%:R * A j q.
+Proof.
+rewrite mxE (bigD1 j)// big1/= ?mxE ?eqxx/= ?addr0 1?eq_sym ?andbT//.
+move=>k /negPf Pk; rewrite mxE Pk/= andbF mul0r//.
+Qed.
+
+Lemma diag_mx_deltaM m n i (j : 'I_n) (D : 'rV[R]_m) : 
+  diag_mx D *m delta_mx i j = D 0 i *: delta_mx i j.
+Proof. 
+apply/matrixP=>a b. rewrite !mxE (bigD1 i)//= big1.
+  by move=>k /negPf nki; rewrite !mxE nki/= mulr0.
+by rewrite addr0 !mxE eqxx/=; case: eqP=>[->|]; 
+  rewrite ?mulr1n//= mulr0n mulr0 mul0r.
+Qed.
+
+Lemma mulmx_colrow p q r (A : 'M[R]_(p,q)) (B : 'M[R]_(q,r)) : 
+  (A *m B) = \sum_i  (col i A) *m (row i B).
+Proof. 
+apply/matrixP=>i j. rewrite !mxE summxE. apply eq_bigr=> k _.
+by rewrite !mxE big_ord1 !mxE.
+Qed.
+
+Lemma row_diag_mul p q (D : 'rV[R]_p) (A : 'M[R]_(p,q)) i : 
+  row i (diag_mx D *m A) = D 0 i *: row i A.
+Proof.
+apply/matrixP=>j k; rewrite !mxE (bigD1 i)//= big1.
+by move=>l /negPf nli; rewrite !mxE eq_sym nli mulr0n mul0r.
+by rewrite mxE eqxx mulr1n addr0.
+Qed.
+
+Lemma rank_block_mx000 [F : fieldType] m n p q (A : 'M[F]_(m,n)) : 
+  \rank (block_mx A 0 0 0 : 'M_(m+p,n+q)) = \rank A.
+Proof. by rewrite /block_mx row_mx0 rank_col_mx0 rank_row_mx0. Qed.
+
+End MxMul.
+
+Section row_col.
+Section Def.
+Variable (R : Type).
+
+Definition col'' [m n] (j0 : 'I_n) (A : 'M[R]_(m,n.-1)) (v : 'cV_m) := 
+    \matrix_(i, j) match unlift j0 j with | None => v i 0 | Some j => A i j end.
+
+Lemma col''K [m n] j (A : 'M[R]_(m,n)) :
+  col'' j (col' j A) (col j A) = A.
+Proof.
+apply/matrixP=>i k.
+by rewrite !mxE; case: unliftP=>[a ->|->//]; rewrite mxE.
+Qed.
+
+Definition row'' [m n] (i0 : 'I_m) (A : 'M[R]_(m.-1,n)) (v : 'rV_n) := 
+    \matrix_(i, j) match unlift i0 i with | None => v 0 j | Some i => A i j end.
+
+Lemma row''K [m n] i (A : 'M[R]_(m,n)) :
+  row'' i (row' i A) (row i A) = A.
+Proof.
+apply/matrixP=>j k.
+by rewrite !mxE; case: unliftP=>[a ->|->//]; rewrite mxE.
+Qed.
+
+Lemma col_col'' [m n] j i (A : 'M[R]_(m,n.-1)) v :
+  col (lift j i) (col'' j A v) = col i A.
+Proof. by apply/matrixP=>k l; rewrite !mxE liftK. Qed.
+
+Lemma col_col''0 [m n] j (A : 'M[R]_(m,n.-1)) v :
+  col j (col'' j A v) = v.
+Proof. by apply/matrixP=>k l; rewrite !mxE unlift_none ord1. Qed.
+
+Lemma row_row'' [m n] j i (A : 'M[R]_(m.-1,n)) v :
+  row (lift j i) (row'' j A v) = row i A.
+Proof. by apply/matrixP=>k l; rewrite !mxE liftK. Qed.
+
+Lemma row_row''0 [m n] j (A : 'M[R]_(m.-1,n)) v :
+  row j (row'' j A v) = v.
+Proof. by apply/matrixP=>k l; rewrite !mxE unlift_none ord1. Qed.
+
+Lemma tr_col'' [m n] j (A : 'M[R]_(m,n.-1)) v :
+  (col'' j A v)^T = row'' j A^T v^T.
+Proof. by apply/matrixP=>i k; rewrite !mxE; case: unliftP=>//??; rewrite mxE. Qed.
+
+Lemma tr_row'' [m n] j (A : 'M[R]_(m.-1,n)) v :
+  (row'' j A v)^T = col'' j A^T v^T.
+Proof. by apply/matrixP=>i k; rewrite !mxE; case: unliftP=>//??; rewrite mxE. Qed.
+
+Lemma col'_col'' m n (x : 'M[R]_(m,n.-1)) i t :
+  col' i (col'' i x t) = x.
+Proof.
+apply/matrixP=>j k; rewrite !mxE.
+by case: unliftP=>[l/lift_inj->//|/eqP]; rewrite lift_eqF.
+Qed.
+
+End Def.
+
+Lemma map_col'' [aT rT : Type] (f : aT -> rT) [m n] j (A : 'M[aT]_(m,n.-1)) v :
+  map_mx f (col'' j A v) = col'' j (map_mx f A) (map_mx f v).
+Proof. by apply/matrixP=>i k; rewrite !mxE; case: unliftP=>//??; rewrite mxE. Qed.
+
+Lemma map_row'' [aT rT : Type] (f : aT -> rT) [m n] j (A : 'M[aT]_(m.-1,n)) v :
+  map_mx f (row'' j A v) = row'' j (map_mx f A) (map_mx f v).
+Proof. by apply/matrixP=>i k; rewrite !mxE; case: unliftP=>//??; rewrite mxE. Qed.
+
+Lemma mulmx_colrow'' [R : ringType] [m n r] (i : 'I_n) 
+  (A : 'M[R]_(m,n.-1)) (B : 'M[R]_(n.-1,r)) (u : 'cV_m)  (v : 'rV_r) :
+  (col'' i A u) *m (row'' i B v) = A *m B + u *m v.
+Proof.
+apply/matrixP=>j k.
+rewrite mulmx_colrow (bigD1_ord i)//= col_col''0 row_row''0 addrC; do ! f_equal.
+by rewrite mulmx_colrow; apply eq_bigr=>l _; rewrite col_col'' row_row''.
+Qed.
+
+End row_col.
+
 
 Lemma nth_tnth (R: ringType) n (t: n.-tuple R) i (ltin : (i < n)%N) :
   t`_i = t~_(Ordinal ltin).
@@ -439,6 +592,12 @@ Proof. exact: dffun_neqP. Qed.
 Lemma neq0_lt0n (m : nat) : (m == 0)%N <> true -> (0 < m)%N.
 Proof. by move/negP; rewrite lt0n. Qed.
 
+Lemma split2r (C : numFieldType) (x : C) : x / 2 + x / 2 = x.
+Proof. by rewrite -mulr2n -mulr_natr mulfVK// pnatr_eq0. Qed.
+Lemma split21 (C : numFieldType) : 2^-1 + 2^-1 = 1 :> C.
+Proof. by rewrite -[RHS]split2r mul1r. Qed.
+Definition split2 := (split21, split2r).
+
 (* similar to %:C, inject real number to imaginary number *)
 Definition im_complex_def (F : ringType) (phF : phant F) (x : F) :=
   Complex 0 x.
@@ -484,6 +643,7 @@ Proof.
 by case: x => a b; simpc=>/=; rewrite -Num.Theory.sqrtr_sqr 
   Num.Theory.ler_wsqrtr // Num.Theory.lerDr Num.Theory.sqr_ge0.
 Qed.
+
 End complex_extra.
 
 Lemma ler_sum_const (T: numDomainType) m (f : 'I_m -> T) c :
@@ -715,7 +875,6 @@ Lemma big_sig_set (T : Type) (idm : T) (op : Monoid.com_law idm) (L: finType)
   \big[op/idm]_(i : {i:L|i \in W}) F (val i) = \big[op/idm]_(i in W ) F i.
 Proof. exact: big_sig. Qed.
 
-
 Lemma leq_ord n (i : 'I_n.+1) : (i <= n)%N.
 Proof. by destruct i. Qed.
 
@@ -737,8 +896,8 @@ Lemma lift_max_neq (i : 'I_n) :
   (nlift ord_max i) != ord_max.
 Proof. by rewrite -widen_lift widen_ord_neq. Qed.
 
-Lemma widen_ord_inj : injective (widen_ord (leqnSn n)).
-Proof. move=>i j; rewrite !widen_lift; exact: lift_inj. Qed.
+Lemma widen_ord_inj m (H : (n <= m)%N) : injective (widen_ord H).
+Proof. by move=>i j /(f_equal val)/= Pij; apply/val_inj. Qed.
 
 Variant widen_spec : 'I_n.+1 -> Type :=
   | widenR : widen_spec ord_max
@@ -763,7 +922,7 @@ Qed.
 
 End WidenOrd.
 
-Arguments widen_ord_inj {n}.
+Arguments widen_ord_inj {n m H}.
 Arguments widenP {n}.
 Arguments lift0P {n}.
 

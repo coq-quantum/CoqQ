@@ -69,7 +69,14 @@ xx
 
 - definitions `perm_ord_fun`, `perm_ord`
 - lemmas `perm_ord_fun_inj`, `splitEl`, `splitEr`, `ltn_lrshift`, `leq_lrshift`, `perm_ordEl`, `perm_ordEr`
-- lemmas `castmx_usubmx`, `mxdiag_cast`, `row_mx_cast0`, `col_mx_cast0`, `block_mx_castr0`, `block_mx_cast00`
+- lemmas `castmx_usubmx`, `mxdiag_cast`, `row_mx_cast0`, `col_mx_cast0`, `block_mx_castr0`, `block_mx_cast00`, `row_mx_perm`, `col_mx_perm`, `block_mx_perm`
+- lemmas `mulmxACA`, `delta_mx_mulEl`, `delta_mx_mulEr`, `diag_mx_deltaM`, `mulmx_colrow`, `row_diag_mul`, `rank_block_mx000`
+- definitions `col''`, `row''`
+- lemmas `col''K`, `row''K`, `col_col''`, `col_col''0`, `row_row''`, `row_row''0`, `tr_col''`, `tr_row''`, `col'_col''`, `map_col''`, `map_row''`, `mulmx_colrow''`, `split2r`, `split2l, `split2`
+
+#### Changed
+- generalized lemma `mulmx_rowcol` so that the dimension of matrix B is more flexible
+- generalized lemma `widen_ord_inj` so that m can be any nat no less than n
 
 ### mxnorm.v
 
