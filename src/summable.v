@@ -2224,7 +2224,6 @@ move: (foo3 Pa)=>[] P3 P4.
 split; last by move=>i; apply: is_cvg_sum_apply=>j _; apply: P2.
 apply/(@cauchy_cvgP (arrow_uniform_type nat R)).
 apply/cauchy_ballP=>e egt0; rewrite near_simpl.
-apply/cauchy_cvgP/cauchy_ballP=>e egt0; rewrite near_simpl.
 move: P4=>/cauchy_cvgP/cauchy_ballP/(_ _ egt0); rewrite near_simpl.
 move=>[][]/=a b[][N1] _ PN1[]N2 _ PN2 PN.
 exists ([set n | (maxn N1 N2 <= n)%N] , [set n | (maxn N1 N2 <= n)%N])=>//=.
