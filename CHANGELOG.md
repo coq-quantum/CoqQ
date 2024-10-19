@@ -140,6 +140,9 @@ xx
 - lemmas `row_idem`, `adj_row'`, `adj_col'`, `adjmx_row''`, `adjmx_col''`, `adj_block_mx`, `mxrank_conj`, `conjmx_const`
 - lemmas `conjmx_unitary`, `adjmx_unitary`, `row_unitarymx`, `mxrank_mulmxU`, `mxrank_mulUmx`, `mxrank_mulmxUC`, `mxrank_mulUCmx`, `dotmx_row_mx`, `row_mx0_unitarymx`, `row_0mx_unitarymx`, `mxdiag_unitary`, `projmx_tr`
 - lemmas `formV_psd`, `form_psd`, `psdmx1`, `obsmx0`, `obsmx1`, `distvC`, `normv_id`, `normv_le0`, `normv_lt0`
+- definition `l2normC`
+- lemmas `l2normC_pair`, `l2normC0_eq0`, `l2normCZ`, `l2normC_triangle`, `l2normC_ge0`, `dotV_l2normC`, `dot_l2normC`, `l2normC_dotV`, `l2normC_dot`, `l2normCUl`, `l2normC_unitary`, `l2normC_trmx`, `l2normC_adjmx`, `l2normC_conjmx`, `l2normCUr`, `l2normC_cauchy` 
+- lemmas `mxtrace_deltaE`, `psdmx_trace`, `psdmx_trace_eq0`
 
 #### Removed
 
@@ -168,7 +171,7 @@ xx
 - lemmas `fbnorm_adjmx`, `fbnorm_conjmx`, `fbnorm_trmx`, `fbnorm0_eq0`, `fbnorm_ge0`, `fbnorm_nneg`, `fbnorm0`, `fbnorm0P`, `fbnorm_eq0`, `fbnormZ`, `fbnormUl`, `fbnormUr`, `fbnorm_svd`, `fbnorm_svds`, `trnorm_adjmx`, `trnorm_conjmx`, `trnorm_trmx`, `trnorm0_eq0`, `trnorm_ge0`, `trnorm_nneg`, `trnorm0`, `trnorm0P`, `trnorm_eq0`, `trnormZ`, `trnormUl`, `trnormUr`, `trnorm_svd`, `trnorm_svds` 
 - lemmas `fbnorm_l2norm`, `fbnorm_trnormV`, `fbnorm_trnorm`, `fbnorm_dotr`, `fbnorm_dotl`, `fbnorm_existsr`, `fbnorm_existsl`, `fbnorm_triangle`, `fbnormM`, `fbnormMl`, `fbnormMr`, `fbnormMV`, `i2norm_fbnorm`
 - definition `i1fun`
-- lemmas `i1funA`, `i1fun_triangle`, `trnorm_svdE`, `tr_mul_diag`, `trnorm_i1funr`, `trnorm_existsr`, `trnorm_triangle`, `trnormMl`, `trnormMr`, `i2norm_trnorm`, `trnorm_ge_tr`, `psdmx_trnorm`, `trnorm_inner`, `form_tr_ge0`, `form_tr_eq0`, `formV_tr_ge0`, `formV_tr_eq0`
+- lemmas `i1funA`, `i1fun_triangle`, `trnorm_svdE`, `tr_mul_diag`, `trnorm_i1funr`, `trnorm_existsr`, `trnorm_triangle`, `trnormMl`, `trnormMr`, `i2norm_trnorm`, `trnorm_ge_tr`, `psdmx_trnorm`, `trnorm_inner`
 
 ### nondeterministic.v
 

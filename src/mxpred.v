@@ -2837,6 +2837,7 @@ Proof. by move=> x_le0 y_le0; rewrite nbregv_rlt0. Qed.
 
 End BRegVOrderTheory.
 
+(* here, we only define l2norm, for general case, see mxnorm.v *)
 Section l2normC.
 Variable (R: numClosedFieldType) (m n: nat).
 Implicit Type (A B : 'M[R]_(m,n)).
@@ -3006,9 +3007,13 @@ Lemma pscalemx_lge0 n (x : 'M[C]_n) (a : C) :
 Proof.
 move=>xgt0. apply/Bool.eq_iff_eq_true; split; last first.
 by move=>age0; apply: scalev_ge0=>//; apply/ltW.
-move: xgt0. rewrite lt_def {1 2}/Order.le/= /lownerle !subr0=>/andP[nx0 px] /psdmx_trnorm pz.
-move: (trnorm_ge0 (a *: x)). rewrite pz linearZ/= pmulr_lge0//.
-by rewrite lt_def -!psdmx_trnorm// trnorm_eq0 trnorm_ge0 nx0.
+move: xgt0. rewrite lt_def {1 2}/Order.le/= /lownerle !subr0.
+move =>/andP[/eqP Px /psdmx_dot px]/psdmx_dot pax.
+case E : (0 <= a)=>//; exfalso.
+apply/Px/eqP/mx_dot_eq0=>u.
+move: (px u) (pax u); rewrite !nnegrE -scalemxAr -scalemxAl linearZ/=.
+rewrite le_eqVlt=>/orP[/eqP<-//|P1].
+by rewrite pmulr_lge0// E.
 Qed.
 
 HB.instance Definition _ n := VOrder_isCan.Build C 'M[C]_n (@pscalemx_lge0 n).
@@ -3125,19 +3130,46 @@ rewrite -mulmxA mxtrace_mulC -mulmxA nnegrE mulmxBl linearB/= subr_ge0.
 apply P. apply form_psd.
 Qed.
 
+Lemma mxtrace_deltaE m (A : 'M[R]_m) : 
+  \tr A = \sum_i \tr (delta_mx 0 i *m A *m delta_mx i 0 : 'rV_1).
+Proof.
+rewrite {1}/mxtrace; apply eq_bigr=>/= i _.
+by rewrite trace_mx11 delta_mx_mulEl delta_mx_mulEr eqxx !mul1r.
+Qed.
+
+Lemma psdmx_trace m (A : 'M[R]_m) : A \is psdmx -> 0 <= \tr A.
+Proof.
+move=>/psdmx_dot PA.
+by rewrite mxtrace_deltaE sumr_ge0//==>i _; rewrite -nnegrE -adjmx_delta.
+Qed.
+
+Lemma psdmx_trace_eq0 m (A : 'M[R]_m) : 
+  A \is psdmx -> (\tr A == 0) = (A == 0).
+Proof.
+move=>PA; apply eqb_iff; split; last by move=>/eqP->; rewrite linear0.
+move: {+}PA=>/psdmxP[]/hermitian_normalmx/eigen_dec=>{2 3}-> Pd.
+rewrite mxtrace_mulC mulmxA unitarymxKV ?eigen_unitarymx// mul1mx.
+rewrite mxtrace_diag psumr_eq0//=.
+  by move=>i _; rewrite -nnegrE; apply/nnegmxP.
+move=>/allP Pi.
+suff -> : spectral_diag A = 0 by rewrite linear0 mulmx0 mul0mx. 
+apply/matrixP=>? i; rewrite ord1 mxE.
+by apply/eqP/Pi; rewrite mem_index_enum.
+Qed.
+
 Lemma le_lownerE_dentr m (A B: 'M[R]_m) : 
   reflect (forall x, x \is denmx -> \tr (A *m x) <= \tr (B *m x)) (A ⊑ B).
 Proof.
 apply/(iffP (@le_lownerE_psdtr _ _ _))=>H x Px.
 apply H. by apply/denmx_psd.
-case E: (x == 0). move/eqP: E=>->. by rewrite !linear0.
-have P: \tr| x| != 0 by rewrite trnorm_eq0 E.
-have : (\tr| x |)^-1 *: x \is denmx. apply/denmxP. split. 
-apply psdmxZ=>//. by rewrite invr_ge0 trnorm_ge0.
-by rewrite linearZ/= -(psdmx_trnorm Px)  mulVf.
-move=>/H. rewrite -!scalemxAr !linearZ/= mulrC [_^-1*_]mulrC ler_pdivrMr.
-by rewrite lt_def P trnorm_ge0. by rewrite mulrVK// unitfE.
+case E: (x == 0); first by move/eqP: E=>->; rewrite !linear0.
+have P: 0 < \tr x.
+  by rewrite lt_def psdmx_trace// andbT psdmx_trace_eq0// E.
+have : (\tr x)^-1 *: x \is denmx. apply/denmxP. split. 
+apply psdmxZ=>//. by rewrite invr_ge0 ltW.
+by rewrite linearZ/= mulVf// gt_eqF.
+move=>/H. rewrite -!scalemxAr !linearZ/= mulrC [_^-1*_]mulrC ler_pdivrMr//.
+by rewrite mulfVK// gt_eqF.
 Qed.
 
 End DecPsdmx.
-
