@@ -2837,6 +2837,115 @@ Proof. by move=> x_le0 y_le0; rewrite nbregv_rlt0. Qed.
 
 End BRegVOrderTheory.
 
+Section l2normC.
+Variable (R: numClosedFieldType) (m n: nat).
+Implicit Type (A B : 'M[R]_(m,n)).
+
+Definition l2normC A := 2.-root (\sum_i `|A i.1 i.2| ^+ 2).
+
+Lemma l2normC_pair A : l2normC A = 2.-root (\sum_i\sum_j (`|A i j| ^+ 2)).
+Proof. by f_equal; rewrite pair_bigA. Qed.
+
+Lemma l2normC0_eq0 : forall A, l2normC A = 0 -> A = 0.
+Proof.
+move=>A /eqP; rewrite rootC_eq0// =>/eqP.
+have P1 i: true -> 0 <= `|A i.1 i.2| ^+ 2 by move=>_; apply/exprn_ge0/normr_ge0.
+move/(psumr_eq0P P1)=>P2; apply/matrixP=>i j; move: (P2 (i,j) isT)=>/eqP.
+by rewrite mxE expf_eq0/= normr_eq0=>/eqP.
+Qed.
+
+Lemma l2normCZ a A : l2normC (a *: A) = `|a| * l2normC A.
+Proof.
+rewrite -(rootCK (ltn0Sn 1) `|a|) /l2normC -rootCX// -rootCMl ?exprn_ge0//.
+f_equal; rewrite mulr_sumr; apply eq_bigr=>i _.
+by rewrite !mxE normrM exprMn.
+Qed.
+
+Lemma l2normC_triangle A B : l2normC (A + B) <= l2normC A + l2normC B.
+Proof.
+rewrite /l2normC; under eq_bigr do rewrite mxE.
+apply: discrete_Minkowski_inequality.
+Qed.
+
+HB.instance Definition _ := isVNorm.Build R 'M_(m, n) l2normC
+  l2normC_triangle l2normC0_eq0 l2normCZ.
+
+Lemma l2normC_ge0 A : l2normC A >= 0. Proof. exact: normv_ge0. Qed.
+
+Lemma dotV_l2normC (M: 'M[R]_(m,n)) : \tr (M ^*t *m M) = l2normC M ^+2.
+Proof.
+rewrite /l2normC sqrtCK -(pair_bigA _ (fun x y=> `|M x y| ^+2))/= exchange_big.
+rewrite /mxtrace; apply eq_bigr=>i _; rewrite !mxE; apply eq_bigr=>j _.
+by rewrite !mxE normCKC.
+Qed.
+
+Lemma dot_l2normC (M: 'M[R]_(m,n)) : \tr (M *m M ^*t) = l2normC M ^+2.
+Proof. by rewrite -dotV_l2normC mxtrace_mulC. Qed.
+
+Lemma l2normC_dotV (M: 'M[R]_(m,n)) : l2normC M = sqrtC (\tr (M ^*t *m M)).
+Proof. by rewrite dotV_l2normC exprCK// normv_ge0. Qed.
+
+Lemma l2normC_dot (M: 'M[R]_(m,n)) : l2normC M = sqrtC (\tr (M *m M ^*t)).
+Proof. by rewrite l2normC_dotV mxtrace_mulC. Qed.
+
+Lemma l2normCUl (U : 'M[R]_m) (M : 'M[R]_(m,n)): 
+  U \is unitarymx -> l2normC (U *m M) = l2normC M.
+Proof.
+by move=>P; rewrite l2normC_dot !adjmxM -!mulmxA 
+mxtrace_mulC mulmxA mulmxKtV// -l2normC_dot.
+Qed.
+
+Lemma l2normC_unitary (U : 'M[R]_(m,n)) :
+  U \is unitarymx -> l2normC U = sqrtC m%:R.
+Proof. by move=>/unitarymxP PU; rewrite l2normC_dot PU mxtrace1. Qed.
+
+End l2normC.
+
+#[global] Hint Extern 0 (is_true (0 <= l2normC _)) => apply: l2normC_ge0 : core.
+
+Section l2normC_extra.
+Variable (C : numClosedFieldType).
+
+Lemma l2normC_trmx m n (A : 'M[C]_(m,n)) : l2normC (A^T) = l2normC A. 
+Proof. 
+rewrite !l2normC_pair; f_equal; rewrite exchange_big.
+by under eq_bigr do under eq_bigr do rewrite mxE.
+Qed.
+
+Lemma l2normC_adjmx m n (A : 'M[C]_(m,n)) : l2normC (A^*t) = l2normC A.
+Proof. by rewrite -l2normC_trmx /l2normC; under eq_bigr do rewrite !mxE norm_conjC.  Qed.
+
+Lemma l2normC_conjmx m n (A : 'M[C]_(m,n)) : l2normC (A^*m) = l2normC A.
+Proof. by rewrite -l2normC_adjmx adjmxCT conjmxK l2normC_trmx. Qed.
+
+Lemma l2normCUr m n l (U : 'M[C]_(n,l)) (M : 'M_(m,n)): 
+  U \is unitarymx -> l2normC (M *m U) = l2normC M.
+Proof.
+by move=>P; rewrite l2normC_dot !adjmxM !mulmxA mulmxtVK// -l2normC_dot.
+Qed.
+
+Lemma l2normC_cauchy m (u : 'rV[C]_m) (v : 'cV[C]_m) :
+  `| \tr (u *m v) | <= l2normC u * l2normC v.
+Proof.
+rewrite trace_mx11 mxE -(ler_pXn2r (n := 2))// ?nnegrE// ?mulr_ge0// ?normv_ge0//.
+apply/(le_trans (Cauchy_Schwarz_C _ _ _ _)).
+by rewrite exprMn !sqrtCK !pair_bigV/= big_ord1 exchange_big big_ord1.
+Qed.
+
+Lemma form_tr_ge0 n m (A : 'M[C]_(m,n)) : 0 <= \tr (A *m A^*t ).
+Proof. by rewrite dot_l2normC exprn_ge0. Qed.
+
+Lemma form_tr_eq0 n m (A : 'M[C]_(m,n)) : \tr (A *m A^*t ) = 0 -> A = 0.
+Proof. by move=>/eqP; rewrite dot_l2normC expf_eq0/= normv_eq0=>/eqP. Qed.
+
+Lemma formV_tr_ge0 n m (A : 'M[C]_(m,n)) : 0 <= \tr (A^*t *m A ).
+Proof. by rewrite mxtrace_mulC form_tr_ge0. Qed.
+
+Lemma formV_tr_eq0 n m (A : 'M[C]_(m,n)) : \tr (A^*t *m A ) = 0 -> A = 0.
+Proof. rewrite mxtrace_mulC; exact: form_tr_eq0. Qed.
+
+End l2normC_extra.
+
 (****************************************************************************)
 (* lowner order over 'M[R]_n as partial order, A <= B iff B - A \is psdmx   *)
 (****************************************************************************)
