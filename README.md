@@ -89,6 +89,9 @@ Define $\small\texttt{extNumType}$ as the common parent type of
 ### ctopology.v
 Instantiate extnum.v to complex number. 
 
+### convex.v [merged from [YZB24])
+Simple implementation of convex hull with proof of basic properties.
+
 ### majorization.v
 Theory of majorization, including Hall's perfect-matching theorem, 
 Konig Frobenius theorem, Birkhoff's theorem, etc.
@@ -261,9 +264,6 @@ Files are displayed in /src/example/qlaws
 
 ### basic_def.v
 Basic definitions and properties, including Definition 5.2, 5.3, 5.4, 5.5.
-
-### convex.v
-Simple implementation of convex hull with proof of basic properties.
 
 ### circuit.v
 Semantics of circuit program and the corresponding laws. In particular, a constructed normal form is provided.
