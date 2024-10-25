@@ -3,8 +3,6 @@ From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra perm fingroup.
 From mathcomp.analysis Require Import -(notations)forms.
 Require Import notation mcaextra mcextra spectral.
-(* From mathcomp.analysis Require Import boolp signed topology. *)
-(* reprove some properties of bigmax; which shouldn't depends on classic logic *)
 
 (* -------------------------------------------------------------------- *)
 Set   Implicit Arguments.
@@ -51,7 +49,7 @@ Import Order.Theory GRing.Theory Num.Theory Num.Def.
 (*              projmx :=: M \is hermmx && spectral_diag M \is boolmx         *)
 (*                         projection/projective matrix                       *)
 (*             proj1mx :=: M \is projmx && rank M == 1                        *)
-(******************************************************************************)
+(* -------------------------------------------------------------------------- *)
 (* Hierarchy of predicates                                                    *)
 (* realmx --> nnegmx --|--> posmx                                             *)
 (*                     |--> uintmx --> boolmx                                 *)
@@ -63,7 +61,7 @@ Import Order.Theory GRing.Theory Num.Theory Num.Def.
 (*                                    |--> obsmx --|--> denmx --> den1mx      *)
 (*                                                 |--> projmx --> proj1mx    *)
 (* den1mx --> proj1mx                                                         *)
-(******************************************************************************)
+(* -------------------------------------------------------------------------- *)
 (* Defining Types                                                             *)
 (* 'MR[R]_(m,n) : subtype of realmx, closed under unitring                    *)
 (* 'MH[R]_m     : subtype of hermmx, closed under lmod                        *)
@@ -71,7 +69,7 @@ Import Order.Theory GRing.Theory Num.Theory Num.Def.
 (* 'MObs[R]_m   : subtype of obsmx                                            *)
 (* psdmx : closed under addr                                                  *)
 (* unitarymx : closed under *m                                                *)
-(******************************************************************************)
+(* -------------------------------------------------------------------------- *)
 (*         vnorm R T == interface type of function f : T -> R satisfying      *)
 (*                      vector norm property, over R : numDomainType          *)
 (*                      and T : lmodType                                      *)
@@ -81,6 +79,8 @@ Import Order.Theory GRing.Theory Num.Theory Num.Def.
 (*      vorderType R == interface type of lmodType (R : numDomainType)        *)
 (*                      equipped with a vector order                          *)
 (*                      The HB class is VOrder                                *)
+(* -------------------------------------------------------------------------- *)
+(* Define lowner order of matrices                                            *)
 (******************************************************************************)
 
 Ltac auto_ge0 := repeat match goal with

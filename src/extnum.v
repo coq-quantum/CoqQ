@@ -5,8 +5,6 @@ From mathcomp.classical Require Import boolp cardinality mathcomp_extra
 From mathcomp.analysis Require Import ereal reals signed topology function_spaces
   prodnormedzmodule normedtype sequences.
 From mathcomp.analysis Require Import -(notations)forms.
-(* From mathcomp.real_closed Require Import complex. *)
-(* From quantum.external Require Import complex. *)
 Require Import mcextra mcaextra notation mxpred.
 
 (******************************************************************************)
@@ -3586,30 +3584,6 @@ have ->: (1 - a) * (1 / `|Y|) = 1 / (`|X| + `|Y|).
 by rewrite -scalerDr normrZ ger0_norm ?divr_ge0// 
   mulrC mulrA mulr1 ler_pdivlMr// addr_gt0// Px0.
 Qed.
-
-(* Lemma test7 (x y : V) : `|x| = 1 -> `|y| <= 1 -> exists a z, 
-  0 <= a <= 1 /\ `|z| = 1 /\ a *: x + (1-a) *: z = y.
-Admitted.
-
-Lemma test6 : { c : C | c > 0 /\ 
-  (forall X Y, ((0 : V) ⊑ X) && (X ⊑ Y) -> c * `|X| <= `|Y|)}.
-move: (pselect (exists x : V, (0 : V) ⊏ x))=>[]; last first.
-move=>/forallNP P1; exists 1; split=>// X Y.
-by move=>/andP[] xge0 /(le_trans xge0); move: xge0; rewrite !le_eqVlt
-  =>/orP[|/P1//]/eqP<-/orP[|/P1//]/eqP<-; rewrite !normr0 mulr0 eqxx.
-move=>/cid[x xgt0].
-have Px: `|1/`|x| *: x| = 1.
-  rewrite normrZ normrM normr1 mul1r ger0_norm ?invr_ge0// mulVf//.
-  by move: xgt0; rewrite lt_def normr_eq0=>/andP[].
-have Ps1: SA 1.
-  exists 0; exists (1/`|x| *: x); exists (1/`|x| *: x); do ! split=>//.
-  by apply/andP; split. 1,2: by rewrite scalev_ge0// ltW.
-  by rewrite scale0r add0r subr0 scale1r.
-have /cid2[c Pc1 Pc2]: exists2 x : C, SA x & forall y : C, SA y -> x <= y.
-by apply: extNum_compact_min=>[i/test5/=/gtr0_real//||]; [apply: test3 | exists 1].
-have cle1 : c <= 1 by apply: Pc2.
-exists c; split=>[|X Y]. by apply: test5.
-case E: (X == 0); first by move: E=>/eqP->; rewrite normr0 mulr0. *)
 
 End test.
 

@@ -727,41 +727,6 @@ rewrite mulr_sumr; apply eq_bigr=>j _.
 by rewrite /tentv_fun/= tentf_apply tentv_dot.
 Qed. 
 
-(* Definition test3 (T : ihbFinType) := 
-    \sum_i ((h2c (eb (cast_ord (ihb_dim_cast _) i) : 'Hs T) *m delta_mx ord0 i)).
-
-Lemma test31 (T : ihbFinType) i j : 
-  test3 T i j = (i == (cast_ord (ihb_dim_cast _) j))%:R.
-Proof.
-rewrite /test3 summxE (bigD1 j)//= big1 ?addr0=>[k/negPf nkj|]; 
-by rewrite delta_mx_mulEl ?nkj ?mul0r// eqxx mul1r h2c_eb mxE eqxx andbT.
-Qed.
-
-Lemma test32 (T : ihbFinType) i j : 
-  test3 T i j = (j == (cast_ord (esym (ihb_dim_cast _)) i))%:R.
-Proof.
-rewrite test31; case: eqP=>[->|].
-by rewrite cast_ord_comp cast_ord_id eqxx.
-move=>Pi; case: eqP=>// Pj; exfalso; apply: Pi.
-by rewrite Pj cast_ord_comp cast_ord_id.
-Qed.
-
-Lemma test3_unitarymx T : test3 T \is unitarymx.
-Proof.
-apply/unitarymxP. rewrite -adjmxE; apply/matrixP=>i j.
-rewrite !mxE (bigD1 (cast_ord (esym (ihb_dim_cast _)) i))//= big1=>[k/negPf nki|];
-by rewrite test32 ?nki ?mul0r// eqxx mul1r !mxE test31 
-  cast_ord_comp cast_ord_id eq_sym addr0 conjC_nat//.
-Qed.
-
-Lemma test3_adj_unitarymx T : (test3 T)^*t \is unitarymx.
-Proof.
-apply/unitarymxP. rewrite -adjmxE; apply/matrixP=>i j.
-rewrite adjmxK !mxE (bigD1 (cast_ord (ihb_dim_cast _) j))//= big1=>[k/negPf nki|];
-by rewrite test31 ?nki ?mulr0// eqxx mulr1 !mxE test32 
-  cast_ord_comp cast_ord_id eq_sym addr0 conjC_nat//.
-Qed. *)
-
 Definition tentv_indexl (T3 T4 : ihbFinType) (i : 'I_(dim 'Hs T3 * dim 'Hs T4)) :
   'I_(dim 'Hs (T3 * T4)%type) := cast_ord (ihb_dim_cast _)
   (enum_rank (enum_val (cast_ord (esym (ihb_dim_cast _)) (mxtens_unindex i).1),

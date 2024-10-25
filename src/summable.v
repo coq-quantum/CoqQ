@@ -7,7 +7,12 @@ From mathcomp.analysis Require Import ereal reals signed topology function_space
 (* From mathcomp.real_closed Require Import complex. *)
 From quantum.external Require Import complex.
 Require Import mcextra mcaextra extnum mxpred ctopology notation.
-(* From mathcomp Require Import fintype bigop finmap. *)
+
+(******************************************************************************)
+(*                      Bounded and Summable functions                        *)
+(* discrete function maps to normed topological space over real or complex    *)
+(*    number.                                                                 *)
+(******************************************************************************)
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -85,15 +90,6 @@ Definition sum (I : choiceType) {K : numFieldType} {R : normedModType K}
 
 Definition psum_preset {I : choiceType} {R : zmodType}
   (x : I -> R) := [set y | exists J : {fset I}, y = psum x J ].
-
-(* Definition summable (I : choiceType) {K : numFieldType} {R : normedModType K}
-   (x : I -> R) := exists (M : K), \forall J \near totally,
-   (psum (fun i => `|x i|) J <= M)%R. *)
-
-(* Definition summable (I : choiceType) {K : realType} {R : normedModType K}
-   (x : I -> R) :=
-   \forall M \near +oo%R, \forall J \near totally,
-   (psum (fun i => `|x i|) J <= M)%R. *)
 
 End totally.
 
@@ -1227,49 +1223,6 @@ HB.instance Definition _ (I : choiceType) (R : realType)
 HB.instance Definition _ (I : choiceType) (R : realType)
   (V : vorderFinNormedModType R[i]) := gen_choiceMixin {vdistr I -> V}.
 
-(* Allows GRing.additive to resolve conflicts. *)
-
-(* Section VOrderFinNormedMod_Lim.
-Context {R : realType} {V : vorderFinNormedModType R[i]} {I : choiceType}.
-Local Notation C := R[i].
-
-Lemma lim_gev_near_fset (x : V) (u : {fset I} -> V) : 
-  cvg u -> (\forall n \near totally, x ⊑ u n) -> x ⊑ lim u.
-Proof.
-move=> /[swap] /(closed_cvg (fun y=>x ⊑ y))/= P1; apply/P1/closed_gev.
-Qed.
-
-Lemma lim_lev_near_fset (x : V) (u : {fset I} -> V) : 
-  cvg u -> (\forall n \near totally, u n ⊑ x) -> lim u ⊑ x.
-Proof.
-move=> /[swap] /(closed_cvg (fun y : V=>y ⊑ x))/= P1;apply/P1/closed_lev.
-Qed.
-
-Lemma lev_lim_near_fset (u_ v_ : {fset I} -> V) : cvg u_ -> cvg v_ ->
-  (\forall n \near totally, u_ n ⊑ v_ n) -> lim u_ ⊑ lim v_.
-Proof.
-move=> uv cu cv; rewrite -(subv_ge0) -limB//.
-apply: lim_gev_near_fset=>//. apply: is_cvgB=>//.
-by apply: filterS cv => k; rewrite (subv_ge0).
-Qed.
-
-Lemma lim_gev_fset (x : V) (u : {fset I} -> V) : cvg u -> lbounded_by x u -> x ⊑ lim u.
-Proof.
-by move=>P1 P2; apply: (lim_gev_near_fset P1); apply: nearW.
-Qed.
-
-Lemma lim_lev_fset (x : V) (u : {fset I} -> V) : cvg u -> ubounded_by x u -> lim u ⊑ x.
-Proof.
-by move=>P1 P2; apply: (lim_lev_near_fset P1); apply: nearW.
-Qed.
-
-Lemma lev_lim_fset (u v : {fset I} -> V) : cvg u -> cvg v ->
-  (forall n, u n ⊑ v n) -> lim u ⊑ lim v.
-Proof.
-by move=>P1 P2 P3; apply: (lev_lim_near_fset P1 P2); apply: nearW.
-Qed.
-End VOrderFinNormedMod_Lim. *)
-
 Section VDistrCoreTh.
 Context {I : choiceType} {R : realType} {V : vorderFinNormedModType R[i]}.
 Variable (f: {vdistr I -> V}).
@@ -1971,31 +1924,6 @@ move: (cvg_switch FF FG uc ca)=>[l []P1 P2].
 split. by apply/cvg_ex; exists l.
 by rewrite (cvg_lim _ P1).
 Qed.
-(* have Pc: cvg (c i @[i --> F]).
-apply/cauchy_cvgP/cauchy_ballP=>e egt0; rewrite near_simpl.
-near=>i; rewrite -ball_normE/ball_/=.
-move: (ca i.1) (ca i.2)=>/cvgrPdist_lt/(_ _ (e2gt0 (e2gt0 egt0))) Pi
-  /cvgrPdist_lt/(_ _ (e2gt0 (e2gt0 egt0))) Pj.
-near G => m; apply: (le_lt_trans (ler_distD (a i.1 m) _ _)).
-rewrite [e]splitr {2}[e/2]splitr addrA addrC ltrD//; last by near: m.
-apply/(le_lt_trans (ler_distD (a i.2 m) _ _))/ltrD;
-  last by rewrite -normrN opprB; near: m.
-near: m. apply: nearW. clear Pi Pj.
-suff: ball (a i.1) (e / 2) (a i.2) by rewrite/ball/=/fct_ball -ball_normE/=.
-by near: i; move: uc=>/cvgP/cauchy_cvgP/cauchy_ballP/(_ _ (e2gt0 egt0)); rewrite near_simpl.
-
-split=>//.
-apply/cvgrPdist_lt=>e egt0.
-move: {+}Pc=>/cvgrPdist_lt/(_ _ (e2gt0 (e2gt0 egt0))) PF.
-move: uc=>/cvg_ball/(_ _ (e2gt0 egt0)); rewrite/ball/=/fct_ball/= -ball_normE/==>PF1.
-near F => N; move: (ca N)=>/cvgrPdist_lt/(_ _ (e2gt0 (e2gt0 egt0))) PG; near=>m.
-have /(_ m) Pm1: forall t : J, `|b t - a N t| < e / 2 by near: N.
-apply: (le_lt_trans (ler_distD (a N m) _ _)).
-rewrite [e]splitr ltrD//; last by rewrite -normrN opprB.
-rewrite [e/2]splitr; apply/(le_lt_trans (ler_distD (c N) _ _))/ltrD.
-by near: N. by near: m.
-Unshelve. all: end_near.
-Qed. *)
 
 Lemma exchange_lim_near2 {I J : choiceType} {F : set_system I} {G : set_system J}
   {FF : ProperFilter F} {FG : ProperFilter G} (a : I -> J -> V) (b : J -> V) (c : I -> V) :
@@ -2411,235 +2339,3 @@ Unshelve. end_near.
 Qed.
 
 End ExchangePsum.
-
-
-
-(* Lemma test4 (I J : choiceType) (V : completeNormedModType C) 
-  (f : I -> J -> V) : (forall i, cvg (psum (f i))) -> (forall j, cvg (psum (f^~j))) ->
-  {uniform (fun j => sum (f i) -> } *)
-
-(* Lemma testb (I J : choiceType) (f : I -> J -> C) :
-  (forall i j, f i j >= 0) -> forall Si1 Si2 Sj1 Sj2, Si1 `<=` Si2 -> Sj1 `<=` Sj2 ->
-  psum (fun i : I => psum (fun j : J => f i j) Sj1) Si1
-  <= psum (fun i : I => psum (fun j : J => f i j) Sj2) Si2.
-Proof.
-intros; rewrite -(fsetUD_sub H1) psumU ?fdisjointXD// -[X in X <= _]addr0 lerD//.
-by apply: ler_sum=>/=i _; apply/psum_ler. by apply: sumr_ge0=>/=i _; apply: sumr_ge0.
-Qed.
-
-Lemma test1 (I J : choiceType) (V : completeNormedModType C) 
-  (f : I -> J -> V) :
-  (exists M, forall Si Sj, psum (fun i => psum (fun j => `|f i j|) Sj) Si <= M) 
-    -> (forall i, summable (f i)) /\ (forall i, cvg (psum (f i))) /\
-    (summable (fun i : I => sum (f i))) /\ (cvg (psum (fun i => sum (f i))))
-    /\ cvg (psum (fun x : I => `|sum (f x)|)).
-Proof.
-move=>[Mu Pu].
-have H0: (forall i, summable (f i)).
-  move=>i; exists Mu; near=>Sj.
-  by move: (Pu [fset i] Sj); rewrite psum1.
-have H1: (forall i, cvg (psum (f i))). 
-  by move=>i; apply: norm_bounded_cvg; apply: H0.
-have H2: summable (fun i : I => sum (f i)).
-  exists Mu; near=>Si; rewrite/psum.
-  rewrite (eq_bigr (fun i : Si => lim (`|psum (f (val i)) x| @[x --> totally]%classic))).
-  move=>i _; symmetry; apply: lim_norm. apply: H1.
-  rewrite -lim_sum_apply. move=>i _; apply: is_cvg_norm; apply: H1.
-  apply: etlim_le_near. 
-  apply: (is_cvg_sum_apply (f := fun i t => `|psum (f (val i)) t|))=>/=i _; apply: is_cvg_norm; apply: H1.
-  near=>Sj. apply: (le_trans (y := psum (fun i : I => psum (fun j : J => `|f i j|) Sj) Si))=>//.
-  rewrite/psum ler_sum//==>i _; apply: ler_norm_sum.
-do !split. apply: H0. apply: H1. apply: H2.
-apply: norm_bounded_cvg; apply: H2.
-by move: (summable_norm_is_cvg (f := Summable H2))=>/=.
-Unshelve. all: end_near.
-Qed.
-
-Lemma test3 (V : normedModType C) (u v : V) :
-  (forall e, e > 0 -> `| u - v | < e) -> u = v.
-Proof.
-move=>P. apply/eqP; case E: (u != v); last by move: E=>/eqP->.
-move: E=>/eqP/eqP; rewrite -subr_eq0 - normr_gt0=>/(P _).
-rewrite lt_def eqxx//.
-Qed.
-
-Local Notation "\`| f |" := (fun x => `|f x|) (at level 2).
-
-Lemma test7 (I : choiceType) (V : completeNormedModType C) (f : I -> V) :
-  summable f -> cvg \`| psum f |.
-Proof.
-move=>Pf; apply/cauchy_cvgP/cauchy_exP=>e egt0/=.
-move: (summable_cvg (f := Summable Pf))=>/=/cvgrPdist_lt/=/(_ _ egt0)=>P.
-exists `|(lim (psum f))|. rewrite near_simpl.
-near=>J; have: `|sum f - psum f J| < e by near: J.
-rewrite/= -ball_normE/=. apply: le_lt_trans. apply: ler_dist_dist.
-Unshelve. all: end_near.
-Qed.
-
-Lemma test6 (I : choiceType) (V : completeNormedModType C) (f : I -> V) :
-  summable f -> `| sum f | <= sum \`|f|.
-Proof.
-move=>Pf; rewrite /sum -lim_norm; first by apply: norm_bounded_cvg.
-rewrite -levcE; apply: lev_lim_near_fset; last first.
-by near=>J; rewrite levcE /psum ler_norm_sum.
-by move: (summable_norm_is_cvg (f := Summable Pf)).
-by apply: test7.
-Unshelve. all: end_near.
-Qed.
-
-Lemma test8 (I : choiceType) (V : completeNormedModType C) (f : I -> V) (J : {fset I}):
-  summable f -> (psum (fun i : I => if i \in J then 0 else f i) --> (sum f - psum f J))%classic.
-Proof.
-set g := (fun i : I => if i \in J then 0 else f i).
-have P1: psum g J = 0 by rewrite/psum big1/g //==>[[?/=->]].
-move=>Pf.
-apply/cvgrPdist_lt=>/=e egt0.
-move: (summable_cvg (f := Summable Pf))=>/=/cvgrPdist_lt/=/(_ _ egt0)=>P.
-near=>K. have: `|lim (psum f) - psum f K| < e by near: K.
-near: K. exists J=>//= J'/= PJ.
-suff ->: psum f J' = psum f J + psum g J' by rewrite opprD addrA.
-apply/eqP. rewrite addrC -subr_eq -psumIB -[psum g J']subr0 -P1 -[X in _ == X]psumIB.
-move: PJ; rewrite -fsetD_eq0=>/eqP->; rewrite !psum0 !subr0; apply/eqP.
-by rewrite/psum; apply: eq_bigr=>/=[[i/=]]; rewrite/g inE=>/andP[]/negPf->.
-Unshelve. end_near.
-Qed.
-
-Lemma test5 (I : choiceType) (V : completeNormedModType C) (f : I -> V) :
-  summable f -> forall J,
-  `| sum f - psum f J | <= sum \`|f| - psum \`|f| J.
-Proof.
-move=>Pf J.
-have Pf1: summable \`|f|. move: {+}Pf=>[]/=e Pe; exists e.
-near=>K; have: psum \`| f | K <= e by near: K.
-by rewrite/psum; under [in X in _ -> X]eq_bigr do rewrite normr_id.
-move: (@test8 _ _ _ J Pf)=>/norm_cvg_lim/=<-.
-move: (@test8 _ _ _ J Pf1)=>/norm_cvg_lim/=<-.
-rewrite -lim_norm.
-
-apply: norm_bounded_cvg; move: {+}Pf=>[e Pe]; exists e.
-near=>K; have: psum \`| f | K <= e by near: K.
-by apply: le_trans; apply: ler_sum=>i _; case: (val i \in J)=>//; rewrite normr0.
-
-apply: ler_etlim_near.
-apply: is_cvg_norm. apply: norm_bounded_cvg; move: {+}Pf=>[e Pe]; exists e.
-near=>K; have: psum \`| f | K <= e by near: K.
-by apply: le_trans; apply: ler_sum=>i _; case: (val i \in J)=>//; rewrite normr0.
-
-apply: norm_bounded_cvg; move: {+}Pf1=>[e Pe]; exists e.
-near=>K; have: psum \`|\`| f | | K <= e by near: K.
-by apply: le_trans; apply: ler_sum=>i _; case: (val i \in J)=>//; rewrite normr0.
-
-near=>K. apply: (le_trans (ler_norm_sum _ _ _)).
-by apply: ler_sum=>i _; case: (val i \in J)=>//; rewrite normr0.
-Unshelve. all: end_near.
-Qed.
-
-Lemma e2gt0 (e : C) : e > 0 -> e / 2 > 0. 
-Proof. by move=>P; apply: divr_gt0=>//; apply: ltr0n. Qed.
-
-Lemma ler_etlim_nearF_add_cst {T : Type}
-  {F : set_system T} {FF : ProperFilter F} (u v : T -> C) (c : C): 
-    (cvg (u @ F) -> cvg (v @ F) ->
-      (\forall n \near F, u n + c <= v n) -> 
-        lim (u @ F) + c <= lim (v @ F))%classic.
-Proof.
-move=>P1 P2 P3. pose fc := (fun _ : T => c).
-have <-: lim (fc @ F)%classic = c. apply/norm_lim_near_cst. by near=>K.
-rewrite -limD. apply: P1. apply: is_cvg_cst.
-apply: ler_etlim_near. apply: is_cvgD. apply: P1. apply: is_cvg_cst.
-apply: P2. near=>K. rewrite/fc fctE; near: K. by [].
-Unshelve. all: end_near.
-Qed.
-
-Lemma test2' (I J : choiceType) (V : completeNormedModType C) 
-  (f : I -> J -> V) :
-  (exists M : C, forall Si Sj, psum (fun i => psum (fun j => `|f i j|) Sj) Si <= M) 
-    -> forall e, e > 0 -> exists Si Sj, forall Si' Sj', 
-      Si `<=` Si' -> Sj `<=` Sj' ->
-        `|sum (fun i => sum (f i)) - psum (fun i => psum (f i) Sj') Si'| < e.
-Proof.
-move=>P1; move: (test1 P1)=>[]P2[] _ []P4[] _ P6.
-have P1': exists M : C, forall Si Sj, 
-  psum (fun i : I => psum \`| \`|f i| | Sj) Si <= M.
-  move: P1=>[/=e Pe]. exists e=>Si Sj; move: (Pe Si Sj).
-  by apply/le_trans/ler_sum=>??; apply/ler_sum=>??; rewrite normr_id.
-move: (test1 P1')=>[] _ []P3'[] _ []P5' _; clear P1 P1'.
-
-have R1: forall Si Sj, sum (fun i : I => sum \`| f i |) >= psum (fun i : I => psum \`| f i | Sj) Si.
-move=>Si Sj. apply: etlim_ge_near. apply: P5'.
-exists Si=>//= Ti/= Pi. rewrite -(fsetUD_sub Pi) psumU ?fdisjointXD// -[X in X <= _]addr0 lerD//.
-apply: ler_sum=>j _; apply: etlim_ge_near. apply: P3'.
-exists Sj=>//= Tj/=. by apply/psum_ler.
-apply: sumr_ge0=>??; apply: etlim_ge_near. apply: P3'.
-by near=>K; apply: sumr_ge0.
-
-(* clear P1 P2 P3 P4 P5 P1' P3' P5' P0 P00 R1 R2. *)
-have Qi: forall e : C, e > 0 -> exists Si Sj, 
-`|sum (fun i => sum \`|f i |) - psum (fun i : I => psum \`| f i | Sj) Si| < e.
-move=>e egt0.
-move: {+}P5'=>/cvgrPdist_lt/(_ _ (e2gt0 egt0))[]x/= _/(_ x)/=/(_ (fsubset_refl _)).
-rewrite {5}/psum -lim_sum_apply=>[|Q2]; first by move=>/=i _; apply: P3'.
-have: cvg (\sum_(i : x) psum \`| f (val i) | t @[t --> totally])%classic.
-  by apply: is_cvg_sum_apply=>/=i _; apply: P3'.
-move=>/cvgrPdist_lt/(_ _ (e2gt0 egt0))[y]/= _/(_ y)/=/(_ (fsubset_refl _))=>Q3.
-exists x. exists y.
-apply: (le_lt_trans (ler_distD (lim (\sum_(i : x) psum \`| f (fsval i) | t @[t --> totally])%classic) _ _)).
-rewrite [e]splitr ltrD//.
-
-move=>/= e egt0; move: (Qi _ egt0)=>[Si[Sj Pi]].
-exists Si; exists Sj=>Si' Sj' PSi PSj.
-
-suff R4: `|sum (fun i : I => sum (f i)) - psum (fun i : I => psum (f i) Sj') Si'| 
-  <= `|sum (fun i : I => sum (\`|f i|)) - psum (fun i : I => psum \`|f i| Sj') Si'|.
-apply: (le_lt_trans R4).
-apply: (le_lt_trans _ Pi). rewrite !ger0_norm ?subr_ge0//.
-by rewrite lerD2l lerN2; apply: testb.
-
-apply: (le_trans (ler_distD (psum (fun i : I => sum (f i)) Si') _ _)).
-have R3: `|sum (fun i : I => sum (f i)) - psum (fun i : I => sum (f i)) Si'| 
-  <= sum (fun i : I => sum \`| f i |) - psum (fun i : I => sum \`| f i |) Si'.
-move:{+}P4=>/test5/(_ Si')=>R3. apply: (le_trans R3).
-rewrite -lerN2 !opprB lerBlDl addrC -addrA -lerBlDl [X in _ <= X]addrC lerBrDr.
-rewrite addrC. apply: ler_etlim_nearF_add_cst.
-apply: P6. apply: P5'.
-exists Si'=>// K/= PK.
-rewrite addrCA addrC -lerBrDr -psumIB -[X in _ <= X]psumIB.
-move: PK; rewrite -fsetD_eq0=>/eqP->; rewrite !psum0 !subr0.
-apply: ler_sum=>i _. apply/test6/P2.
-
-have R4: `|psum (fun i : I => sum (f i)) Si' - psum (fun i : I => psum (f i) Sj') Si'| <= 
-  psum (fun i : I => sum \`|f i| - psum \`|f i| Sj') Si'.
-rewrite{1 2 4}/psum raddf_sum/= -big_split/=.
-apply: (le_trans (ler_norm_sum _ _ _)).
-apply: ler_sum=>i _. apply/test5/P2.
-
-apply: (le_trans (lerD R3 R4)).
-rewrite/psum raddf_sum/= -addrA -big_split/=.
-under eq_bigr do rewrite addrA addNr add0r.
-rewrite -raddf_sum/= real_ler_norm//. apply: ger0_real.
-rewrite subr_ge0. apply: R1.
-Unshelve. all: end_near.
-Qed.
-
-Lemma testc (I J : choiceType) (V : zmodType) (h : I -> J -> V) Si Sj :
-  psum (fun i : I => psum (h i) Sj) Si =
-    psum (fun j : J => psum (h ^~ j) Si) Sj.
-Proof. by intros; rewrite /psum exchange_big. Qed.
-
-Lemma test2 (I J : choiceType) (V : completeNormedModType C) 
-  (f : I -> J -> V) :
-  (exists M : C, forall Si Sj, psum (fun i => psum (fun j => `|f i j|) Sj) Si <= M) ->
-      sum (fun i => sum (f i)) = sum (fun j => sum (f ^~ j)).
-Proof.
-move=>P1.
-have P2: exists M : C, forall Sj Si, psum (fun j : J => psum \`| f ^~ j | Si) Sj <= M.
-by move: P1=>[e Pe]; exists e=>Sj Si; move: (Pe Si Sj); apply: le_trans; rewrite testc.
-move: (test2' P1) (test2' P2)=>Qi Qj.
-apply: test3=>/= e egt0.
-move: (Qi _ (e2gt0 egt0)) (Qj _ (e2gt0 egt0))=>[Si1[Sj1 Pi]][Sj2[Si2 Pj]].
-pose Si := Si1 `|` Si2; pose Sj := Sj1 `|` Sj2.
-move: (ltrD (Pi Si Sj (fsubsetUl _ _) (fsubsetUl _ _)) (Pj Sj Si (fsubsetUr _ _) (fsubsetUr _ _))).
-rewrite -splitr; apply: le_lt_trans.
-apply: (le_trans (ler_distD (psum (fun i : I => psum (f i) Sj) Si) _ _)).
-by rewrite lerD2l - normrN opprB testc.
-Qed. *)

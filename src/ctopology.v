@@ -26,8 +26,6 @@ Local Open Scope ring_scope.
 (* -------------------------------------------------------------------------- *)
 (* Specify extnum theory for R[i] : topology/theory of R[i], 'M[R[i]] and     *)
 (*    finNormedModType R[i]                                                   *)
-(* convergence w.r.t. lowner order of matrices                                *)
-(* denmx forms CPO                                                            *)
 (******************************************************************************)
 
 Module CTopology.

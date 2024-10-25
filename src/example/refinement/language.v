@@ -8,8 +8,6 @@ From quantum.external Require Import complex.
 Require Import mcextra mcaextra notation hermitian quantum
   orthomodular hspace inhabited autonat hspace_extra.
 
-(* memory model *)
-(* From mathcomp.real_closed Require Import complex. *)
 From quantum Require Import prodvect tensor mxpred cpo extnum
   ctopology qreg qmem.
 From quantum.dirac Require Import hstensor.
@@ -419,16 +417,6 @@ Local Open Scope order_scope.
 Local Open Scope hspace_scope.
 Import ComplLatticeSyntax.
 
-(* Lemma cups_fsem (U : chsType) c (F : 'SO -> {hspace U}) :
-  \cups_(i in fsem c) F i 
-    = \cups_(i in [set x : 'CP | fsem c (x : 'SO)]) F i.
-Admitted.
-Lemma caps_fsem (U : chsType) c (F : 'SO -> {hspace U}) :
-  \caps_(i in fsem c) F i 
-    = \caps_(i in [set x : 'CP | fsem c (x : 'SO)]) F i.
-Admitted. *)
-
-
 (* predicates are Hilbert subspace over full space : {hspace 'H[msys]_setT } *)
 (* there are two boolean variables, pt : false - partial , true - toal *)
 (* st : false - may not saturated , true saturated (the weakest (literal) precondition)*)
@@ -657,11 +645,6 @@ rewrite elemso_projFE liftfso_formso dualso_comp soE
   (QOperation_BuildE (fsem_qo P2)) -kerh_cp_supp/=.
 by rewrite -th2hO dualso_formE hermf_adjE/= -liftfhE shookhE supphE.
 Qed.
-
-(* Lemma kerh_limn_sum (U : chsType) (f : nat -> 'End(U)) :
-  cvgn (fun i => \sum_(j < i) (f j)) -> (forall i, f i \is psdlf) ->
-    kerh (limn (fun i => \sum_(j < i) (f j))) = \caps_(i : nat) kerh (f i).
-Admitted. *)
 
 Fixpoint wlp_while_iter (T : qType) (x : 'QReg[T]) (P : {hspace 'Ht T}) 
   (c : cmd_) (R : {hspace _}) n : {hspace _} :=

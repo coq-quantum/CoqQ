@@ -4,8 +4,6 @@ From mathcomp Require Import all_ssreflect all_algebra perm fingroup.
 From mathcomp.analysis Require Import -(notations)forms.
 From mathcomp.classical Require Import boolp.
 Require Import notation mcaextra mcextra spectral mxpred.
-(* From mathcomp.analysis Require Import boolp signed topology. *)
-(* reprove some properties of bigmax; which shouldn't depends on classic logic *)
 
 (* -------------------------------------------------------------------- *)
 Set   Implicit Arguments.
@@ -51,6 +49,9 @@ Import Order.Theory GRing.Theory Num.Theory Num.Def.
 (*                 ordered nonincreasingly                                    *)
 (*    technically, we allow r if provided \rank A = r instead of using        *)
 (*      \rank A directly as dimensions, to avoid unnecessary type casts.      *)
+(*----------------------------------------------------------------------------*)
+(* let A = 'M[R]_(m,n)  R: numClosedFieldType                                 *)
+(*         svd_f A : nat -> C (ordered singular values)                       *)
 (******************************************************************************)
 
 Section MatrixDotOperator.
@@ -2044,10 +2045,6 @@ Proof. by rewrite -{2}[A]hsubmxK svd_f_row_mxl. Qed.
 Lemma svd_f_rsub m n p (A : 'M[C]_(m,n+p)) i :
   svd_f (rsubmx A) i <= svd_f A i.
 Proof. by rewrite -{2}[A]hsubmxK svd_f_row_mxr. Qed.
-
-(* Lemma test4 m n (A : 'M[C]_(m,n)) (i : 'I_m) (k : nat) :
-  svd_f (row' i A) k >= svd_f A k.+1.
-Abort. *)
 
 Lemma adjmx_unitary_cond m n (U : 'M[C]_(m,n)) :
   m = n -> U^*t \is unitarymx = (U \is unitarymx).

@@ -582,7 +582,7 @@ End RComplexLMod.
 (* split. *)
 (*   move=> p sp. *)
 (*   move: (ivt p). *)
-(*   admit. *)
+(*   Abort. *)
 (* move=> x. *)
 (* case: (boolP (0 <= x)) (@ivt ('X^2 - x%:P) 0 (1 + x))=> px; last first. *)
 (*   by move=> _; exists 0; rewrite lerr eqxx. *)
@@ -601,12 +601,12 @@ End RComplexLMod.
 (* Proof. *)
 (* rewrite /GRing.ClosedField.axiom /= => hclosed. *)
 (* move=> p a b hab. *)
-(* Admitted. *)
+(* Abort. *)
 
 (* Lemma closed_form_rcf_odd_sqr : rcf_odd -> rcf_square *)
 (*   -> GRing.ClosedField.axiom [ringType of C]. *)
 (* Proof. *)
-(* Admitted. *)
+(* Abort. *)
 
 (* Lemma closed_form_ivt : rcf_axiom R -> GRing.ClosedField.axiom [ringType of C]. *)
 (* Proof. *)

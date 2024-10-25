@@ -2173,22 +2173,17 @@ Variable (U V : chsType).
 Implicit Type (A : 'Hom(U,V)).
 
 Lemma svd_dec A : A = sumoutp (svd_di A) (svd_vi A) (svd_ui A).
-Admitted.
 
 Lemma svd_ui_ponb A : forall i j, [< svd_ui A i ; svd_ui A j >] = (i == j)%:R.
-Admitted.
 HB.instance Definition _ A := isPONB.Build V _ (svd_ui A) (@svd_ui_ponb A).
 
 Lemma svd_vi_ponb A : forall i j, [< svd_vi A i ; svd_vi A j >] = (i == j)%:R.
-Admitted.
 HB.instance Definition _ A := isPONB.Build U _ (svd_vi A) (@svd_vi_ponb A).
 
 Lemma svd_di_ge0 A i : 0 <= svd_di A i.
-Admitted.
 
 Lemma svd_di_decreasing A (i j : 'I_(\Rank A)) :
   (i <= j)%N -> svd_di A i >= svd_di A j.
-Admitted.
 
 (* add lemmas from mxpred about svd and svds *)
 (* add norm lemmas, at least for trnorm and i2norm *)

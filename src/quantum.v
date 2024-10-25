@@ -6,7 +6,6 @@ From quantum.external Require Import spectral.
 From mathcomp.classical Require Import boolp classical_sets.
 From mathcomp.analysis Require Import reals signed topology normedtype sequences exp.
 From mathcomp.analysis Require Import -(notations)forms.
-(* From mathcomp.analysis Require Import reals boolp classical_sets topology normedtype sequences. *)
 (* From mathcomp.real_closed Require Import complex. *)
 From quantum.external Require Import complex.
 From mathcomp.real_closed Require Import mxtens.
@@ -3872,77 +3871,6 @@ Proof. by move=>??; apply/cptpP. Qed.
 Lemma cpmap_tnmap_cptn A : A \is cpmap -> A \is tnmap -> A \is cptn.
 Proof. by move=>??; apply/cptnP. Qed.
 
-(* sum_ij |i><j| *t (E |i><j|) = M
-sum_ij |i><j| *t (sum_k E_k |i><j| E_k^* ) = sum_k l_k |v_k><v_k|
-sum_k (sum_ij |i><j| *t E_k|i><j|E_k^* )
-sum_i |i>*t E_k|i> = sqrt(l_k) v_k
-E_k = \sum_i sqrt(l_k)<i|v_k><i|
-
-ptrace2 M = sum_tk l_k <t|v_k><v_k|t>
-=sum_tkij l_k |i><i|<t|v_k><v_k|t>|j><j|
-=sum_ijk |i><j| sum_t <t| <i|v_k><v_k|j> |t>
-E_k^* E_k = sum_ij l_k |j><v_k|j> <i|v_k><i|
-= sum_k sum_ij l_k |i><j| <v_k|i><j|v_k>
-
-<vj||vi>
-<vi|vj>
-
-E_k E_k^* = sum_ij l_k <i|v_k><i| |j><v_k|j>
-=sum_i l_k <i|v_k><v_k|i>
-
-E |i><j| = <i| M |j>
-|i> = delta i 0
-<i| = delta 0 i
-x = sum_ij <i|x|j>|i><j|
-
-(E x)
-= (E sum_ij <i|x|j>|i><j| )
-= sum_ij <i|x|j> E |i><j|
-= sum_ij <i|x|j> <i|M|j> *)
-
-(* next give the construct that if cptn, then give qo *)
-
-(* Lemma ptrace2funE A : A \is psdmx ->
-  (ptrace2 A)^*m = (\sum_k h2mx ((choi2kraus A k)^A \o (choi2kraus A k))).
-Proof.
-move/diag_decomp_absorb=> P1.
-rewrite {1}P1 [X in X^*m]linear_sum !linear_sum/=; apply eq_bigr=>k _.
-rewrite /ptrace2 castmx_funE [RHS]tens_mx_cast1rE; f_equal.
-rewrite h2mx_comp/= choi2kraus.unlock adj_lfun.unlock !mx2hK.
-rewrite castmx_funE/= mcextra.castmx_mul castmx_id.
-set v := (sqrtC (eigenval A k) *: eigenvec A k).
-apply/matrix_tenP=>a c b d; rewrite mxE tensmxE !summxE !ord1 [1%:M 0 0]mxE eqxx mulr1
-  !linear_sum/= summxE [in RHS](bigD1 b)//= [in X in _ + X]big1.
-move=>i /negPf ni. rewrite linear_suml summxE big1 ?mul0mx ?mxE// =>j _.
-by rewrite /= !adjmxM adjmx_delta !mulmxA delta_mx_mulEl ni mul0r.
-rewrite linear_suml summxE (bigD1 a)//= [in RHS]big1=>[i /negPf ni|].
-by rewrite !adjmxM adjmx_delta -!mulmxA delta_mx_mulEr ni mul0r.
-rewrite !adjmxM -!mulmxA adjmx_delta delta_mx_mulEr !mulmxA delta_mx_mulEl.
-rewrite !eqxx !mul1r !addr0 -mulmxA tensmxE_mid big_ord1 rmorph_sum; apply eq_bigr=>i _.
-rewrite mulmxA -mulmxA mxE big_ord1 rmorphM/= -adjmxM mxE_adj 
-  -[X in _ * X = _]mxE_adj adjmxM adjmxK adjmx_tens adjmx1 adjmx_delta.
-congr (_^* * _); rewrite !tensmxE_mid; do 2 (apply eq_bigr=> ? _);
-rewrite !tensmxE !mxE !eqxx/=; congr (_ * _ * _); by rewrite eq_sym.
-Qed.
-
-Lemma choi2kraus_trace_nincr A : A \is psdmx -> 
-  ptrace2 A ⊑ 1%:M = trace_nincr (choi2kraus A).
-Proof.
-rewrite -lemx_conj conjmx1=>/ptrace2funE ->.
-by rewrite -linear_sum/= /trace_nincr -lef_tr trf1 -h2mx1 -lef_h2mx -lef_tr trf1.
-Qed.
-
-Lemma choi2kraus_trace_presv A : A \is psdmx -> 
-  ptrace2 A == 1%:M = trace_presv (choi2kraus A).
-Proof.
-rewrite -conjmx1 -(inv_eq (@conjmxK _ _ _))=>/ptrace2funE ->.
-by rewrite -linear_sum/= (can2_eq h2mxK mx2hK) mx2h1.
-Qed. *)
-
-
-(* sum_ij |i><j| *t (sum_k f k o |i><j| o (f k)^A))
-sum_k (|i> *t (f k o |i>)) 
-*)
 Lemma krausso2choiE (F: finType) (f : F -> 'Hom(U,V)) :
 let A k := \sum_i (delta_mx i (0:'I_1) *t (h2mx (f k) *m (delta_mx i (0:'I_1)))) 
   in \sum_k ((A k) *m (A k)^*t) = so2choi (krausso f).
@@ -3959,39 +3887,6 @@ Qed.
 Lemma krausso2choi_psd (F: finType) (f : F -> 'Hom(U,V)) : 
   so2choi (krausso f) \is psdmx.
 Proof. by rewrite -krausso2choiE; apply psdmx_sum=>k _; apply form_psd. Qed.
-
-(* 
-Lemma ptrace2_krausso2choiE (F: finType) (f : F -> 'Hom(U,V)) : 
-  ptrace2 (so2choi (krausso f)) = trmx (\sum_k h2mx ((f k)^A \o (f k))).
-Proof.
-rewrite -krausso2choiE linear_sum [in RHS]linear_sum/=.
-apply eq_bigr=>k _/=. rewrite/ptrace2 [RHS]tens_mx_cast1rE; f_equal.
-apply/matrix_tenP=>a b c d.
-rewrite tensmxE summxE h2mx_comp !mxE [RHS]mulr_suml; apply eq_bigr=>i _/=.
-rewrite !linear_sum/= linear_suml summxE/=.
-under eq_bigr do rewrite linear_suml linear_sum/= linear_suml summxE/=.
-under eq_bigr do under eq_bigr do rewrite adjmx_tens adjmxM !tensmx_mul !adjmx_delta
-  mulmx1 mul1mx mul_delta_mx tensmxE mxE.
-rewrite (bigD1 c)//= [X in _ + X]big1=>[m /negPf nm|].
-by rewrite big1// =>n _; rewrite [c == m]eq_sym nm andbF mul0r.
-rewrite (bigD1 a)//= big1=>[m /negPf nm|]; first by rewrite eq_sym nm mul0r.
-rewrite !ord1 !eqxx mul1r mulr1 !addr0 !mulmxA delta_mx_mulEl -!mulmxA delta_mx_mulEr.
-by rewrite mulmxA mxE big_ord1 delta_mx_mulEl delta_mx_mulEr !eqxx !mul1r mulrC adj_lfun.unlock mx2hK.
-Qed.
-
-Lemma krausso2choi_trace_nincr (F: finType) (f : F -> 'Hom(U,V)) :
-  trace_nincr f = (ptrace2 (so2choi (krausso f)) ⊑ 1%:M).
-Proof.
-rewrite ptrace2_krausso2choiE  -linear_sum/=.
-by rewrite /trace_nincr -lef_tr trf1 lef_h2mx h2mx1 h2mx_tr.
-Qed.
-
-Lemma krausso2choi_trace_presv (F: finType) (f : F -> 'Hom(U,V)) :
-  trace_presv f = (ptrace2 (so2choi (krausso f)) == 1%:M).
-Proof.
-rewrite ptrace2_krausso2choiE -linear_sum/=.
-by rewrite /trace_presv -(can_eq (@trfK _ _)) trf1 -(can_eq (@h2mxK _ _)) h2mx1 h2mx_tr.
-Qed. *)
 
 Lemma krausso_tnE (F: finType) (f : F -> 'Hom(U,V)) :
   krausso f \is tnmap = (trace_nincr f).
@@ -4015,13 +3910,6 @@ apply/tpmapP=>x; move: (P x); rewrite comp_lfun1l=><-.
 rewrite kraussoE linear_suml/= !linear_sum/=.
 by apply eq_bigr=>i _; rewrite -!comp_lfunA [RHS]lftraceC comp_lfunA.
 Qed.
-
-(* Lemma krausso2choi_trace_presv (F: finType) (f : F -> 'Hom(U,V)) :
-  trace_presv f = (ptrace2 (so2choi (krausso f)) == 1%:M).
-Proof.
-rewrite ptrace2_krausso2choiE -linear_sum/=.
-by rewrite /trace_presv -(can_eq (@trfK _ _)) trf1 -(can_eq (@h2mxK _ _)) h2mx1 h2mx_tr.
-Qed. *)
 
 Lemma krausso2choiK E : so2choi E \is psdmx ->
   krausso (choi2kraus (so2choi E)) = E.

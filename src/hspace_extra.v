@@ -8,12 +8,9 @@ From quantum.external Require Import complex.
 Require Import mcextra mcaextra notation quantum
   orthomodular hspace inhabited autonat.
 
-(* memory model *)
-(* From mathcomp.real_closed Require Import complex. *)
 From quantum Require Import hermitian prodvect tensor mxpred
   cpo extnum ctopology.
 Require Import Coq.Program.Equality String.
-(* Require Import Relation_Definitions Setoid. *)
 
 (****************************************************************************)
 (*  Extra of hspace.v, formalizing infinite caps and cups of Hilbert        *)

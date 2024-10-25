@@ -18,7 +18,6 @@ Import Order.TTheory GRing.Theory Num.Theory Num.Def.
 (*   A + B  = {a + b  | a \in A & b \in B}                                  *)
 (*   c *: A = {c *: a | a \in A & b \in B}                                  *)
 (*   A \o B = {a \o b | a \in A & b \in B}                                  *)
-(*   A :o B = {a :o b | a \in A & b \in B}                                  *)
 (* ------------------------------------------------------------------------ *)
 (* Show that conv(A + B) = conv A + conv B;                                 *)
 (****************************************************************************)

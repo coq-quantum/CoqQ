@@ -7,8 +7,6 @@ From quantum.external Require Import complex.
 (* From mathcomp.real_closed Require Import complex. *)
 Require Import mcextra mcaextra notation quantum inhabited autonat.
 
-(* memory model *)
-(* From mathcomp.real_closed Require Import complex. *)
 From quantum Require Import hermitian qreg prodvect tensor mxpred
   orthomodular hspace hspace_extra.
 From quantum.dirac Require Import hstensor dirac.

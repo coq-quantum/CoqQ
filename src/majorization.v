@@ -9,6 +9,13 @@ From mathcomp Require Import convex itv realfun.
 Require Import mcextra mcaextra mxpred svd extnum ctopology convex.
 From quantum.external Require Import spectral.
 
+(******************************************************************************)
+(*                           Theory of majorization                           *)
+(* Proved: Hall's perfect-matching theorem, Konig Frobenius theorem,          *)
+(*   Birkhoff's theorem, etc.                                                 *)
+(* Prove basic inequalies of singular values.                                 *)
+(******************************************************************************)
+
 Set   Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

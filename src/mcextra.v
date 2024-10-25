@@ -1,6 +1,5 @@
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra perm fingroup.
-(* From mathcomp.analysis Require Import reals. *)
 (* From mathcomp.real_closed Require Import complex. *)
 From quantum.external Require Import complex.
 Require Import Eqdep_dec.

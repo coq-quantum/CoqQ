@@ -67,10 +67,12 @@ Collecting common notations of CoqQ
 ### mxpred.v
 Predicate for matrix and their hierarchy theory; 
   modules for vector norm, vector order;
-  define matrix norm includes pnorm (entry-wise p-norm),
-  i2norm (induced 2-norm), trnorm (trace/nuclear norm/schatten 1
-  norm), fbnorm (Frobenius norm/schatten 2 norm). Provide singular
-  value decomposition. Define Lowner order of matrices.
+  Define Lowner order of matrices.
+
+### svd.v
+Singular value decomposition; Courant-Fischer theorem for svd decomposition;
+prove basic inequality of singular values: 
+$$\prod_{i < k} \sigma_i (AB) <= \prod_{i < k} \sigma_i (A)\sigma_i (B).$$
 
 ### extnum.v
 Define $\small\texttt{extNumType}$ as the common parent type of 
@@ -85,8 +87,20 @@ Define $\small\texttt{extNumType}$ as the common parent type of
   vector order with closed condition.
 
 ### ctopology.v
-Instantiate extnum.v to complex number. Show density matrices
-  form a cpo w.r.t. Lowner order.
+Instantiate extnum.v to complex number. 
+
+### majorization.v
+Theory of majorization, including Hall's perfect-matching theorem, 
+Konig Frobenius theorem, Birkhoff's theorem, etc.
+Prove basic inequalies of singular values.
+
+### mxnorm.v
+define matrix norm includes lpnorm (entry-wise lp-norm), ipqnorm (induced p,q-norm), 
+schattern norm (lp-norm over singular values); prove basic properties such as
+hoelder's inequality, cauchy's inequality.
+Instance of norms: i2norm (induced 2-norm), trnorm (trace/nuclear norm/schatten 1
+  norm), fbnorm (Frobenius norm/schatten 2 norm).
+Show density matrices form a cpo w.r.t. Lowner order.
 
 ### summable.v
 Bounded and Summable functions (discrete function maps to normed topological space over real or complex number).

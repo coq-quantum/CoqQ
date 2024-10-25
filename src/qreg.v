@@ -3,13 +3,10 @@ From mathcomp Require Import all_ssreflect all_algebra finmap.
 From quantum.external Require Import complex.
 From mathcomp.classical Require Import boolp classical_sets.
 From mathcomp.analysis Require Import reals.
-(* From mathcomp.analysis Require Import reals normedtype. *)
 (* From mathcomp.real_closed Require Import complex. *)
-(* Require Import Eqdep_dec. *)
 Require Import mcextra mcaextra notation quantum ctopology inhabited autonat summable.
 Require Import Coq.Program.Equality String.
 Require Import Relation_Definitions Setoid.
-(* Require Import -(notations) Program. *)
 
 Import Order.LTheory GRing.Theory Num.Theory GenTree.
 Local Notation C := hermitian.C.
