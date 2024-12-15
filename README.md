@@ -1,22 +1,5 @@
 # Compiling the development
 
-We depend on the following external libraries:
-
-```
-  "coq"                      { = "8.18.0"           }
-  "coq-core"                 { = "8.18.0"           }
-  "coq-elpi"                 { = "2.0.0"            }
-  "dune"                     {>= "3.2" & <= "3.13.0"}
-  "dune-configurator"        { = "3.12.1"           }
-  "coq-hierarchy-builder"    { = "1.7.0"            }
-  "coq-mathcomp-ssreflect"   { = "2.2.0"            }
-  "coq-mathcomp-algebra"     { = "2.2.0"            }
-  "coq-mathcomp-fingroup"    { = "2.2.0"            }
-  "coq-mathcomp-analysis"    { = "1.3.1"            }
-  "coq-mathcomp-real-closed" { = "2.0.0"            }
-  "coq-mathcomp-finmap"      { = "2.1.0"            }
-```
-
 The easiest way to install the above libraries is via [OPAM](https://opam.ocaml.org/doc/Install.html):
 
 ```bash

@@ -1,3 +1,3 @@
-(lang dune 3.2)
-(using coq 0.3)
+(lang dune 3.17)
+(using coq 0.10)
 (name coq-quantum)
