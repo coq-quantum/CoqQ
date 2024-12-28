@@ -30,21 +30,21 @@ Section majorize_def.
 Variable (R : numFieldType).
 
 Definition majorize m (x y : 'rV[R]_m) := (forall (i : 'I_m), 
-    \sum_(j < m | (j < i)%N) sort_v x 0 j <= \sum_(j < m | (j < i)%N) sort_v y 0 j)
-    /\ \sum_(j < m) sort_v x 0 j = \sum_(j < m) sort_v y 0 j.
+    \sum_(j < m | (j < i)%N) sortv x 0 j <= \sum_(j < m | (j < i)%N) sortv y 0 j)
+    /\ \sum_(j < m) sortv x 0 j = \sum_(j < m) sortv y 0 j.
 
 Definition weak_majorize m (x y : 'rV[R]_m) := (forall (i : 'I_m), 
-    \sum_(j < m | (j <= i)%N) sort_v x 0 j <= \sum_(j < m | (j <= i)%N) sort_v y 0 j).
+    \sum_(j < m | (j <= i)%N) sortv x 0 j <= \sum_(j < m | (j <= i)%N) sortv y 0 j).
 
-Lemma sort_v_sum m (x : 'rV[R]_m) : \sum_i sort_v x 0 i = \sum_i x 0 i.
+Lemma sortv_sum m (x : 'rV[R]_m) : \sum_i sortv x 0 i = \sum_i x 0 i.
 Proof.
-move: (perm_sort_v x)=>[s <-]; rewrite (reindex_perm s^-1).
+move: (permv_sortv x)=>[s <-]; rewrite (reindex_perm s^-1).
 by under eq_bigr do rewrite mxE permKV.
 Qed. 
 
 Lemma weak_majorize_ltP m (x y : 'rV[R]_m) :
-  weak_majorize x y <-> (forall i, \sum_(j < m | (j < i)%N) sort_v x 0 j 
-                                <= \sum_(j < m | (j < i)%N) sort_v y 0 j).
+  weak_majorize x y <-> (forall i, \sum_(j < m | (j < i)%N) sortv x 0 j 
+                                <= \sum_(j < m | (j < i)%N) sortv y 0 j).
 Proof.
 case: m x y=>[x y |m x y].
   by split=> _ i; rewrite !big_ord0.
@@ -61,16 +61,16 @@ split.
 Qed.
 
 Lemma weak_majorize_leP m (x y : 'rV[R]_m) :
-  weak_majorize x y <-> (forall i, \sum_(j < m | (j <= i)%N) sort_v x 0 j 
-                                <= \sum_(j < m | (j <= i)%N) sort_v y 0 j).
+  weak_majorize x y <-> (forall i, \sum_(j < m | (j <= i)%N) sortv x 0 j 
+                                <= \sum_(j < m | (j <= i)%N) sortv y 0 j).
 Proof.
 rewrite weak_majorize_ltP; split=>P i; first by move: (P i.+1).
 case: i=>[|i]; by [rewrite !big1| move: (P i)].
 Qed.
 
 Lemma majorize_ltP m (x y : 'rV[R]_m) : majorize x y <->
-  ((forall i, \sum_(j < m | (j < i)%N) sort_v x 0 j <= \sum_(j < m | (j < i)%N) sort_v y 0 j)
-  /\ \sum_(j < m) sort_v x 0 j = \sum_(j < m) sort_v y 0 j).
+  ((forall i, \sum_(j < m | (j < i)%N) sortv x 0 j <= \sum_(j < m | (j < i)%N) sortv y 0 j)
+  /\ \sum_(j < m) sortv x 0 j = \sum_(j < m) sortv y 0 j).
 Proof.
 split=>[[P1 P2]|[P1 P2]]; split=>// i.
 have [Pi | Pi] := leqP m i.
@@ -81,8 +81,8 @@ by move: (P1 (Ordinal Pi)).
 Qed.
 
 Lemma majorize_leP m (x y : 'rV[R]_m) : majorize x y <->
-  ((forall i, \sum_(j < m | (j <= i)%N) sort_v x 0 j <= \sum_(j < m | (j <= i)%N) sort_v y 0 j)
-  /\ \sum_(j < m) sort_v x 0 j = \sum_(j < m) sort_v y 0 j).
+  ((forall i, \sum_(j < m | (j <= i)%N) sortv x 0 j <= \sum_(j < m | (j <= i)%N) sortv y 0 j)
+  /\ \sum_(j < m) sortv x 0 j = \sum_(j < m) sortv y 0 j).
 Proof. by rewrite majorize_ltP -weak_majorize_ltP -weak_majorize_leP. Qed.
 
 Lemma majorizeW m (x y : 'rV[R]_m) :
@@ -109,14 +109,14 @@ Proof. by move=>P1 P2 i; apply/(le_trans (P1 i)). Qed.
 Lemma weak_majorize_anti m (x y : 'rV[R]_m) :
   weak_majorize x y -> weak_majorize y x -> exists s, y = col_perm s x.
 Proof.
-move=>P1 P2; suff : sort_v x = sort_v y.
-  move: (perm_sort_v x) (perm_sort_v y)=>[s1 <-][s2 <-]/(f_equal (col_perm (s2^-1))).
+move=>P1 P2; suff : sortv x = sortv y.
+  move: (permv_sortv x) (permv_sortv y)=>[s1 <-][s2 <-]/(f_equal (col_perm (s2^-1))).
   rewrite -!col_permM mulVg col_perm1 =>Py.
   by exists (s2^-1 * s1)%g; rewrite Py.
 apply/matrixP=>i j; rewrite ord1.
 elim/ord_ltn_ind: j=> j Pj.
-have : \sum_(j0 < m | (j0 <= j)%N) sort_v x 0 j0 = 
-  \sum_(j0 < m | (j0 <= j)%N) sort_v y 0 j0.
+have : \sum_(j0 < m | (j0 <= j)%N) sortv x 0 j0 = 
+  \sum_(j0 < m | (j0 <= j)%N) sortv y 0 j0.
   by apply/le_anti; rewrite P1 P2.
 rewrite (bigD1 j)//= [in X in _ = X](bigD1 j)//=.
 under eq_bigl do rewrite andbC -ltn_neqAle/=.
@@ -127,17 +127,6 @@ Qed.
 Lemma majorize_anti m (x y : 'rV[R]_m) :
   majorize x y -> majorize y x -> exists s, y = col_perm s x.
 Proof. move=>/majorizeW + /majorizeW; exact: weak_majorize_anti. Qed.
-
-Lemma sort_v_eq m (x y : 'rV[R]_m) : 
-  (exists s, col_perm s x = y) -> y \is rv_nonincreasing -> sort_v x = y.
-Proof.
-move=>[]s <-. move: (perm_sort_v x)=>[s1]/(f_equal (col_perm s1^-1)).
-rewrite -col_permM mulVg col_perm1=>{1 3}->.
-rewrite -col_permM=>P; symmetry; apply/rv_nonincreasing_perm=>//.
-apply/rv_nonincreasingP/sort_v_nonincreasing.
-move: (perm_sort_v x) P=>[s2 <-]; 
-by rewrite -col_permM=>/rv_nonincreasing_is_cmp; rewrite col_perm_rv_cmp.
-Qed.
 
 End majorize_def.
 
@@ -721,13 +710,13 @@ case: m IH A PA1 PA s Ps=>[_ A _ _ _ _|m IH A PA1 PA s Ps].
   rewrite ler01 lexx !big_ord1 scale1r; do ! split=>//.
   by move=> _; rewrite inE/=; apply/existsP; exists (perm_one _); rewrite !mx_dim0E.
 pose v := \row_i A i (s i).
-pose c := sort_v v 0 ord_max.
+pose c := sortv v 0 ord_max.
 have Pvi i : c <= A i (s i).
-  move: (perm_sort_v v)=>[t Pv].
+  move: (permv_sortv v)=>[t Pv].
   have : v \is rv_cmp.
-    apply/realmx_is_cmp/nnegmx_real/nnegmxP=>j k.
+    apply/realmx_cmp/nnegmx_real/nnegmxP=>j k.
     by rewrite nnegrE mxE doubly_stochastic_ge0.
-  move=>/sort_v_nonincreasing/(_ ((t^-1)%g i) ord_max).
+  move=>/sortv_nincr/rv_nincrP/(_ ((t^-1)%g i) ord_max).
   by rewrite -/c -ltnS/= -Pv mxE permKV /v mxE; apply.
 have [Pc|/eqP Pc] := @eqP _ c 1.
   have PAi i : A i (s i) = 1.
@@ -745,7 +734,7 @@ have [Pc|/eqP Pc] := @eqP _ c 1.
   exists 'I_1; exists (fun=>1); exists (fun=>perm_mx s).
   rewrite ler01 lexx !big_ord1 scale1r; do ! split=>//.
   by move=> _; rewrite inE/=; apply/existsP; exists s.
-move: (perm_sort_v v)=>[t Pt].
+move: (permv_sortv v)=>[t Pt].
 have cgt0 : 0 < c.
   rewrite /c -Pt; rewrite mxE /v mxE lt_def Ps/=.
   by apply/nnegmxP/doubly_stochastic_nnegmx.
@@ -1016,73 +1005,34 @@ End Birkhoff_doubly_stochastic.
 Section S2.
 Variable (R : realFieldType).
 
-Lemma rV_rv_cmp m (v : 'rV[R]_m) : v \is rv_cmp.
-Proof. by apply/rv_cmpP=>i j; apply/real_comparable; apply/num_real. Qed.
-#[local] Hint Extern 0 (is_true (_ \is rv_cmp)) => apply: rV_rv_cmp : core.
+#[local] Hint Extern 0 (is_true (_ \is rv_cmp)) => try (apply: total_rv_cmp) : core.
 
-Lemma sort_vZ_ge0 m (x : 'rV[R]_m) (c : R) : 
-  0 <= c -> sort_v (c *: x) = c *: sort_v x.
-Proof.
-move=>Pc; apply/sort_v_eq.
-by move: (perm_sort_v x)=>[s<-]; exists s; rewrite !col_permE scalemxAl.
-apply/rv_nonincreasingP=>i j Pij; rewrite mxE [leRHS]mxE ler_wpM2l//.
-by move: Pij; apply/sort_v_nonincreasing.
-Qed.
-
-(* move *)
-Definition perm_rev_ord {n} := (perm (@rev_ord_inj n)).
-
-Lemma sort_vZ_le0 m (x : 'rV[R]_m) (c : R) : 
-  c <= 0 -> sort_v (c *: x) = c *: (col_perm perm_rev_ord (sort_v x)).
-Proof.
-move=>Pc; apply/sort_v_eq.
-  move: (perm_sort_v x)=>[s<-]; exists (perm_rev_ord * s)%g; 
-  by rewrite col_permE -scalemxAl -col_permM col_permE.
-apply/rv_nonincreasingP=>i j Pij; rewrite mxE [leRHS]mxE ler_wnM2l//.
-rewrite mxE [leRHS]mxE; apply/sort_v_nonincreasing=>//.
-by rewrite !permE /=; apply/leq_sub2l; rewrite ltnS.
-Qed.
+#[local] Lemma sortv_nincr m (v : 'rV[R]_m) (i j : 'I_m) :
+  (i <= j)%N -> sortv v ord0 j <= sortv v ord0 i.
+Proof. by apply/rv_nincrP/sortv_nincr/total_rv_cmp. Qed.
 
 Lemma weak_majorizeZ m (x y : 'rV[R]_m) (c : R) :
   0 <= c -> weak_majorize x y -> weak_majorize (c *: x) (c *: y).
 Proof.
 move=>Pc Pxy i.
-under eq_bigr do rewrite (sort_vZ_ge0 _ Pc) mxE.
-under [leRHS]eq_bigr do rewrite (sort_vZ_ge0 _ Pc) mxE.
+under eq_bigr do rewrite (ge0_sortvZ _ Pc) mxE.
+under [leRHS]eq_bigr do rewrite (ge0_sortvZ _ Pc) mxE.
 by rewrite -!mulr_sumr ler_wpM2l.
 Qed.
 
-(* Lemma rv_nonincreasing_itv m (x : 'rV[R]_m) (t : R) : x \is rv_nonincreasing ->
-  exists i : nat, forall j : 'I_m, 
-  ((j < i)%N -> t <= x 0 j) /\ ((i <= j)%N -> x 0 j <= t).
-Proof.
-move: m x; apply: row_ind=>[A _ | n c A IH PA]; first by exists 0=>[[]].
-have PA1 : A \is rv_nonincreasing.
-  apply/rv_nonincreasingP=>i j Pij.
-  move: PA=>/rv_nonincreasingP/(_ (rshift 1 i) (rshift 1 j)) /=.
-  by rewrite leq_add2l=>/(_ Pij); rewrite !row_mxEr.
-move: (IH PA1)=>[] i Pi.
-have [Pt | /ltW Pt] := leP t (c 0 0).
-  exists i.+1 => j; case: (split_ordP j)=>/=[k ->|k ->].
-  - by rewrite /= ord1 row_mxEl; split.
-  - by rewrite /= row_mxEr add1n !ltnS.
-exists 0=>j; split=>// _; apply/(le_trans (y := row_mx c A 0 (lshift n 0))).
-by apply/rv_nonincreasingP. by rewrite row_mxEl.
-Qed. *)
-
-Lemma rv_nonincreasing_itv m (x : 'rV[R]_m) (t : R) : x \is rv_nonincreasing ->
+Lemma rv_nincr_itv m (x : 'rV[R]_m) (t : R) : x \is rv_nincr ->
   exists i : nat, forall j : 'I_m, 
   ((j < i)%N -> t < x 0 j) /\ ((i <= j)%N -> x 0 j <= t).
 Proof.
 move: m x; apply: row_ind=>[A _ | n c A IH PA]; first by exists 0=>[[]].
-have PA1 : A \is rv_nonincreasing.
-  apply/rv_nonincreasingP=>i j Pij.
-  move: PA=>/rv_nonincreasingP/(_ (rshift 1 i) (rshift 1 j)) /=.
+have PA1 : A \is rv_nincr.
+  apply/rv_nincrP=>i j Pij.
+  move: PA=>/rv_nincrP/(_ (rshift 1 i) (rshift 1 j)) /=.
   by rewrite leq_add2l=>/(_ Pij); rewrite !row_mxEr.
 move: (IH PA1)=>[] i Pi.
 have [Pt | Pt] := leP (c 0 0) t.
   exists 0=>j; split=>// _; apply/(le_trans (y := row_mx c A 0 (lshift n 0))).
-  by apply/rv_nonincreasingP. by rewrite row_mxEl.
+  by apply/rv_nincrP. by rewrite row_mxEl.
 exists i.+1 => j; case: (split_ordP j)=>/=[k ->|k ->].
 - by rewrite /= ord1 row_mxEl; split.
 - by rewrite /= row_mxEr add1n !ltnS.
@@ -1096,12 +1046,11 @@ have P0 (s : 'S_m) (v : 'rV[R]_m) t :
   \sum_i maxr (v 0 i - t) 0 = \sum_i maxr (col_perm s v 0 i - t) 0.
 by rewrite (reindex_perm s)/=; apply eq_bigr=>i _; rewrite mxE.
 split.
-- move=>P t; move: (sort_v_nonincreasing (v := x))=>
-    /(_ (rV_rv_cmp _))/rv_nonincreasingP/(rv_nonincreasing_itv t)[i Pi].
-  move: (perm_sort_v x)=>[sx Psx]; rewrite (P0 sx) Psx.
-  move: (perm_sort_v y)=>[sy Psy]; rewrite [leRHS](P0 sy) Psy.
-  have ->: \sum_i0 maxr (sort_v x 0 i0 - t) 0 = 
-    \sum_(i0 < m | (i0 < i)%N) sort_v x 0 i0 - \sum_(i0 < m | (i0 < i)%N) t.
+- move=>P t; move: (sortv_nincr x)=>/rv_nincrP/(rv_nincr_itv t)[i Pi].
+  move: (permv_sortv x)=>[sx Psx]; rewrite (P0 sx) Psx.
+  move: (permv_sortv y)=>[sy Psy]; rewrite [leRHS](P0 sy) Psy.
+  have ->: \sum_i0 maxr (sortv x 0 i0 - t) 0 = 
+    \sum_(i0 < m | (i0 < i)%N) sortv x 0 i0 - \sum_(i0 < m | (i0 < i)%N) t.
     rewrite (bigID (fun j : 'I_m => (j < i)%N))/= [X in _ + X]big1=>[j|].
       rewrite -leqNgt=>Pj; move: (Pi j)=>[] _ /(_ Pj).
       by rewrite -subr_le0 maxEle=>->.
@@ -1112,13 +1061,14 @@ split.
   apply: lerD.
     by apply ler_sum=>j _; rewrite le_max lexx.
     by apply sumr_ge0=>j _; rewrite le_max lexx orbT.
-- move=>P i; move: (P (sort_v y 0 i)). 
-  move: (perm_sort_v x)=>[sx Psx]; rewrite (P0 sx) Psx.
-  move: (perm_sort_v y)=>[sy Psy]; rewrite [leRHS](P0 sy) Psy.
-  have -> : \sum_i0 maxr (sort_v y 0 i0 - sort_v y 0 i) 0 = \sum_(j < m | (j <= i)%N) (sort_v y 0 j - sort_v y 0 i).
+- move=>P i; move: (P (sortv y 0 i)). 
+  move: (permv_sortv x)=>[sx Psx]; rewrite (P0 sx) Psx.
+  move: (permv_sortv y)=>[sy Psy]; rewrite [leRHS](P0 sy) Psy.
+  have -> : \sum_i0 maxr (sortv y 0 i0 - sortv y 0 i) 0 = 
+    \sum_(j < m | (j <= i)%N) (sortv y 0 j - sortv y 0 i).
     rewrite (bigID (fun j : 'I_m => (j <= i)%N))/= [X in _ + X]big1 ?addr0=>[j|].
-      by rewrite -ltnNge=>/ltnW Pij; rewrite maxEle subr_le0 sort_v_nonincreasing.
-    by apply eq_bigr=>j Pj; rewrite /maxr subr_lt0 ltNge sort_v_nonincreasing.
+      by rewrite -ltnNge=>/ltnW Pij; rewrite maxEle subr_le0 sortv_nincr.
+    by apply eq_bigr=>j Pj; rewrite /maxr subr_lt0 ltNge sortv_nincr.
   rewrite big_split/= -raddf_sum/= lerBrDl; apply: le_trans.
   rewrite -lerBlDl raddf_sum -big_split/= -[leLHS]addr0.
   rewrite [leRHS](bigID (fun j : 'I_m => (j <= i)%N))/= lerD//.
@@ -1141,51 +1091,50 @@ have P1 (v : 'rV[R]_m) t i :
   apply/eqP; rewrite eq_sym subr_eq addrC [X in X + _](bigID (fun j : 'I_m => (j < i)%N))/=.
   by rewrite addrA addrK mulrDl mul1r.
 split.
-- move=>P t; move: (sort_v_nonincreasing (v := x))=>
-    /(_ (rV_rv_cmp _))/rv_nonincreasingP/(rv_nonincreasing_itv t)[i Pi].
-  move: (perm_sort_v x)=>[sx Psx]; rewrite (P0 sx) Psx.
-  move: (perm_sort_v y)=>[sy Psy]; rewrite [leRHS](P0 sy) Psy.
-  have -> : \sum_i0 normr (sort_v x 0 i0 - t) = 
-    \sum_(j < m | (j < i)%N) (sort_v x 0 j - t) + \sum_(j < m | ~~(j < i)%N) (t - sort_v x 0 j).
+- move=>P t; move: (sortv_nincr x)=>/rv_nincrP/(rv_nincr_itv t)[i Pi].
+  move: (permv_sortv x)=>[sx Psx]; rewrite (P0 sx) Psx.
+  move: (permv_sortv y)=>[sy Psy]; rewrite [leRHS](P0 sy) Psy.
+  have -> : \sum_i0 normr (sortv x 0 i0 - t) = 
+    \sum_(j < m | (j < i)%N) (sortv x 0 j - t) + \sum_(j < m | ~~(j < i)%N) (t - sortv x 0 j).
     rewrite (bigID (fun j : 'I_m => (j < i)%N))/=; f_equal; apply eq_bigr=>j Pj.
       by rewrite ger0_norm// subr_ge0; move: (Pi j)=>[]/(_ Pj)/ltW.
     by rewrite ler0_norm ?opprB// subr_le0; move: (Pi j)=>[] _; apply; rewrite leqNgt.
   rewrite P1; move: P; rewrite majorize_ltP=>[[/(_ i) P2 ->]].
-  apply/(le_trans (y := \sum_(j < m | (j < i)%N) (sort_v y 0 j - t) + \sum_(j < m | ~~(j < i)%N) (t - sort_v y 0 j))).
+  apply/(le_trans (y := \sum_(j < m | (j < i)%N) (sortv y 0 j - t) + \sum_(j < m | ~~(j < i)%N) (t - sortv y 0 j))).
     by rewrite P1 -!addrA lerD2r ler_wpM2l.
   rewrite [leRHS](bigID (fun j : 'I_m => (j < i)%N))/= lerD//; apply ler_sum=>j _.
     apply/ler_norm.
   rewrite -normrN opprB; apply/ler_norm.
-- move: (perm_sort_v x) (perm_sort_v y) =>[sx Psx] [sy Psy] P.
-  have Ps : \sum_i sort_v x 0 i = \sum_i sort_v y 0 i.
+- move: (permv_sortv x) (permv_sortv y) =>[sx Psx] [sy Psy] P.
+  have Ps : \sum_i sortv x 0 i = \sum_i sortv y 0 i.
     case: m x y P0 P1 sx Psx sy Psy P=> [x y _ _ _ _ _ _ _|
       m x y P0 P1 sx Psx sy Psy P]; first by rewrite !big_ord0.
     apply/le_anti/andP; split.
-    - pose t := (minr (sort_v x 0 ord_max) (sort_v y 0 ord_max)); move: (P t).
-      suff -> : \sum_i normr (y 0 i - t) = \sum_i sort_v y 0 i + \sum_(i < m.+1)-t.
-      suff -> : \sum_i normr (x 0 i - t) = \sum_i sort_v x 0 i + \sum_(i < m.+1)-t.
+    - pose t := (minr (sortv x 0 ord_max) (sortv y 0 ord_max)); move: (P t).
+      suff -> : \sum_i normr (y 0 i - t) = \sum_i sortv y 0 i + \sum_(i < m.+1)-t.
+      suff -> : \sum_i normr (x 0 i - t) = \sum_i sortv x 0 i + \sum_(i < m.+1)-t.
         by rewrite lerD2r.
       1 : rewrite (P0 sx) Psx -big_split. 2 : rewrite (P0 sy) Psy -big_split.
       1,2: by apply eq_bigr=>i _; rewrite ger0_norm// subr_ge0 
-              /t ge_min sort_v_nonincreasing// ?orbT//= -ltnS.
-    - pose t := (maxr (sort_v x 0 0) (sort_v y 0 0)); move: (P t).
-      suff -> : \sum_i normr (y 0 i - t) = \sum_(i < m.+1) t - \sum_i sort_v y 0 i.
-      suff -> : \sum_i normr (x 0 i - t) = \sum_(i < m.+1) t - \sum_i sort_v x 0 i.
+              /t ge_min sortv_nincr// ?orbT//= -ltnS.
+    - pose t := (maxr (sortv x 0 0) (sortv y 0 0)); move: (P t).
+      suff -> : \sum_i normr (y 0 i - t) = \sum_(i < m.+1) t - \sum_i sortv y 0 i.
+      suff -> : \sum_i normr (x 0 i - t) = \sum_(i < m.+1) t - \sum_i sortv x 0 i.
         by rewrite lerD2l lerN2.
       1 : rewrite (P0 sx) Psx. 2 : rewrite (P0 sy) Psy.
       1,2: rewrite raddf_sum -big_split/=; apply eq_bigr=>i _;
-        by rewrite -normrN opprB ger0_norm// subr_ge0 /t le_max sort_v_nonincreasing// ?orbT//=.
+        by rewrite -normrN opprB ger0_norm// subr_ge0 /t le_max sortv_nincr// ?orbT//=.
   split=>// i.
-  move: (P (sort_v y 0 i)).
-  have -> : \sum_i0 normr (y 0 i0 - sort_v y 0 i) = 
-    \sum_(j < m | (j < i)%N) (sort_v y 0 j - sort_v y 0 i) + 
-    \sum_(j < m | ~~(j < i)%N) (sort_v y 0 i - sort_v y 0 j).
+  move: (P (sortv y 0 i)).
+  have -> : \sum_i0 normr (y 0 i0 - sortv y 0 i) = 
+    \sum_(j < m | (j < i)%N) (sortv y 0 j - sortv y 0 i) + 
+    \sum_(j < m | ~~(j < i)%N) (sortv y 0 i - sortv y 0 j).
     rewrite (P0 sy) Psy (bigID (fun j : 'I_m => (j < i)%N))/=; f_equal; apply eq_bigr=>j Pj.
-      by rewrite ger0_norm// subr_ge0 sort_v_nonincreasing// ltnW.
-    by rewrite -normrN opprB ger0_norm// subr_ge0 sort_v_nonincreasing// leqNgt.
-  have : \sum_i0 normr (x 0 i0 - sort_v y 0 i) >= 
-    \sum_(j < m | (j < i)%N) (sort_v x 0 j - sort_v y 0 i) + 
-    \sum_(j < m | ~~(j < i)%N) (sort_v y 0 i - sort_v x 0 j).
+      by rewrite ger0_norm// subr_ge0 sortv_nincr// ltnW.
+    by rewrite -normrN opprB ger0_norm// subr_ge0 sortv_nincr// leqNgt.
+  have : \sum_i0 normr (x 0 i0 - sortv y 0 i) >= 
+    \sum_(j < m | (j < i)%N) (sortv x 0 j - sortv y 0 i) + 
+    \sum_(j < m | ~~(j < i)%N) (sortv y 0 i - sortv x 0 j).
     rewrite (P0 sx) Psx [leRHS](bigID (fun j : 'I_m => (j < i)%N))/= lerD//; 
     apply ler_sum=>j _; first by apply/ler_norm.
     by rewrite -normrN opprB; apply/ler_norm.
@@ -1254,65 +1203,34 @@ under [X in _ <= _ + X]eq_bigr do rewrite row_mxEr mxE.
 by rewrite lerD2r.
 Qed.
 
-Lemma sort_v_rv_nonincreasing m (v : 'rV[R]_m) : sort_v v \is rv_nonincreasing.
-Proof. by apply/rv_nonincreasingP/sort_v_nonincreasing. Qed.
-
-Lemma sort_vK m (v : 'rV[R]_m) : sort_v (sort_v v) = sort_v v.
-Proof. by apply/rv_nonincreasing_sorted/sort_v_rv_nonincreasing. Qed.
-
-Lemma sort_v_permK m (v : 'rV[R]_m) s :
-  sort_v (col_perm s v) = sort_v v.
-Proof.
-move: (perm_sort_v (col_perm s v)) (sort_v_rv_nonincreasing (col_perm s v))=>[s1 <-].
-move: (perm_sort_v v)=>[s2]/(f_equal (col_perm (s2^-1)%g)).
-rewrite -col_permM mulVg col_perm1=>{1 2}->.
-by rewrite -!col_permM; apply/rv_nonincreasing_perm/sort_v_rv_nonincreasing.
-Qed.
-
 Lemma majorize_perml m (x y : 'rV[R]_m) s :
   majorize (col_perm s x) y <-> majorize x y.
-Proof. by rewrite /majorize sort_v_permK. Qed.
+Proof. by rewrite /majorize sortv_col_perm. Qed.
 
 Lemma majorize_permr m (x y : 'rV[R]_m) s :
   majorize x (col_perm s y) <-> majorize x y.
-Proof. by rewrite /majorize sort_v_permK. Qed.
+Proof. by rewrite /majorize sortv_col_perm. Qed.
 
 Lemma majorize_sortl m (x y : 'rV[R]_m) :
-  majorize (sort_v x) y <-> majorize x y.
-Proof. by move: (perm_sort_v x)=>[s <-]; rewrite majorize_perml. Qed.
+  majorize (sortv x) y <-> majorize x y.
+Proof. by move: (permv_sortv x)=>[s <-]; rewrite majorize_perml. Qed.
 
 Lemma majorize_sortr m (x y : 'rV[R]_m) :
-  majorize x (sort_v y) <-> majorize x y.
-Proof. by move: (perm_sort_v y)=>[s <-]; rewrite majorize_permr. Qed.
-
-Lemma sort_v_delta_mx m (i : 'I_m.+1) :
-  sort_v (delta_mx 0 i : 'rV[R]__) = delta_mx 0 0.
-Proof.
-rewrite -(sort_v_permK _ (tperm 0 i)).
-have -> : col_perm (tperm 0 i) (delta_mx 0 i : 'rV[R]__) = delta_mx 0 0.
-  apply/matrixP=>j k; rewrite !mxE; do 3 ! f_equal.
-  rewrite permE/=; case E1: (k == 0); first by rewrite eqxx.
-  have [ <-|/eqP/negPf//] := @eqP _ k i; by rewrite eq_sym.
-apply/rv_nonincreasing_sorted/rv_nonincreasingP=>j k.
-case: (unliftP 0 k)=>/=[l-> _|->].
-  by rewrite !mxE eqxx/=; case: eqP.
-by rewrite leqn0 !mxE !eqxx/= -(inj_eq val_inj)/= =>->.
-Qed.
+  majorize x (sortv y) <-> majorize x y.
+Proof. by move: (permv_sortv y)=>[s <-]; rewrite majorize_permr. Qed.
 
 Lemma majorize_delta_nneg m (x : 'rV[R]_m) i :
   majorize x (delta_mx 0 i) -> x \is a nnegmx.
 Proof.
 case: m x i=>[?[]//|/= m x i].
-move=>[]; rewrite sort_v_delta_mx=>P1 P2.
-suff: sort_v x \is a nnegmx.
-  move: (perm_sort_v x)=>[s <-].
+move=>[]; rewrite sortv_delta=>P1 P2.
+suff: sortv x \is a nnegmx.
+  move: (permv_sortv x)=>[s <-].
   move=>/nnegmxP P; apply/nnegmxP=>j k.
   by move: (P j ((s^-1)%g k)); rewrite mxE permKV.
-have [] := leP 0 (sort_v x 0 ord_max).
+have [] := leP 0 (sortv x 0 ord_max).
   move=>P3; apply/nnegmxP=>j k; rewrite ord1 nnegrE; 
-  apply/(le_trans P3)/rv_nonincreasingP.
-    apply/sort_v_rv_nonincreasing.
-  by rewrite /= -ltnS.
+  by apply/(le_trans P3)/sortv_nincr; rewrite /= -ltnS.
 have P (f : _ -> R) :
   \sum_(j < m.+1) f j = \sum_(j < m.+1 | (j < @ord_max m)%N) f j + f ord_max.
   rewrite (bigID (fun j : 'I_m.+1 => (j < @ord_max m)%N))/=; f_equal.
@@ -1324,34 +1242,29 @@ rewrite subr_le0=>P2 P3; move: (le_lt_trans P2 P3); rewrite mxE eqxx/=;
 by case: eqP=>_; rewrite ?ltxx// ltNge ler01.
 Qed.
 
-Lemma sort_v_const_mx m (c : R) :
-  sort_v (const_mx c : 'rV_m) = const_mx c.
-Proof. by apply/rv_nonincreasing_sorted/rv_nonincreasingP=>i j _; rewrite !mxE. Qed.
-
 Lemma majorize_const_mx m (x : 'rV[R]_m) c :
   majorize x (const_mx c) -> x = const_mx c.
 Proof.
 case: m x=>[x | m x]; first by rewrite !mx_dim0E.
-have [Pc | Pc] := leP (sort_v x 0 0) c; last first.
+have [Pc | Pc] := leP (sortv x 0 0) c; last first.
   rewrite majorize_leP=>[[/(_ 0)] + _].
   rewrite (bigD1 0)//= big1 1?(bigD1 0)//= ?big1=>[i|i|].
   1,2: by move=>/andP[]; rewrite leqn0 -(inj_eq val_inj)=>/eqP/=->.
-  by rewrite !addr0 sort_v_const_mx [leRHS]mxE=>/le_lt_trans/(_ Pc); rewrite ltxx.
-have [Pd _ | Pd] := leP c (sort_v x 0 ord_max).
+  by rewrite !addr0 sortv_const [leRHS]mxE=>/le_lt_trans/(_ Pc); rewrite ltxx.
+have [Pd _ | Pd] := leP c (sortv x 0 ord_max).
   apply/matrixP=>i j; rewrite ord1 mxE.
-  move: (perm_sort_v x)=>[s]/(f_equal (col_perm s^-1)).
+  move: (permv_sortv x)=>[s]/(f_equal (col_perm s^-1)).
   rewrite -col_permM mulVg col_perm1=>->; rewrite mxE.
   apply/le_anti/andP; split.
-    by apply/(le_trans _ Pc)/rv_nonincreasingP=>//; apply/sort_v_rv_nonincreasing.
-  apply/(le_trans Pd)/rv_nonincreasingP; first by apply/sort_v_rv_nonincreasing.
-  by rewrite -ltnS.
-move=>[] _; rewrite sort_v_const_mx (bigD1 ord_max)//=.
+    by apply/(le_trans _ Pc)/sortv_nincr.
+  by apply/(le_trans Pd)/sortv_nincr; rewrite -ltnS.
+move=>[] _; rewrite sortv_const (bigD1 ord_max)//=.
 rewrite [RHS](bigD1 ord_max)//==>/eqP.
 rewrite -subr_eq -addrA raddf_sum -big_split/= eq_sym addrC -subr_eq mxE=>/eqP.
 set t := \sum_(_ | _) _ => Pt.
 have : t <= 0.
   apply sumr_le0=>i _; rewrite subr_le0 [leRHS]mxE; 
-  apply/(le_trans _ Pc)/rv_nonincreasingP=>//; apply/sort_v_rv_nonincreasing.
+  by apply/(le_trans _ Pc)/sortv_nincr.
 by rewrite -Pt subr_le0=>/(lt_le_trans Pd); rewrite ltxx.
 Qed.
 
@@ -1361,7 +1274,7 @@ Proof.
 apply/(iffP (doubly_stochasticP _))=>[|Px]; last first.
   have P1 : (forall i : 'I_m, \sum_j A i j = 1).
     move=>i; move: (Px (delta_mx 0 i))=>[] _.
-    rewrite !sort_v_sum.
+    rewrite !sortv_sum.
     under eq_bigr do rewrite -rowE mxE.
     move=>->; rewrite (bigD1 i)//= big1=>[j/negPf nj|]; 
     by rewrite mxE ?eqxx ?addr0// nj.
@@ -1371,13 +1284,13 @@ apply/(iffP (doubly_stochasticP _))=>[|Px]; last first.
   - move=>i; move: (Px (const_mx 1))=>/majorize_const_mx/matrixP/(_ 0 i).
     by rewrite !mxE; under eq_bigr do rewrite mxE mul1r.
 move=>/doubly_stochasticP PA x.
-move: (perm_sort_v x)=>[sx]/(f_equal (col_perm (sx^-1))).
+move: (permv_sortv x)=>[sx]/(f_equal (col_perm (sx^-1))).
 rewrite -col_permM mulVg col_perm1=>->.
 rewrite -mul_row_perm majorize_permr.
-move: (perm_sort_v (sort_v x *m row_perm sx A))=>[sy].
-set y := sort_v (sort_v _ *m _); set z := sort_v x.
-have Py : y \is rv_nonincreasing by apply/sort_v_rv_nonincreasing.
-have Pz : z \is rv_nonincreasing by apply/sort_v_rv_nonincreasing.
+move: (permv_sortv (sortv x *m row_perm sx A))=>[sy].
+set y := sortv (sortv _ *m _); set z := sortv x.
+have Py : y \is rv_nincr by apply/rv_nincrP/sortv_nincr.
+have Pz : z \is rv_nincr by apply/rv_nincrP/sortv_nincr.
 rewrite -(majorize_perml _ _ sy).
 rewrite col_permE -mulmxA -col_permE.
 set B := col_perm _ _.
@@ -1385,7 +1298,7 @@ have PB : B \is doubly_stochastic
   by rewrite doubly_stochastic_col_perm doubly_stochastic_row_perm.
 move=>Ey; rewrite Ey; move: y z Py Pz B PB Ey; 
 clear=>y x Py Px A /doubly_stochasticP[P1][P2]P3 Ey.
-move: {+}Px {+}Py => /rv_nonincreasing_sorted Px1 /rv_nonincreasing_sorted Py1.
+move: {+}Px {+}Py => /rv_nincr_sorted Px1 /rv_nincr_sorted Py1.
 split; rewrite Px1 Py1; last first.
   rewrite -Ey; under eq_bigr do rewrite mxE.
   by rewrite exchange_big/=; under eq_bigr do rewrite -mulr_sumr P2 mulr1.
@@ -1401,9 +1314,9 @@ rewrite -[leLHS]addr0 -{2}Pt1 addrCA -lerBrDl !raddf_sum/= -!big_split/=.
 rewrite (bigID (fun j : 'I_m => (j < k)%N))/= -lerBrDl raddf_sum/= -big_split/=.
 apply/(le_trans (y := 0)).
   by apply sumr_le0=>i Pi; rewrite -subr_ge0 opprB add0r -mulrBl mulr_ge0// 
-    ?subr_ge0 ?sumr_ge0//; apply/rv_nonincreasingP=>//; rewrite leqNgt.
+    ?subr_ge0 ?sumr_ge0//; apply/rv_nincrP=>//; rewrite leqNgt.
   apply sumr_ge0=>i Pi. rewrite subr_ge0 -mulrBl ler_piMr// ?subr_ge0.
-    by apply/rv_nonincreasingP=>//; apply/ltnW.
+    by apply/rv_nincrP=>//; apply/ltnW.
 by rewrite /t -(P2 i) [leRHS](bigID (fun j : 'I_m => (j < k)%N))/= lerDl sumr_ge0.
 Qed.
 
@@ -1434,25 +1347,25 @@ move=>/(_ P)/(majorizeZ 2);
 by rewrite scalerDr !scalerA mulrBr mulfV// {1}mulr2n mulr1 addrK !scale1r.
 Qed.
 
-Lemma sort_v_sum_constDl m (z : 'rV[R]_m) c P : 
-  \sum_(j < m | P j) sort_v (const_mx c + z) 0 j 
-    = \sum_(j < m | P j) c + \sum_(j < m | P j) sort_v z 0 j.
+Lemma sortv_sum_constDl m (z : 'rV[R]_m) c P : 
+  \sum_(j < m | P j) sortv (const_mx c + z) 0 j 
+    = \sum_(j < m | P j) c + \sum_(j < m | P j) sortv z 0 j.
 Proof.
-move: (perm_sort_v z)=>[s Pz].
-suff Pcz : col_perm s (const_mx c + z) = sort_v (const_mx c + z).
+move: (permv_sortv z)=>[s Pz].
+suff Pcz : col_perm s (const_mx c + z) = sortv (const_mx c + z).
   under eq_bigr do rewrite -Pcz linearD/= Pz 3!mxE.
   by rewrite big_split.
-symmetry; apply sort_v_eq; first by exists s.
-apply/rv_nonincreasingP=>i j Pij; 
+symmetry; apply sortv_eq; first by apply/permvP; exists s.
+apply/rv_nincrP=>i j Pij; 
 rewrite linearD/= Pz 3!mxE 3![in leRHS]mxE lerD2l.
-by apply/sort_v_nonincreasing.
+by apply/sortv_nincr.
 Qed.
 
 Lemma majorizeD2l m (x y : 'rV[R]_m) c :
   majorize (const_mx c + x) (const_mx c + y) <->  majorize x y.
 Proof.
 split=>[[]|[]]P1 P2; (split=>[i|]; [move: (P1 i)|move: P2]); 
-rewrite !sort_v_sum_constDl ?lerD2l//.
+rewrite !sortv_sum_constDl ?lerD2l//.
 by move=>/addrI. by move=>->.
 Qed. 
 
@@ -1462,7 +1375,7 @@ Proof. by rewrite ![_ + const_mx _]addrC majorizeD2l. Qed.
 
 Lemma weak_majorizeD2l m (x y : 'rV[R]_m) c :
   weak_majorize (const_mx c + x) (const_mx c + y) <->  weak_majorize x y.
-Proof. by split=>P1 i; move: (P1 i); rewrite !sort_v_sum_constDl lerD2l. Qed.
+Proof. by split=>P1 i; move: (P1 i); rewrite !sortv_sum_constDl lerD2l. Qed.
 
 Lemma weak_majorizeD2r m (x y : 'rV[R]_m) c :
   weak_majorize (x + const_mx c) (y + const_mx c) <->  weak_majorize x y.
@@ -1504,12 +1417,12 @@ by rewrite -mulmxA -perm_mxM mulgV perm_mx1 mulmx1.
 Qed.
 
 Lemma T_P_trans_sortl m (x : 'rV[R]_m) :
-  T_P_trans (sort_v x) x.
-Proof. by move: (perm_sort_v x)=>[s] <-; rewrite col_permE; apply/T_P_trans_perml. Qed.
+  T_P_trans (sortv x) x.
+Proof. by move: (permv_sortv x)=>[s] <-; rewrite col_permE; apply/T_P_trans_perml. Qed.
 
 Lemma T_P_trans_sortr m (x : 'rV[R]_m) :
-  T_P_trans x (sort_v x).
-Proof. by move: (perm_sort_v x)=>[s] <-; rewrite col_permE; apply/T_P_trans_permr. Qed.
+  T_P_trans x (sortv x).
+Proof. by move: (permv_sortv x)=>[s] <-; rewrite col_permE; apply/T_P_trans_permr. Qed.
 
 Lemma T_P_trans_seq_cons m (x : 'rV[R]_m) s : 
   (T_P_trans_seq s /\ match s with | nil => True | h :: _ => T_P_trans x h end) <->
@@ -1549,18 +1462,18 @@ Lemma majorize_col'' m (x y : 'rV[R]_m.-1) i t :
   majorize (col'' i x t) (col'' i y t) <-> majorize x y.
 Proof. by rewrite -(majorize_col' (i := i)) ?col'_col''// !mxE unlift_none. Qed.
 
-Lemma sort_v_sum_lt m (x : 'rV[R]_m) i : 
-  \sum_(j < m | (j < i)%N) x 0 j <= \sum_(j < m | (j < i)%N) sort_v x 0 j.
+Lemma sortv_sum_lt m (x : 'rV[R]_m) i : 
+  \sum_(j < m | (j < i)%N) x 0 j <= \sum_(j < m | (j < i)%N) sortv x 0 j.
 Proof.
 elim: m x i=>[x i|m IH x i]; first by rewrite !big_ord0.
-move: (perm_sort_v x)=>[s Ps].
+move: (permv_sortv x)=>[s Ps].
 apply/(le_trans (y := \sum_(j < m.+1 | (j < i)%N) xcol 0 (s 0) x 0 j)).
   have P4: \sum_(j < m.+1) x 0 j = \sum_(j < m.+1) xcol 0 (s 0) x 0 j.
     rewrite (reindex_perm (tperm 0 (s 0)))/=.
     by apply eq_bigr=>j _; rewrite mxE.
   have Pj j : x 0 j <= x 0 (s 0).
     move: Ps=>/(f_equal (col_perm s^-1)); rewrite -col_permM mulVg col_perm1=>->.
-    by rewrite mxE [leRHS]mxE permK; apply/sort_v_nonincreasing.
+    by rewrite mxE [leRHS]mxE permK; apply/sortv_nincr.
   have [Pi|Pi] := leqP i (s 0).
     apply ler_sum=>j/leq_trans/(_ Pi).
     by rewrite mxE permE/=; case: eqP=>//; case: eqP=>//->; rewrite ltnn.
@@ -1571,7 +1484,7 @@ apply/(le_trans (y := \sum_(j < m.+1 | (j < i)%N) xcol 0 (s 0) x 0 j)).
     [X in _ + X]big1 ?addr0=>[j|/eqP->//].
   rewrite -leqNgt=>/(leq_trans Pi) Pj0.
   by rewrite mxE permE/= gt_eqF ?gt_eqF// ?subrr//; apply/(leq_trans _ Pj0).
-have P1: sort_v (col' 0 (xcol 0 (s 0) x)) = col' 0 (sort_v x).
+have P1: sortv (col' 0 (xcol 0 (s 0) x)) = col' 0 (sortv x).
   pose f (i : 'I_m) := match (nlift 0 i) =P (s^-1)%g 0 with
                        | ReflectT _ => match unlift 0 (s 0) with
                                        | Some i => i
@@ -1596,32 +1509,28 @@ have P1: sort_v (col' 0 (xcol 0 (s 0) x)) = col' 0 (sort_v x).
     - move=>/eqP/P0[/= k0 Pk0 ->]/eqP/P0[/= k1 Pk1 ->].
       by move=>/eqP; rewrite -(inj_eq (@lift_inj _ 0)) 
         -Pk0 -Pk1 (inj_eq perm_inj) (inj_eq lift_inj)=>/eqP.
-  apply/sort_v_eq.
-    exists (perm injf); apply/matrixP=>? /= a.
+  apply/sortv_eq.
+    apply/permvP; exists (perm injf); apply/matrixP=>? /= a.
     rewrite ord1 -Ps !mxE !permE/= /f.
     case: eqP=>[Pa|].
       have /P0[/= k0 Pk0 ->]: 0 != (s^-1)%g 0 by rewrite -Pa.
       by rewrite -Pk0 eqxx Pa permKV.
     by move=>/eqP/P0[/= k0 Pk0 ->]; rewrite Pk0 -Pk0 (inj_eq perm_inj).
-  apply/rv_nonincreasingP=>/= j k Pjk; rewrite mxE [leRHS]mxE.
-  by apply/sort_v_nonincreasing.
+  apply/rv_nincrP=>/= j k Pjk; rewrite mxE [leRHS]mxE.
+  by apply/sortv_nincr.
 case: i IH=>[_ |i IH]; first by rewrite !big1//=.
 have -> : \sum_(j < m.+1 | (j < i.+1)%N) xcol 0 (s 0) x 0 j = 
   x 0 (s 0) + \sum_(j < m | (j < i)%N) col' 0 (xcol 0 (s 0) x) 0 j.
   rewrite big_mkcond/= big_ord_recl/= mxE permE/=; f_equal.
   under eq_bigr do rewrite bump0 ltnS; rewrite -big_mkcond/=.
   by apply eq_bigr=>j Pj; rewrite !mxE.
-have -> : \sum_(j < m.+1 | (j < i.+1)%N) sort_v x 0 j = 
-  x 0 (s 0) + \sum_(j < m | (j < i)%N) sort_v (col' 0 (xcol 0 (s 0) x)) 0 j.
+have -> : \sum_(j < m.+1 | (j < i.+1)%N) sortv x 0 j = 
+  x 0 (s 0) + \sum_(j < m | (j < i)%N) sortv (col' 0 (xcol 0 (s 0) x)) 0 j.
   rewrite big_mkcond/= big_ord_recl/=; f_equal; first by rewrite -Ps mxE.
   under eq_bigr do rewrite bump0 ltnS; rewrite -big_mkcond/=.
   by apply eq_bigr=>j Pj; rewrite P1 !mxE.
 by rewrite lerD2l; apply IH.
 Qed.
-
-Lemma col_permEV [C : semiRingType] [m n] (s : {perm 'I_n}) (A : 'M[C]_(m, n)) :
-    A *m perm_mx s = col_perm s^-1 A.
-Proof. by rewrite col_permE invgK. Qed.
 
 Lemma T_P_trans_col'' m (x y : 'rV[R]_m.-1) i t :
   T_P_trans x y -> T_P_trans (col'' i x t) (col'' i y t).
@@ -1663,38 +1572,38 @@ elim: m x y.
   move=>x y _; exists nil=>/=; rewrite !mx_dim0E; do ! split=>//.
   exists (perm_mx 1); rewrite mul0mx; split=>//; right; apply/perm_mx_is_perm.
 move=>m IH x y Pxy.
-have P1 : majorize (sort_v x) (sort_v y).
+have P1 : majorize (sortv x) (sortv y).
   by rewrite majorize_sortl majorize_sortr.
-move: (rv_nonincreasing_itv (sort_v x 0 0) (sort_v_rv_nonincreasing y))=>[].
+move: (rv_nincr_itv (sortv x 0 0) (svd.sortv_nincr (total_rv_cmp y)))=>[].
 case=>[IH1 | n IH1].
-  have Pxy0 : sort_v x 0 0 = sort_v y 0 0.
+  have Pxy0 : sortv x 0 0 = sortv y 0 0.
     apply/le_anti/andP; split.
       move: Pxy=>/majorize_ltP[]/(_ 1)+ _.
       rewrite (bigD1 0)//= big1 1?(bigD1 0)//= ?big1 ?addr0//.
         1,2: by move=>i /andP[]; rewrite ltnS leqn0 -(inj_eq val_inj)/==>/eqP->.
     by move: (IH1 0)=>[] _; rewrite leqnn=>/(_ isT).
   move: {+}P1; rewrite -(majorize_col' Pxy0)=>/IH[s Ps].
-  exists (sort_v x :: (rcons 
-    (map (@col'' _ _ _ 0 ^~ (col 0 (sort_v x))) s) (sort_v y))).
+  exists (sortv x :: (rcons 
+    (map (@col'' _ _ _ 0 ^~ (col 0 (sortv x))) s) (sortv y))).
   rewrite -!rcons_cons -T_P_trans_seq_rcons; split;
     last by exact: T_P_trans_sortl.
   rewrite !rcons_cons -T_P_trans_seq_cons; split;
     last by exact: T_P_trans_sortr.
-  move: Ps=>/(T_P_trans_seq_col'' 0 (col 0 (sort_v x))).
+  move: Ps=>/(T_P_trans_seq_col'' 0 (col 0 (sortv x))).
   rewrite map_cons col''K map_rcons.
-  suff -> : col 0 (sort_v x) = col 0 (sort_v y) by rewrite col''K.
+  suff -> : col 0 (sortv x) = col 0 (sortv y) by rewrite col''K.
   by apply/matrixP=>i j; rewrite mxE ord1 Pxy0 !mxE.
 have [Pmn|Pmn] := ltnP n m; last first.
   move: Pxy=>[] _ /eqP; rewrite eq_sym -subr_eq0 raddf_sum -big_split/=.
   rewrite psumr_eq0=>[/= j _ | /allP P].
-    rewrite subr_ge0; apply/ltW/(le_lt_trans (y := sort_v x 0 0)).
-      by apply/sort_v_nonincreasing.
+    rewrite subr_ge0; apply/ltW/(le_lt_trans (y := sortv x 0 0)).
+      by apply/sortv_nincr.
     by move: (IH1 j)=>[] + _; apply; apply/(leq_trans (ltn_ord _)).
-  have eqxy : sort_v x = sort_v y.
+  have eqxy : sortv x = sortv y.
     apply/matrixP=>i j; rewrite ord1.
     move: (P j); rewrite mem_index_enum=>/(_ isT)/implyP/(_ isT).
     by rewrite subr_eq0=>/eqP->.
-  exists [:: sort_v x] =>/=; do ! split.
+  exists [:: sortv x] =>/=; do ! split.
     rewrite eqxy; exact: T_P_trans_sortl.
   exact: T_P_trans_sortr.
 move: {+}Pmn {+}Pmn=>/ltnW; rewrite -ltnS=>Pn; rewrite -ltnS=>Pn1.
@@ -1703,53 +1612,53 @@ pose k1 := Ordinal Pn1.
 move: (IH1 k)=>/=[]/(_ (leqnn _))P2 _.
 move: (IH1 k1)=>/=[] _ /(_ (leqnn _)) P3.
 have [t [] /andP[] t0 t1 Pt]: exists t, 0 <= t <= 1 /\ 
-  sort_v x 0 0 = t * sort_v y 0 0 + (1-t) * sort_v y 0 k1.
-  have [P4|/eqP P4] := @eqP _ (sort_v y 0 0) (sort_v y 0 k1).
+  sortv x 0 0 = t * sortv y 0 0 + (1-t) * sortv y 0 k1.
+  have [P4|/eqP P4] := @eqP _ (sortv y 0 0) (sortv y 0 k1).
     exists 1; rewrite ler01 lexx mul1r subrr mul0r addr0; split=>//.
     apply/le_anti/andP; rewrite {2}P4; split=>//.
-    by apply/ltW/(lt_le_trans P2)/sort_v_nonincreasing.
-  pose t := (sort_v x 0 0 - sort_v y 0 k1) / (sort_v y 0 0 - sort_v y 0 k1).
-  have Pt0 : 0 <= t by rewrite divr_ge0// subr_ge0// sort_v_nonincreasing.
+    by apply/ltW/(lt_le_trans P2)/sortv_nincr.
+  pose t := (sortv x 0 0 - sortv y 0 k1) / (sortv y 0 0 - sortv y 0 k1).
+  have Pt0 : 0 <= t by rewrite divr_ge0// subr_ge0// sortv_nincr.
   have Pt1 : t <= 1.
     rewrite ler_pdivrMr.
-      by rewrite subr_gt0 lt_def P4 sort_v_nonincreasing.
-    by rewrite mul1r lerD2r; apply/ltW/(lt_le_trans P2)/sort_v_nonincreasing.
+      by rewrite subr_gt0 lt_def P4 sortv_nincr.
+    by rewrite mul1r lerD2r; apply/ltW/(lt_le_trans P2)/sortv_nincr.
   exists t; rewrite Pt0 Pt1; split=>//.
   by rewrite mulrBl mul1r addrCA -mulrBr mulfVK ?subr_eq0// addrC subrK.
 pose At := t%:M + (1-t) *: tperm_mx 0 k1.
 have PAt : is_T_transform At.
   by exists t; exists 0; exists k1; rewrite t0 t1; split.
-pose y1 := sort_v y *m At.
-have Py10 : sort_v x 0 0 = y1 0 0.
+pose y1 := sortv y *m At.
+have Py10 : sortv x 0 0 = y1 0 0.
   by rewrite /y1 /At mulmxDr -scalemx1 -!scalemxAr mulmx1 -xcolE Pt !mxE permE.
-have Py1_eq (i : 'I_m.+1) : ((i != k1) && (i != 0)) -> y1 0 i = sort_v y 0 i.
+have Py1_eq (i : 'I_m.+1) : ((i != k1) && (i != 0)) -> y1 0 i = sortv y 0 i.
   move=>/andP[]/negPf nk1 /negPf n0.
   rewrite /y1 /At mulmxDr mxE mul_mx_scalar mxE -scalemxAr -xcolE 
     -[RHS]mul1r -[in RHS](subrK t 1) mulrDl addrC; f_equal.
   by rewrite mxE mxE permE/= n0 nk1.
-have Pyk1 : y1 0 k1 = (1-t) * sort_v y 0 0 + t * sort_v y 0 k1.
+have Pyk1 : y1 0 k1 = (1-t) * sortv y 0 0 + t * sortv y 0 k1.
   rewrite /y1 /At mulmxDr mxE mul_mx_scalar mxE addrC; f_equal.
   by rewrite -scalemxAr -xcolE mxE mxE permE/= eqxx.
-have Pxy1 : majorize (sort_v x) y1.
-  have P4: \sum_(j < m.+1) sort_v (sort_v x) 0 j = \sum_(j < m.+1) sort_v y1 0 j.
-    symmetry; rewrite sort_vK.
-    move: (perm_sort_v y1)=>[s] <-; rewrite (reindex_perm s^-1)/=.
+have Pxy1 : majorize (sortv x) y1.
+  have P4: \sum_(j < m.+1) sortv (sortv x) 0 j = \sum_(j < m.+1) sortv y1 0 j.
+    symmetry; rewrite sortv_idem//.
+    move: (permv_sortv y1)=>[s] <-; rewrite (reindex_perm s^-1)/=.
     under eq_bigr do rewrite mxE permKV /y1 /At mulmxDr mul_mx_scalar 
       -scalemxAr mxE mxE  -xcolE 2![in X in _ + X]mxE addrC.
     rewrite big_split/= -!mulr_sumr (reindex_perm (tperm 0 k1))/=.
     under eq_bigr do rewrite -{1}tpermV permK.
     by rewrite -mulrDl subrK mul1r; move: Pxy=>[] _.
   split=>//.
-  move=>i; rewrite sort_vK; apply/(le_trans _ (sort_v_sum_lt _ _)).
+  move=>i; rewrite sortv_idem//; apply/(le_trans _ (sortv_sum_lt _ _)).
   have [Pi|Pi] := leqP i k1.
     apply ler_sum=>j/leq_trans/(_ Pi) Pj.
-    apply/(le_trans (y := sort_v x 0 0)); first by apply/sort_v_nonincreasing.
+    apply/(le_trans (y := sortv x 0 0)); first by apply/sortv_nincr.
     move: Pj; case: (unliftP 0 j)=>/=[j'->Pj|-> _]; last by rewrite Py10.
-    apply/ltW/(lt_le_trans P2); rewrite Py1_eq; last by apply/sort_v_nonincreasing.
+    apply/ltW/(lt_le_trans P2); rewrite Py1_eq; last by apply/sortv_nincr.
     by rewrite /= andbT eq_sym gt_eqF.
-  suff -> : \sum_(j < m.+1 | (j < i)%N) y1 0 j = \sum_(j < m.+1 | (j < i)%N) sort_v y 0 j.
+  suff -> : \sum_(j < m.+1 | (j < i)%N) y1 0 j = \sum_(j < m.+1 | (j < i)%N) sortv y 0 j.
     by move: Pxy=>[]/(_ i).
-  move: (perm_sort_v y1) P4=>[s<-]; rewrite sort_vK [RHS](reindex_perm s^-1).
+  move: (permv_sortv y1) P4=>[s<-]; rewrite sortv_idem// [RHS](reindex_perm s^-1).
   move: Pxy=>[] _ ->.
   under [RHS]eq_bigr do rewrite mxE permKV.
   rewrite (bigID (fun j : 'I_m.+1 => (j < i)%N))/=.
@@ -1758,18 +1667,18 @@ have Pxy1 : majorize (sort_v x) y1.
     [X in _ + X]big1 ?addr0=>[j|/eqP//].
   rewrite -leqNgt=>/(leq_trans Pi) Pj.
   by rewrite Py1_eq ?subrr// gt_eqF//= gt_eqF//; apply/(leq_trans _ Pj).
-have: majorize (col' 0 (sort_v x)) (col' 0 y1).
+have: majorize (col' 0 (sortv x)) (col' 0 y1).
   by rewrite majorize_col'.
 move=>/IH [s Ps].
-exists (sort_v x :: rcons (rcons 
-  (map (@col'' _ _ _ 0 ^~ (col 0 (sort_v x))) s) y1) (sort_v y)).
+exists (sortv x :: rcons (rcons 
+  (map (@col'' _ _ _ 0 ^~ (col 0 (sortv x))) s) y1) (sortv y)).
 split.
   rewrite -!rcons_cons -!T_P_trans_seq_rcons rcons_cons; split;
     last by apply T_P_trans_sortl.
   split; last by exists At; split=>//; left.
-  move: Ps=>/(T_P_trans_seq_col'' 0 (col 0 (sort_v x))).
+  move: Ps=>/(T_P_trans_seq_col'' 0 (col 0 (sortv x))).
   rewrite map_cons col''K map_rcons.
-  suff -> : col 0 (sort_v x) = col 0 y1 by rewrite col''K.
+  suff -> : col 0 (sortv x) = col 0 y1 by rewrite col''K.
   by apply/matrixP=>i j; rewrite mxE ord1 Py10 !mxE.
 by rewrite rcons_cons; exact: T_P_trans_sortr.
 Qed.
@@ -1836,11 +1745,11 @@ rewrite ge_max !le_max lexx orbT andbT lerD2r.
 by move: Pxy=>/elem_lemxP/(_ 0 i)->.
 Qed.
 
-Lemma sort_v_lsub m n (x : 'rV[R]_(m+n)) : 
-  sort_v (lsubmx (sort_v x)) = lsubmx (sort_v x).
+Lemma sortv_lsub m n (x : 'rV[R]_(m+n)) : 
+  sortv (lsubmx (sortv x)) = lsubmx (sortv x).
 Proof.
-apply/rv_nonincreasing_sorted/rv_nonincreasingP=>i j Pij.
-by rewrite mxE [leRHS]mxE; apply/sort_v_nonincreasing.
+apply/rv_nincr_sorted/rv_nincrP=>i j Pij.
+by rewrite mxE [leRHS]mxE; apply/sortv_nincr.
 Qed.
 
 Lemma doubly_substochastic0 m : (0 : 'M[R]_m) \is doubly_substochastic.
@@ -1884,14 +1793,14 @@ have Ps: 0 <= s.
   move: (Pxy m).
   under [leLHS]eq_bigl do rewrite -ltnS ltn_ord.
   under [leRHS]eq_bigl do rewrite -ltnS ltn_ord.
-  by rewrite -subr_ge0 !sort_v_sum.
-move: (rv_nonincreasing_itv s (sort_v_rv_nonincreasing x))=>[i Pi].
+  by rewrite -subr_ge0 !sortv_sum.
+move: (rv_nincr_itv s (svd.sortv_nincr (total_rv_cmp x)))=>[i Pi].
 pose f (j : 'I_(m.+1 + m.+1)) : 'I_(m.+1 + m.+1) :=
   match fintype.split j with
   | inl j => if (j < i)%N then lshift _ j else rshift _ j
   | inr j => if (j < i)%N then rshift _ j else lshift _ j
   end.
-move: (perm_sort_v x) (perm_sort_v y)=>[sx Psx] [sy Psy].
+move: (permv_sortv x) (permv_sortv y)=>[sx Psx] [sy Psy].
 Ltac lrsimp := try by move=>/eqP; rewrite ?eq_lrshift ?eq_rlshift.
 have injf : injective f.
   move=>a b; rewrite /f; case: split_ordP=>c ->; case: split_ordP=>d ->.
@@ -1903,73 +1812,73 @@ have injf : injective f.
     by move=>/rshift_inj Pcd; move: (leq_trans Pc Pd); rewrite Pcd ltnn.
     by move=>/lshift_inj Pcd; move: (leq_trans Pd Pc); rewrite Pcd ltnn.
   - by case: ltnP=>Pc; case: ltnP=>Pd //; lrsimp =>/lshift_inj->.
-have Prx : sort_v (row_mx (sort_v x) (const_mx s)) = 
-  col_perm (perm injf) (row_mx (sort_v x) (const_mx s)).
-  apply/sort_v_eq; first by exists (perm injf).
-  apply/rv_nonincreasingP=>j k; rewrite mxE [leRHS]mxE !permE /f.
+have Prx : sortv (row_mx (sortv x) (const_mx s)) = 
+  col_perm (perm injf) (row_mx (sortv x) (const_mx s)).
+  apply/sortv_eq; first by apply/permvP; exists (perm injf).
+  apply/rv_nincrP=>j k; rewrite mxE [leRHS]mxE !permE /f.
   case: split_ordP=>a ->; case: split_ordP=>b -> /=.
   - move=>Pab; case: ltnP.
-    - by move=>/(leq_ltn_trans Pab)->; rewrite !row_mxEl; apply/sort_v_nonincreasing.
+    - by move=>/(leq_ltn_trans Pab)->; rewrite !row_mxEl; apply/sortv_nincr.
     - case: ltnP=> Pb Pa; rewrite ?row_mxEl ?row_mxEr mxE; last by rewrite mxE.
       by apply/ltW; move: (Pi b)=>[]/(_ Pb).
   - by move=>/(leq_ltn_trans)/(_ (ltn_ord _)); rewrite -ltn_subRL subnn.
   - move=>_; case: ltnP=>Pa; case: ltnP=>Pb; 
     rewrite ?row_mxEl ?row_mxEr ?[const_mx s _ _]mxE//.
     - by apply/ltW; move: (Pi b)=>[]/(_ Pb).
-    - by apply/sort_v_nonincreasing=>//; apply/ltnW/(leq_trans Pb Pa).
+    - by apply/sortv_nincr=>//; apply/ltnW/(leq_trans Pb Pa).
     - by move: (Pi a)=>[] _ /(_ Pa).
   - rewrite leq_add2l=>Pab; case: ltnP.
     - by move=>/(leq_ltn_trans Pab)->; rewrite !row_mxEr !mxE.
     - case: ltnP=>Pb Pa; rewrite ?row_mxEl ?row_mxEr.
       by rewrite [leRHS]mxE; move: (Pi a)=>[] _ /(_ Pa).
-      by apply/sort_v_nonincreasing.
+      by apply/sortv_nincr.
 pose perm_lift_fun (s0 : 'S_m.+1) (j : 'I_(m.+1 + m.+1)) := 
   match fintype.split j with | inl j => lshift _ (s0 j) | inr j => rshift _ j end.
 have perm_lift_inj s0 : injective (perm_lift_fun s0).
   move=>a b; rewrite /perm_lift_fun; 
   case: split_ordP=>c ->; case: split_ordP=>d -> // ; lrsimp.
   by move=>/lshift_inj/perm_inj->.
-have Pry : sort_v (row_mx y 0) = row_mx (sort_v y) (0 : 'rV_m.+1).
-  apply/sort_v_eq.
-    exists (perm (perm_lift_inj sy)); apply/matrixP=>? j.
+have Pry : sortv (row_mx y 0) = row_mx (sortv y) (0 : 'rV_m.+1).
+  apply/sortv_eq.
+    apply/permvP; exists (perm (perm_lift_inj sy)); apply/matrixP=>? j.
     rewrite ord1 mxE permE /perm_lift_fun; case: split_ordP=>a ->;
     by rewrite ?row_mxEr// !row_mxEl -Psy mxE.
-  apply/rv_nonincreasingP=>j k; case: (split_ordP j)=>a ->; 
+  apply/rv_nincrP=>j k; case: (split_ordP j)=>a ->; 
     case: (split_ordP k)=>b ->/=; rewrite ?row_mxEl ?row_mxEr.
-  - by apply/sort_v_nonincreasing.
+  - by apply/sortv_nincr.
   - by rewrite mxE -Psy mxE -nnegrE=> _; apply/nnegmxP.
   - by move=>/(leq_ltn_trans)/(_ (ltn_ord _)); rewrite -ltn_subRL subnn.
   - by rewrite !mxE.
 rewrite -(majorize_perml _ _ (perm (perm_lift_inj sx))).
 have ->: col_perm (perm (perm_lift_inj sx)) (row_mx x (const_mx s))
-  = row_mx (sort_v x) (const_mx s).
+  = row_mx (sortv x) (const_mx s).
   apply/matrixP=>? j; rewrite ord1 mxE permE /perm_lift_fun; 
   by case: split_ordP=>a ->; rewrite ?row_mxEr// !row_mxEl -Psx mxE.
-have Pxs_ge0 j : 0 <= row_mx (sort_v x) (const_mx s : 'rV_m.+1) 0 j.
+have Pxs_ge0 j : 0 <= row_mx (sortv x) (const_mx s : 'rV_m.+1) 0 j.
   case: (split_ordP j)=>? ->; rewrite ?row_mxEr ?row_mxEl.
   by rewrite -Psx mxE -nnegrE; apply/nnegmxP. by rewrite mxE.
-have Pys_ge0 j : 0 <= row_mx (sort_v y) (0 : 'rV_m.+1) 0 j.
+have Pys_ge0 j : 0 <= row_mx (sortv y) (0 : 'rV_m.+1) 0 j.
   case: (split_ordP j)=>? ->; rewrite ?row_mxEr ?row_mxEl.
   by rewrite -Psy mxE -nnegrE; apply/nnegmxP. by rewrite mxE.
-have Psum : \sum_(j < m.+1 + m.+1) sort_v (row_mx (sort_v x) (const_mx s)) 0 j = 
-  \sum_(j < m.+1 + m.+1) sort_v (row_mx y 0) 0 j.
+have Psum : \sum_(j < m.+1 + m.+1) sortv (row_mx (sortv x) (const_mx s)) 0 j = 
+  \sum_(j < m.+1 + m.+1) sortv (row_mx y 0) 0 j.
   rewrite Prx Pry (reindex_perm (perm injf)^-1)/=.
   rewrite !big_split_ord/=.
   under eq_bigr do rewrite mxE permKV row_mxEl.
   under [X in _ + X]eq_bigr do rewrite mxE permKV row_mxEr mxE.
-  rewrite sumr_const -mulr_natr card_ord /s mulfVK// addrC sort_v_sum subrK -[LHS]addr0; f_equal.
-    by under [RHS]eq_bigr do rewrite row_mxEl; rewrite sort_v_sum. 
+  rewrite sumr_const -mulr_natr card_ord /s mulfVK// addrC sortv_sum subrK -[LHS]addr0; f_equal.
+    by under [RHS]eq_bigr do rewrite row_mxEl; rewrite sortv_sum. 
   by under eq_bigr do rewrite row_mxEr mxE; rewrite big1.
 split=>// j; case: (split_ordP j)=>k ->; last first.
-  have -> : \sum_(j0 < m.+1 + m.+1 | (j0 < rshift m.+1 k)%N) sort_v (row_mx y 0) 0 j0
-    = \sum_(j < m.+1 + m.+1) sort_v (row_mx y 0) 0 j.
+  have -> : \sum_(j0 < m.+1 + m.+1 | (j0 < rshift m.+1 k)%N) sortv (row_mx y 0) 0 j0
+    = \sum_(j < m.+1 + m.+1) sortv (row_mx y 0) 0 j.
     rewrite !big_split_ord/= [X in _ + X]big1 ?addr0 ?[X in _ + X]big1 ?addr0.
     1,2: by move=>a _; rewrite Pry row_mxEr mxE.
     by apply eq_bigl=>a; apply/(leq_trans (ltn_ord a))/leq_addr.
   rewrite -Psum [leRHS](bigID (fun a : 'I_(m.+1 + m.+1) => (a < rshift m.+1 k)%N))/= 
     lerDl sumr_ge0// =>a _; rewrite Prx mxE//.
-have Psum1: \sum_(j < m.+1) sort_v (row_mx (sort_v x) (const_mx s)) 0 (lshift m.+1 j)
-  <= \sum_(j < m.+1) sort_v (row_mx y 0) 0 (lshift m.+1 j).
+have Psum1: \sum_(j < m.+1) sortv (row_mx (sortv x) (const_mx s)) 0 (lshift m.+1 j)
+  <= \sum_(j < m.+1) sortv (row_mx y 0) 0 (lshift m.+1 j).
   move: Psum; rewrite !big_split_ord/=.
   under [X in _ = _ + X]eq_bigr do rewrite Pry row_mxEr mxE.
   rewrite sumr_const mul0rn addr0=><-.
@@ -1985,7 +1894,7 @@ have [Pki|Pki] := leqP i k; last first.
   rewrite mxE permE /f; case: split_ordP=>[b /lshift_inj<-|?]; lrsimp.
   by move: (leq_trans Pa Pki)=>->; rewrite row_mxEl.
 pose ki := Ordinal (ltnW Pk).
-have [Pks|Pks] := leP s (sort_v y 0 ki).
+have [Pks|Pks] := leP s (sortv y 0 ki).
   rewrite (bigID (fun j : 'I_m.+1 => (j < i)%N)) 
     [leRHS](bigID (fun j : 'I_m.+1 => (j < i)%N))/= lerD//.
     have Pi0 : (fun i0 : 'I_m.+1 => (i0 < k.+1)%N && (i0 < i)%N) =1 (fun i0 : 'I_m.+1 => (i0 < i)%N).
@@ -1997,7 +1906,7 @@ have [Pks|Pks] := leP s (sort_v y 0 ki).
     by rewrite Pa row_mxEl.
   apply ler_sum=>a /andP[] P1 /negPf P2.
   rewrite Prx Pry row_mxEl mxE permE /f; case: split_ordP=>[?/lshift_inj<-|?]; lrsimp.
-  rewrite P2 row_mxEr mxE; apply/(le_trans Pks)/sort_v_nonincreasing=>//.
+  rewrite P2 row_mxEr mxE; apply/(le_trans Pks)/sortv_nincr=>//.
 move: Psum1; rewrite (bigID (fun i0 : 'I_m.+1 => (i0 < k.+1)%N))
   [leRHS](bigID (fun i0 : 'I_m.+1 => (i0 < k.+1)%N))/=.
 rewrite -lerBlDl addrAC -lerBrDr -[in X in _ -> X]subr_le0.
@@ -2005,7 +1914,7 @@ move=>/le_trans; apply; rewrite raddf_sum -big_split/= sumr_le0=>// a Pa.
 rewrite Pry Prx row_mxEl [in X in _ - X]mxE permE /f; 
 case: split_ordP=>[?/lshift_inj<-|?]; lrsimp.
 move: {+}Pa; rewrite -leqNgt=>/ltnW/(leq_trans Pki); rewrite ltnNge=>->.
-rewrite /= row_mxEr subr_le0 [leRHS]mxE; apply/ltW/(le_lt_trans _ Pks)/sort_v_nonincreasing=>//.
+rewrite /= row_mxEr subr_le0 [leRHS]mxE; apply/ltW/(le_lt_trans _ Pks)/sortv_nincr=>//.
 by apply/ltnW; rewrite /= leqNgt.
 Qed.
 
@@ -2055,20 +1964,20 @@ split; last first.
   apply/weak_majorize_trans.
 case: m x y=>[x y _ | m x y].
 by exists 0; rewrite mx_dim0E// elem_lemx_refl.
-pose s := minr (sort_v x 0 ord_max) (sort_v y 0 ord_max).
-move: (perm_sort_v x) (perm_sort_v y)=>[sx Psx] [sy Psy].
+pose s := minr (sortv x 0 ord_max) (sortv y 0 ord_max).
+move: (permv_sortv x) (permv_sortv y)=>[sx Psx] [sy Psy].
 have Px i : s <= x 0 i.
   move: Psx=>/(f_equal (col_perm sx^-1))=>/matrixP/(_ 0 i).
   rewrite -col_permM mulVg col_perm1=>->.
-  apply/(le_trans (y := sort_v x 0 ord_max)).
+  apply/(le_trans (y := sortv x 0 ord_max)).
   by rewrite /s ge_min lexx.
-  by rewrite [leRHS]mxE; apply/sort_v_nonincreasing=>//=; rewrite -ltnS.
+  by rewrite [leRHS]mxE; apply/sortv_nincr=>//=; rewrite -ltnS.
 have Py i : s <= y 0 i.
   move: Psy=>/(f_equal (col_perm sy^-1))=>/matrixP/(_ 0 i).
   rewrite -col_permM mulVg col_perm1=>->.
-  apply/(le_trans (y := sort_v y 0 ord_max)).
+  apply/(le_trans (y := sortv y 0 ord_max)).
   by rewrite /s ge_min lexx orbT.
-  by rewrite [leRHS]mxE; apply/sort_v_nonincreasing=>//=; rewrite -ltnS.
+  by rewrite [leRHS]mxE; apply/sortv_nincr=>//=; rewrite -ltnS.
 have [Ps|Ps] := leP 0 s.
   have Px1 : x \is a nnegmx.
     by apply/nnegmxP=>i j; rewrite ord1 nnegrE; apply/(le_trans Ps).
@@ -2105,12 +2014,12 @@ Proof.
 case: m x=>[x _|m x].
   by apply/elem_lemxP=>? [].
 move=>/weak_majorize_ltP/(_ 1).
-rewrite sort_v_const_mx (bigD1 0)//= big1 1?(bigD1 0)//= ?big1.
+rewrite sortv_const (bigD1 0)//= big1 1?(bigD1 0)//= ?big1.
   1,2: by move=>i; rewrite ltnS leqn0 -(inj_eq val_inj)/==>/andP[]/eqP->.
 rewrite !addr0 [leRHS]mxE=>Pc.
-apply/elem_lemxP=>i j; move: (perm_sort_v x)=>[s]/(f_equal (col_perm s^-1)).
+apply/elem_lemxP=>i j; move: (permv_sortv x)=>[s]/(f_equal (col_perm s^-1)).
 rewrite -col_permM mulVg col_perm1=>->.
-by rewrite mxE ord1 [leRHS]mxE; apply/(le_trans _ Pc)/sort_v_nonincreasing.
+by rewrite mxE ord1 [leRHS]mxE; apply/(le_trans _ Pc)/sortv_nincr.
 Qed.
 
 Theorem doubly_substochasticPv m (A : 'M[R]_m) : 
@@ -2135,7 +2044,7 @@ apply/doubly_substochasticP; do ! split.
 - move=>i; move: (H _ (Pi i))=>[] _ /weak_majorize_ltP/(_ m).
   have Pj : (fun j : 'I_m => (j < m)%N) =1 (fun => true).
     by move=>j; rewrite ltn_ord.
-  rewrite !(eq_bigl _ _ Pj) !sort_v_sum.
+  rewrite !(eq_bigl _ _ Pj) !sortv_sum.
   under eq_bigr do rewrite delta_mx_mulEr eqxx mul1r.
   move=>/le_trans; apply; rewrite (bigD1 i)//= big1=>[j/negPf nji|];
   by rewrite mxE !eqxx ?addr0// nji.
@@ -2146,7 +2055,7 @@ apply/doubly_substochasticP; do ! split.
 Qed.
 
 End S2.
-#[global] Hint Extern 0 (is_true (_ \is rv_cmp)) => apply: rV_rv_cmp : core.
+#[global] Hint Extern 0 (is_true (_ \is rv_cmp)) => apply: total_rv_cmp : core.
 
 Lemma in_itv1 [disp : unit] [T : latticeType disp] (i : T) :
   i \in `]-oo, +oo[.
@@ -2431,11 +2340,11 @@ case: m x y =>[x y _ []//| m x y + i].
 move=>/weak_majorize_leP/(_ 0).
 rewrite (bigD1 0)//= big1 1?(bigD1 0)//= ?big1 ?addr0.
 1,2: by move=>j /andP[]; rewrite leqn0 -(inj_eq val_inj)=>->.
-move: (perm_sort_v x) (perm_sort_v y)=>[sx Psx] [sy Psy].
+move: (permv_sortv x) (permv_sortv y)=>[sx Psx] [sy Psy].
 move=>Pxy; exists (sy 0).
 move: Psx Psy=>/(f_equal (col_perm sx^-1))+ /(f_equal (col_perm sy^-1)).
 rewrite -!col_permM !mulVg !col_perm1=>->->.
-by rewrite mxE [leRHS]mxE permK; apply/(le_trans _ Pxy)/sort_v_nonincreasing.
+by rewrite mxE [leRHS]mxE permK; apply/(le_trans _ Pxy)/sortv_nincr.
 Qed.
 
 Lemma majorize_ub m (x y : 'rV[R]_m) :
@@ -3273,12 +3182,12 @@ Qed.
 
 Lemma prod_sum_weak_majorize_ln m (x y : 'rV[R]_m) :
   (forall i, 0 < x 0 i) ->
-    x \is rv_nonincreasing -> y \is rv_nonincreasing ->
+    x \is rv_nincr -> y \is rv_nincr ->
       (forall k : 'I_m, \prod_(i < m | (i <= k)%N) x 0 i <= \prod_(i < m | (i <= k)%N) y 0 i) ->
         (forall i, 0 < y 0 i) /\ weak_majorize (map_mx (@ln _) x) (map_mx (@ln _) y).
 Proof.
 move=>Px1 Px2 Py2 Pp.
-move: (rv_nonincreasing_itv 0 Px2)=>[n Pn].
+move: (rv_nincr_itv 0 Px2)=>[n Pn].
 have Py3 i : 0 < y 0 i.
   elim/ord_ltn_ind: i => i IH1.
   move: (Pp i)=> P1.
@@ -3287,9 +3196,9 @@ have Py3 i : 0 < y 0 i.
   rewrite pmulr_lgt0//; apply/prodr_gt0=>j.
   rewrite -(inj_eq val_inj)/= andbC -ltn_neqAle; apply/IH1.
 split=>//.
-move=>i; rewrite !rv_nonincreasing_sorted.
-  1,2: apply/rv_nonincreasingP=>a b P; 
-    by rewrite !mxE ler_ln ?posrE//; apply/rv_nonincreasingP.
+move=>i; rewrite !rv_nincr_sorted.
+  1,2: apply/rv_nincrP=>a b P; 
+    by rewrite !mxE ler_ln ?posrE//; apply/rv_nincrP.
 under eq_bigr do rewrite mxE.
 under [leRHS]eq_bigr do rewrite mxE.
 move: (Pp i); rewrite -ler_ln ?ln_prod//;
@@ -3298,7 +3207,7 @@ Qed.
 
 Lemma prod_sum_weak_majorize_gt0 m (x y : 'rV[R]_m) :
   (forall i, 0 < x 0 i) ->
-    x \is rv_nonincreasing -> y \is rv_nonincreasing ->
+    x \is rv_nincr -> y \is rv_nincr ->
       (forall k : 'I_m, \prod_(i < m | (i <= k)%N) x 0 i <= \prod_(i < m | (i <= k)%N) y 0 i) ->
         weak_majorize x y.
 Proof.
@@ -3308,13 +3217,13 @@ Qed.
 
 Lemma prod_sum_weak_majorize m (x y : 'rV[R]_m) :
   (forall i, 0 <= x 0 i) -> (forall i, 0 <= y 0 i) ->
-    x \is rv_nonincreasing -> y \is rv_nonincreasing ->
+    x \is rv_nincr -> y \is rv_nincr ->
       (forall k : 'I_m, \prod_(i < m | (i <= k)%N) x 0 i 
                      <= \prod_(i < m | (i <= k)%N) y 0 i) ->
         weak_majorize x y.
 Proof.
 move=>Px1 Py1 Px2 Py2.
-move: (rv_nonincreasing_itv 0 Px2)=>[n].
+move: (rv_nincr_itv 0 Px2)=>[n].
 have [Pmn H|] := ltnP m n.
   apply: prod_sum_weak_majorize_gt0=>// i.
   move: (H i)=>[] + _; apply.
@@ -3325,8 +3234,8 @@ rewrite -[x]hsubmxK -[y]hsubmxK; apply weak_majorize_row_mx.
   apply/prod_sum_weak_majorize_gt0.
   - move=>i; move: (IH (lshift _ i))=>[] + _;
     by rewrite mxE; apply=>/=.
-  1,2: apply/rv_nonincreasingP=>i j Pij; 
-    by rewrite !mxE; apply/rv_nonincreasingP.
+  1,2: apply/rv_nincrP=>i j Pij; 
+    by rewrite !mxE; apply/rv_nincrP.
   - move=>i; under eq_bigr do rewrite mxE.
     under [leRHS]eq_bigr do rewrite mxE.
     move: (H1 (lshift _ i)).
@@ -3354,7 +3263,7 @@ Proof.
 move=>/weak_majorize_ltP/(_ m).
 under [leLHS]eq_bigl do rewrite ltn_ord.
 under [leRHS]eq_bigl do rewrite ltn_ord.
-by rewrite !sort_v_sum.
+by rewrite !sortv_sum.
 Qed.
 
 Lemma majority_entropy_le m (x y : 'rV[R]_m) :
@@ -3431,8 +3340,8 @@ Proof.
 move=>x y; apply/prod_sum_weak_majorize.
 - by move=>j; rewrite mxE.
 - by move=>j; rewrite mxE mulr_ge0.
-- by apply/rv_nonincreasingP=>i j Pij; rewrite !mxE svd_fR_nincr.
-- by apply/rv_nonincreasingP=>i j Pij; rewrite !mxE ler_pM// svd_fR_nincr.
+- by apply/rv_nincrP=>i j Pij; rewrite !mxE svd_fR_nincr.
+- by apply/rv_nincrP=>i j Pij; rewrite !mxE ler_pM// svd_fR_nincr.
 move=>r; under eq_bigr do rewrite mxE.
 under [leRHS]eq_bigr do rewrite mxE.
 move: (svd_fR_prodM A B r.+1).
@@ -3455,18 +3364,6 @@ Proof.
 move: (svd_fR_sumM A B k); rewrite !svd_fE/=.
 under [X in _ -> _ <= X]eq_bigr do rewrite -realcM.
 by rewrite -!realc_sum lecR.
-Qed.
-
-Theorem svd_fR_powM m n p (A : 'M[C]_(m,n)) (B : 'M[C]_(n,p)) (r : R) k :
-  1 <= r -> \sum_(i < k) (svd_fR (A *m B) i) `^ r 
-         <= \sum_(i < k) (svd_fR A i * svd_fR B i) `^ r.
-Proof.
-move=>Pr; move: (weak_majorize_svd_fR A B (k := k))=>/(powR_weak_majorize Pr).
-set x := \row__ _; set y := \row__ _.
-have Px i : 0 <= x 0 i by rewrite mxE.
-have Py i : 0 <= y 0 i by rewrite mxE mulr_ge0.
-move=>/(_ Px Py)/weak_majorize_sum; apply/le_le_trans.
-all: by apply/ler_sum=>/= i _; rewrite !mxE.
 Qed.
 
 Theorem svd_fR_fM m n p (A : 'M[C]_(m,n)) (B : 'M[C]_(n,p)) (f : R -> R) :
@@ -3499,13 +3396,24 @@ have Pk1 (j : 'I_k) :    \prod_(i < k | (i <= j)%N) x 0 i
   by rewrite -big_ord_widen//; apply svd_fR_prodM.
 have Px i : 0 < x 0 i.
   by rewrite mxE svd_fR_gt0// (leq_trans (ltn_ord i)).
-have Px1 : x \is rv_nonincreasing.
-  by apply/rv_nonincreasingP=>i j Pij; rewrite !mxE svd_fR_nincr.
-have Py1 : y \is rv_nonincreasing.
-  by apply/rv_nonincreasingP=>i j Pij; rewrite !mxE ler_pM// svd_fR_nincr.
+have Px1 : x \is rv_nincr.
+  by apply/rv_nincrP=>i j Pij; rewrite !mxE svd_fR_nincr.
+have Py1 : y \is rv_nincr.
+  by apply/rv_nincrP=>i j Pij; rewrite !mxE ler_pM// svd_fR_nincr.
 move: (prod_sum_weak_majorize_ln Px Px1 Py1 Pk1)=>[] Py P1.
 apply/weak_majorize_sum/exp_ln_weak_majorize=>//.
 by move=>a b Pab /=; rewrite Pf2// ?nnegrE ?expR_ge0// ler_expR.
+Qed.
+
+Theorem svd_fR_powM m n p (A : 'M[C]_(m,n)) (B : 'M[C]_(n,p)) (r : R) k :
+  0 < r -> \sum_(i < k) (svd_fR (A *m B) i) `^ r 
+         <= \sum_(i < k) (svd_fR A i * svd_fR B i) `^ r.
+Proof.
+move=>Pr; apply: (svd_fR_fM A B (f := @powR _ ^~ r)); last first.
+  by apply/ge0_ler_powR/ltW.
+move=>t x y _ _ /=; rewrite /powR !expR_eq0 !expRK.
+apply/(le_trans _ (convex_expR _ _ _)).
+by rewrite /conv/= /conv/= mulrDr /GRing.scale/= mulrCA [X in _ + X]mulrCA.
 Qed.
 
 End svd_inequlity.

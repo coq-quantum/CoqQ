@@ -1582,8 +1582,8 @@ Lemma tenf_norm S T S' T' (f: 'F[E]_(S,T)) (g: 'F_(S',T')) :
   `|f \⊗ g| = `|f| * `|g|.
 Proof.
 move=>dS dT; rewrite /Num.norm/= /trfnorm h2mx_tenf
-  schnormUr_eq_dim ?schnormUl_eq_dim ?schnorm_tens// ?tenv_dim//.
-by apply/tenv_mxU_adj_unitarymx. by apply/tenv_mxU_unitarymx.
+  schnormUr ?schnormUl_cond ?schnorm_tens// ?tenv_dim//.
+all: by apply/tenv_mxU_adj_unitarymx.
 Qed.
 
 Lemma tenf_i2fnorm S T S' T' (f: 'F[E]_(S,T)) (g: 'F_(S',T')) :
@@ -1591,8 +1591,8 @@ Lemma tenf_i2fnorm S T S' T' (f: 'F[E]_(S,T)) (g: 'F_(S',T')) :
   i2fnorm (f \⊗ g) = i2fnorm f * i2fnorm g.
 Proof.
 move=>dS dT; rewrite /Num.norm/= /i2fnorm h2mx_tenf  
-  i2normUr_eq_dim ?i2normUl_eq_dim ?i2norm_tens// ?tenv_dim//.
-by apply/tenv_mxU_adj_unitarymx. by apply/tenv_mxU_unitarymx.
+  i2normUr ?i2normUl_cond ?i2norm_tens// ?tenv_dim//.
+all: by apply/tenv_mxU_adj_unitarymx.
 Qed.
 
 Lemma linear_dotf S T S' T' f : linear (@dot_lfun I E S T S' T' f).

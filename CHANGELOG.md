@@ -1,14 +1,202 @@
 # Changelog
 
-## [v1.0] - 2024-08-22
+## [v1.2] - 2024-12-15
 
-First public release.
+### factoring.v
 
-This release is compatible with Coq versions 8.18, MathComp versions 2.2.0, Mathcomp analysis version 1.3.1.
+#### Added
 
-The contributors to this version are:
+- lemmas `eq_properfrac`, `eq_floorint`, `eq_int_dem`, `pngt0`, `pnge0`, `gt0_lt0f`, `ge0_lt0f`, `gcdzMDr`, `mulz_sign_absP_modn`, `numq_addn`, `denq_addn`, `denq_inv`, `numq_inv`, `rat_eqP`
+- definitions `s2r_pair`, `s2r_`, `s2r`, `rat_s2r__rec`
+- lemmas `s2r_subproof`, `s2r__nil`, `s2r__0`, `denq_s2r__rec`, `numq_s2r__rec`, `s2r__rec`, `s2r__gt0`, `s2r__gt0_iff`, `s2r_lt1`, `s2r__recl`, `s2r__prefix`, `s2r_prefix`, `s2r__inj`
+- definitions `r2s1_rec`, `r2s1`, `cast_s`, `cast_l`, `r2s`, `I01`, `r2s_odd`, `r2s_even`
 
-Li Zhou, Pierre-Yves Strub, Xiaoquan Xu
+### hspace.v
+
+#### Added
+
+- notations `A `=>` B`, `A `&&` B`, `x '_|_' y`, `x '_C_' y`
+- lemmas `supph1`, `supph0`, `kerh1`, `kerh0`
+- lemmas `memh_cap`, `memh_capP`
+
+### hspace_extra.v
+
+#### Added
+
+- lemmas `memh_caps`, `memh_capsP`
+
+#### Removed
+
+- lemmas `supph1`, `supph0`, `kerh1`, `kerh0`
+
+#### Changed
+
+- generalize g from 'F+(U) to 'End(U): `supph_lef`, `kerh_lef`
+
+### majorization.v
+
+#### Removed
+
+- lemmas `sort_v_eq`, `rV_rv_cmp`, `sort_vZ_ge0`, `sort_vZ_le0`
+- definition `perm_rev_ord`
+- lemmas `sort_v_rv_nonincreasing`, `sort_vK`, `sort_v_permK`, `sort_v_delta_mx`, `sort_v_const_mx`, `col_permEV`
+
+#### Renamed
+
+- `sort_v_sum` -> `sortv_sum`
+- `rv_nonincreasing_itv` -> `rv_nincr_itv`
+- `sort_v_sum_constDl` -> `sortv_sum_constDl`
+- `sort_v_sum_lt` -> `sortv_sum_lt`
+- `sort_v_lsub` -> `sortv_lsub`
+
+### mcaextra.v
+
+#### Added
+
+- lemma `directcE`
+- lemmas `natrS_neq0`, `natr_nneg`
+- definition `expi`
+- lemmas `expi0`, `expiD`, `expiN`
+- definitions `expip`, `sinp`, `cosp`
+- lemmas `expipD`, `expipN`, `expipNC`, `expipB`, `expip0`, `expip1`, `expip2`, `expip_half`, `expipX`, `expip2n`, `expip_prod`, `periodicN`, `periodicz`, `cos_eq1`
+- lemmas `is_deriveV`, `derive_div`, `is_derive_div`
+- lemmas `pi_gt1`, `pi_le4`, `ger_tan`, `ler_abs_sin`, `ger_abs_sin`, `pi_neq0`, `pi_eq0`, `expip_sum_cst`, `expip_sum`, `expip_eq1_uniq`, `expip_neq1`, `expip_sum_ord`, `expip_period`
+- lemmas `sinB`, `cosB`, `sin2x`, `cos2x`, `cos2x_cos`, `cos2x_sin`
+
+#### Changed
+
+- generalize `R[i]` to any numFieldType: `directc`, `directc_norm`, `norm_directcE`
+
+### mcextra.v
+
+#### Added
+
+- lemmas `cast_qualifier1_diag`, `cast_qualifier1_rv`, `cast_qualifier1_cv`, `cast_qualifier1_mx`
+
+#### Renamed
+
+- `diagmx_cast` -> `diag_mx_cast`
+
+### mxnorm.v
+
+#### Added
+
+- lemmas `lpnormrc_tens`, `lpnormrc_swap`, `ptrace1E`, `lpnormrc_ptrace1_plt1`, `lpnormrc_ptrace2_plt1`, `test`, `lpnormrc_ptrace1_pge1`, `lpnormrc_ptrace2_pge1`
+- notations `\loo| M |` for l0norm
+- lemmas `lpnorm_tens`, `lpnorm_swap`, `lpnorm_ptrace1_plt1`, `lpnorm_ptrace2_plt1`, `lpnorm_ptrace1_pge1`, `lpnorm_ptrace2_pge1`, `l0norm_dmul`
+- definitions `l1norm_tens`, `l1norm_swap`, `l2norm_tens`, `l2norm_swap`
+- lemmas `l2normUl_cond`, `l0norm_ptrace1`, `l0norm_ptrace2`, `l1norm_ptrace1`, `l1norm_ptrace2`, `l2norm_ptrace1`, `l2norm_ptrace2`
+- lemmas `ipqnormrc_tens`, `ipqnormrc_swap`, `ipqnorm_tens`, `ipqnorm_swap`
+- lemmas `col_tens`, `row_tens`, `i1norm_tens`, `i0norm_tens`
+- definitions `i2norm_col_perm`, `i2norm_row_perm`, `i2norm_permMl`, `i2norm_permMr`, `i2norm_castmx`, `i2norm_row0mx`, `i2norm_rowmx0`, `i2norm_col0mx`, `i2norm_colmx0`, `i2norm_rowmxl_le`, `i2norm_rowmxr_le`, `i2norm_colmxl_le`, `i2norm_colmxr_le`, `i2norm_col_le`, `i2norm_row_le`, `i2norm_swap`
+- lemma `schnormUl_cond`
+- lemmas `schnorm_tens`, `schnorm_swap`
+- definitions `PauliX_genmx`, `PauliZ_genmx`
+- lemmas `PauliX_genmx_unitary`, `PauliZ_genmx_unitary`, `ptrace1_unitary_sum`, `schnorm_ptrace1_plt1`, `schnorm_ptrace2_plt1`, `schnorm_ptrace1_pge1`, `schnorm_ptrace2_pge1`, `i2norm_tens`, `i2norm_formC`, `i2norm_ptrace1`, `i2norm_ptrace2`, `i2normUl_cond`
+- lemmas `fbnormUl_cond`, `fbnorm_tens`, `fbnorm_swap`, `trnormUl_cond`, `trnorm_tens`, `trnorm_swap`
+- lemmas `fbnorm_ptrace1`, `fbnorm_ptrace2`, `trnorm_ptrace1`, `trnorm_ptrace2`, `lemx_psd_ub`
+
+#### Changed
+- lemma `schnormUr` is generalized from `U : 'M[C]_n` to `U : 'M[C]_(n,l)`, and the legacy is localized and renamed as `schnormUr_temp`
+- lemma `i2normUr` is generalized from `U : 'M[C]_n` to `U : 'M[C]_(n,l)`, and the legacy is localized and renamed as `i2normUr_temp`
+
+#### Renamed
+- `i10normE` -> `i12normE`
+
+### mxpred.v
+
+#### Added
+- lemmas `linear_tensmx`, `linear_tensmxr`
+- lemmas `adjmx_tens`, `conjmx_tens`
+- definition `tensvE`
+- lemmas `tensrvrvE`, `tenscvcvE`, `diag_mx_tens`, `mxtrace_tens`, `reindex_mxtens_index`, `reindex_mxtens_unindex`, `mxtens_index_pairV`, `mxtens_index_distr`
+- definitions `mxswap`, `perm_swap_fun`, `perm_swap`, `ptrace2`, `ptrace1`
+- lemmas `tr_tens`, `matrix_tenP`, `mxswapK`, `mxswap_is_linear`, `mxswap_inj`, `mxswap_trace`, `mxswap_mul`, `mxswap_tr`, `mxswap_map`, `mxtens_index_inj`, `mxtens_unindex_inj`, `perm_swap_fun_inj`, `mxswap_permE`, `mxtens_index1`, `mxtens_1index`, `tens_mx_cast1l`, `tens_mx_cast1r`, `tens_mx_cast1lE`, `tens_mx_cast1rE`, `tensmxE_mid`, `tens_delta_mx1_mulEl`, `tens_delta_mx1_mulEr`, `tensmx11`
+- lemmas `mxswap_adj`, `mxswap_conj`, `mxswap_tens`, `ptrace2E1`, `ptrace1E2`, `ptrace2_is_linear`, `ptrace1_is_linear`, `tr_ptrace2`, `tr_ptrace1`, `ptrace1_mulmxI`, `ptrace1_mulImx`, `ptrace2_mulmxI`, `ptrace2_mulImx`
+- lemmas `realmx_tens`, `posmx_tens`, `nnegmx_tens`, `uintmx_tens`, `boolmx_tens`
+- lemmas `trmx_unitaryP`, `conjmx_unitaryP`, `adjmx_unitaryP`
+- lemma `psdmx_sum`
+- lemmas `lemx_trace`, `ptrace2_psd`, `ptrace1_psd`, `ptrace2_le`, `ptrace1_le`
+- lemmas `castmx_eq1`, `castmx_le1`
+
+#### Renamed
+- `rank_diagmx` -> `rank_diag_mx`
+- `psdmx_add` -> `psdmxD`
+
+### qreg.v
+
+#### Removed
+- notation `` x`
+
+#### Renamed
+- notation `c %:S` -> `c %:CS`
+- notation `c %:F' e` -> `c '%:F1' e`
+- notation `c %:FF e1 e2` -> `c '%:F2' e1 e2`
+
+### qtype.v
+
+#### Removed
+- lemmas `natrS_neq0`, `natr_nneg`
+- definition `expi`
+- lemmas `expi0`, `expiD`, `expiN`
+- definitions `expip`, `sinp`, `cosp`
+- lemmas `expipD`, `expipN`, `expipNC`, `expipB`, `expip0`, `expip1`, `expip2`, `expip_half`, `expipX`, `expip2n`, `expip_prod`, `periodicN`, `periodicz`, `cos_eq1`, `is_deriveV`, `derive_div`, `is_derive_div`
+- lemmas `pi_gt1`, `pi_le4`, `ger_tan`, `ler_abs_sin`, `ger_abs_sin`, `pi_neq0`, `pi_eq0`, `expip_sum_cst`, `expip_sum`, `expip_eq1_uniq`, `expip_neq1`, `expip_sum_ord`, `expip_period`
+- lemmas `sinB`, `cosB`, `sin2x`, `cos2x`, `cos2x_cos`, `cos2x_sin`
+
+### quantum.v
+
+#### Removed
+- lemmas `mxrank_mulmxU`, `mxrank_mulUmx`, `mxrank_mulmxUC`, `mxrank_mulUCmx`, `projmx_tr`
+- lemmas `psdmx_sum`, `linear_tensmx`, `linear_tensmxr`, `adjmx_tens`, `mxtrace_tens`, `matrix_tenP`, `lemx_trace`, `lemx_psd_ub`, `big_nat_mul_mxtens`, `tr_tens`, `mxswapK`, `mxswap_is_linear`, `mxswap_inj`, `mxswap_tens`, `mxswap_trace`, `mxswap_mul`, `mxswap_trmx`, `mxswap_map_mx`, `mxswap_trmxC`
+- definition `mxswap`
+- lemmas `mxtens_index1`, `mxtens_1index`, `tens_mx_cast1l`, `tens_mx_cast1r`, `tens_mx_cast1lE`, `tens_mx_cast1rE`, `ptrace2E1`, `ptrace1E2`, `ptrace2_is_linear`, `ptrace1_is_linear`, `tr_ptrace2`, `tr_ptrace1`, `form_psdmx`, `formV_psdmx`, `mx_decomp_psd_mull`, `mx_decomp_psd_mulr`, `ptrace1_mul_tens1mx`, `tensmx11`, `unitarymx_tens`, `psdmx_tens`, `castmx_le1`, `castmx_eq1`, `tensmxE_mid`, `tens_delta_mx1_mulEl`, `tens_delta_mx1_mulEr`
+- definitions `ptrace2`, `ptrace1`
+- lemmas `trnorm_ptrace1_le`, `denmx_tens`
+- lemmas `i2normUl_eq_dim`, `i2normUr_eq_dim`, `schnormUl_eq_dim`, `schnormUr_eq_dim`, `reindex_mxtens_index`, `reindex_mxtens_unindex`, `lpnorm_tens`, `map_mx_svd_d_exdl`, `schnorm_spectral`, `diag_mx_tens`, `spectral_tens`, `schnorm_tens`, `mx_norm_col_perm`, `mx_norm_dmul`, `mx_norm_cast`, `mx_norm_row`, `mx_norm_svd_d_exdl`, `mx_normr1E1`, `mx_normr1E`, `i2norm_spectral`, `mx_norm_tens`, `i2norm_tens`
+- lemmas `ptrace2_mulmxI`, `ptrace2_psd`, `ptrace2_perserves_order`
+
+### svd.v
+
+#### Added
+- definitions `permv`, `permv_sym`
+- lemmas `permvP`, `permv_refl`, `permv_idP`, `permv_trans`, `permvC`, `col_permv`, `permv_map`
+- definitions `rv_nincr`, `tsorts`, `sortv`
+- lemmas `rv_nincrP`, `rv_nincr_cmp`, `tsortsE`, `sorts_sorted`, `sorts_tsorts_perm`, `perm_exists_tsorts`, `sortv_permvr`, `sortv_permvl`, `permv_sortv`, `homo_sorts`, `sortv_nincr`, `rv_nincr_sorted_s`, `rv_nincr_sorted`, `sortv_idem`, `rv_nincr_col_perm`, `col_perm_cmp`, `permv_cmp`, `permv_sortv_eq`, `sortv_eq`, `sortv_col_perm`, `total_rv_cmp`, `col_permEV`
+- definition `perm_rev_ord`
+- lemmas `realmx_cmp`, `sortv_real`, `sortv_nneg`, `sortv_uint`, `sortv_bool`, `sortv_delta`, `sortv_const`, `ge0_sortvZ`, `le0_sortvZ`
+- lemmas `svd_diag_cmp`, `nnegmx_svd_diag`, `form_psdmx`, `formV_psdmx`, `svd_d_ge0`, `svd_d_nneg`, `svds_d_ge0`, `svds_d_nneg`, `spectral_permv`, `svd_dl_spectral_permv`, `spectral_svd_dl_permv`, `svd_dl_spectral_sort`, `svd_dr_spectral_permv`, `spectral_svd_dr_permv`, `svd_dr_spectral_sort`, `svd_d_sorted`, `row_mx_permv`, `permv_cast`, `svd_d_unique_sort`, `svd_d_unique_permv`, `svds_d_spectral_permv`, `spectral_svds_d_permv`, `svds_d_spectral_sort`, `svds_dV_spectral_permv`, `spectral_svds_dV_permv`, `svds_dV_spectral_sort`, `svds_d_unique_sort`, `svds_d_unique_permv`, `svds_d_spectral_permv_normal`, `svds_d_spectral_permv_psd`, `svd_dN`, `svds_dN`, `rank_svd_d`, `rank_spectral`, `rank_form`, `rank_formV`
+- lemmas `unitarymx_tens`, `psdmx_tens`, `denmx_tens`, `spectral_tens_permv`, `spectral_tens`, `normalmx_tens`, `hermmx_tens`, `symmx_tens`, `diagmx_tens`, `pdmx_tens`, `den1mx_tens`, `obsmx_tens`, `projmx_tens`, `rank_tens`, `proj1mx_tens`
+- lemmas `csvd_d_unique_sort`, `csvd_d_unique_permv`, `csvdr_d_tens_permv`, `csvdr_d_tens`
+- lemmas `svd_fN`, `svd_fZ`
+- definition `mapf_mx`
+- lemmas `mapf_mx_normal`, `mapf_mx_spectral`, `mapf_mx_spectral_permv`, `mapf_mx_mul`, `test1`, `test2`, `mapf_mx_unique`, `mapf_mx_comp`, `mapf_mx_pinv`, `mapf_mx_adj`, `mapf_mx_id`, `mapf_mx_sqrt`, `mapf_mx_rank`, `mapf_mx_psd`, `mapf_mx_psdP`, `mapf_mx_svds_d`, `mapf_mx_svds_d_psd`, `rv_nincr_permv_eq`, `mapf_mx_svd_f_psd`
+- lemmas `svd_f_lerD`, `svd_minmax_ub_psd`, `svd_f_lerM`, `svd_f_lerD0`, `svd_f_ler0D`, `svd_f_lerM0`, `svd_f_ler0M`, `tensmx_eq0`, `tensmx_ge0`, `ptensmx_rge0`, `ptensmx_lge0`
+
+#### Removed
+- definitions `rv_nonincreasing`, `tsort_s`, `sort_v`
+- lemmas `rv_nonincreasingP`, `rv_nonincreasing_is_cmp`, `realmx_is_cmp`
+- lemmas `size_sort_s`, `tsort_sE`, `sort_s_sorted`, `sort_tsort_perm`, `perm_exists_sort_t`, `perm_sort_v`, `homo_sort_s`, `sort_v_nonincreasing`, `sort_exists`, `rv_nonincreasing_sorted_s`, `rv_nonincreasing_sorted`, `col_perm_perm_s`, `col_perm_rv_cmp`, `rv_nonincreasing_perm`
+- lemmas `descreasing_row_vec`, `svd_u_adj_unitarymx`, `svd_v_adj_unitarymx`, `svd_d_spectral_perm`, `svds_d_spectral_perm`, `divr_norm_id`, `norm_if_id`, `norm_if_norm`, `svd_d_ge0`, `svd_d_nneg`, `svds_d_ge0`, `svds_d_nneg`, `rank_svd_d`
+
+#### Changed
+- generalized from `R: numFieldType` to `R : porderType disp`: `rv_cmp`, `rv_cmpP`, `geR`, `geR_transitive`, `geR_anti`, `ltn_ordK`, `poly_prod_perm_seq`, `poly_prod_perm`
+- generalized from `R: numFieldType` to `T : idomainType`: `poly_unique_sort`
+
+#### Renamed
+- `trC_perm_mx` -> `adjmx_perm`
+- `svd_diag_nonincreasing` -> `svd_diag_nincr`
+- `sqrt_svd_diag` -> `root_svd_diag`
+- `cdiag_adjmx` -> `cdiag_mx_adj`
+- `cdiag_conjmx` -> `cdiag_mx_conj`
+- `cdiag_trmx` -> `cdiag_mx_tr`
+- `svd_d_exd_sumr` -> `svd_d_exdr_sum`
+- `svd_d_exd_suml` -> `svd_d_exdl_sum`
+- `svds_d_svd_dl` -> `svds_dEl`
+- `svds_d_svd_dr` -> `svds_dEr`
+- `svd_cdiagmx` -> `svd_d_cdiag`
+- `svd_diagmx` -> `svd_d_diag`
+- `svds_diagmx` -> `svds_d_diag`
 
 ## [v1.1] - 2024-10-25
 
@@ -225,3 +413,13 @@ Li Zhou, Xiaoquan Xu, Pierre-Yves Strub
 - definitions `set_compso`
 - lemmas `set_compso1l`, `set_compso1r`, `set_compsoA`, `set_compsoxl`, `set_compsoxr`, `set_compso_le`, `set_compso_lel`, `set_compso_ler`, `set_compso0l`, `set_compso0r`, `set_compsoDl`, `set_compsoDr`, `set_compsoxDl`, `set_compsoxDr`, `set_compsoZl`, `set_compsoZr`, `conv_compso`
 <!-- - notations ``*:``, ``\o``, ``:o`` -->
+
+## [v1.0] - 2024-08-22
+
+First public release.
+
+This release is compatible with Coq versions 8.18, MathComp versions 2.2.0, Mathcomp analysis version 1.3.1.
+
+The contributors to this version are:
+
+Li Zhou, Pierre-Yves Strub, Xiaoquan Xu

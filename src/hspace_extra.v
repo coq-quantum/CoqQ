@@ -174,27 +174,6 @@ Section hspace_extra.
 Local Open Scope hspace_scope.
 Variable (U : chsType).
 
-(* generalize to U V *)
-Lemma supph0 : supph (0 : 'End(U)) = `0`.
-Proof.
-apply/eqhP=>x; rewrite memh0; apply/eqb_iff; split.
-by move/memh_suppP=>[y]; rewrite adjf0 lfunE/==>->.
-by move=>/eqP->; apply/memh_suppP; exists 0; rewrite adjf0 lfunE.
-Qed.
-
-Lemma supph1 : supph (\1 : 'End(U)) = `1`.
-Proof.
-by apply/eqhP=>x; rewrite memh1; apply/memh_suppP;
-exists x; rewrite adjf1 lfunE.
-Qed.
-
-(* generalize to U V *)
-Lemma kerh0 : kerh (0 : 'End(U)) = `1`.
-Proof. by rewrite kerhE supph0 hsO0. Qed.
-
-Lemma kerh1 : kerh (\1 : 'End(U)) = `0`.
-Proof. by rewrite kerhE supph1 hsO1. Qed.
-
 Lemma eigenvec_mem (Q : 'FH(U)) i : 
   @hspace.eigenvec _ Q i \in supph Q.
 Proof.
@@ -479,14 +458,14 @@ Lemma kerhD (f1 f2 : 'F+(U)) :
   kerh (f1%:VF + f2) = kerh f1 `&` kerh f2.
 Proof. by rewrite !kerhE supphD ocomplU. Qed.
 
-Lemma supph_lef (f g : 'F+(U)) :
+Lemma supph_lef (f : 'F+(U)) (g : 'End(U)) :
   f%:VF <= g -> supph f `<=` supph g.
 Proof.
 rewrite -subv_ge0 -psdlfE =>Pf.
 by rewrite -(subrK f%:VF g) (PsdLf_BuildE Pf) supphD lehUr.
 Qed.
 
-Lemma kerh_lef (f g : 'F+(U)) :
+Lemma kerh_lef (f : 'F+(U)) (g : 'End(U)) :
   f%:VF <= g -> kerh g `<=` kerh f.
 Proof. by move=>/supph_lef; rewrite !supphE lehO. Qed.
 
@@ -891,6 +870,17 @@ Lemma cups_glb P F A :
 Proof.
 rewrite bigcuph.unlock -{2}(ocomplK A) lehO=> H;
 apply: caps_lub=> i Pi; rewrite lehO; exact: H i Pi.
+Qed.
+
+Lemma memh_caps P F v :
+  (forall i, P i -> v \in F i) -> (v \in \caps_(i in P) F i).
+Proof. by move=>H; rewrite memhE_line; apply/caps_lub=>i /H; rewrite memhE_line. Qed.
+
+Lemma memh_capsP P F v :
+  reflect (forall i, P i -> v \in F i) (v \in \caps_(i in P) F i).
+Proof.
+apply/(iffP idP); last by apply/memh_caps.
+by move=>+ i Pi; apply/lehP/caps_inf.
 Qed.
 
 Lemma caps_image {aT} (P : set aT) (f : aT -> I) F :

@@ -3,6 +3,7 @@ From mathcomp Require Import all_ssreflect all_algebra archimedean interval finm
 From mathcomp Require Import perm fingroup.
 From mathcomp.analysis Require Import -(notations)forms.
 From quantum.external Require Import complex.
+From mathcomp.real_closed Require Import mxtens.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import signed reals ereal topology normedtype sequences real_interval.
 From mathcomp Require Import esum measure lebesgue_measure lebesgue_integral numfun exp.
@@ -1515,6 +1516,124 @@ move: Pp; rewrite -(ltr_nat R); apply/le_lt_trans/ltW/archi_boundP/ltW.
 by rewrite invr_gt0.
 Qed.
 
+Lemma lpnormrc_tens x (m n p q : nat) (A : 'M[C]_(m,n)) (B : 'M_(p,q)) :
+  lpnormrc x (A *t B) = lpnormrc x A * lpnormrc x B.
+Proof.
+case: m A=>[A|m]; last (case: n=>[A|n A]; 
+  last (case: p B=>[B|p]; last case: q=>[B|q B])).
+1-4: by rewrite !mx_dim0E ?tensmx0 !lpnormrc0 ?mulr0// mul0r.
+have [Px | Px] := leP 1 x.
+  rewrite lpnormrc.unlock ltNge Px/=.
+  rewrite -powRM ?sumr_ge0//; f_equal.
+  rewrite !pair_bigV/= mulr_suml reindex_mxtens_index/= pair_bigV/=.
+  apply eq_bigr=>i _; rewrite mulr_sumr.
+  apply eq_bigr=>j _; rewrite reindex_mxtens_index/= pair_bigV/= mulr_suml.
+  apply eq_bigr=>k _; rewrite mulr_sumr.
+  by apply eq_bigr=>l _; rewrite tensmxE normrcM powRM.
+rewrite lpnormrc_plt1E// lpnormrc.unlock ltr01; f_equal.
+apply/le_anti/andP; split.
+  apply/bigmax_leP; split=>[|/= [i j]/= _].
+    by rewrite mulr_ge0//; apply/bigmax_geP; left.
+  case: (mxtens_indexP i)=> i0 i1; case: (mxtens_indexP j)=> j0 j1.
+  rewrite tensmxE normrcM ler_pM//; apply/bigmax_geP; right.
+  by exists (i0,j0). by exists (i1, j1).
+rewrite (bigmax_eq_arg _ (0,0))//= (bigmax_eq_arg _ (0,0))//=.
+apply/bigmax_geP; right=>/=.
+set i := [arg max_(_ > _) _]%O.
+set j := [arg max_(_ > _) _]%O.
+exists (mxtens_index (i.1, j.1), mxtens_index (i.2, j.2))=>//.
+by rewrite tensmxE normrcM.
+Qed.
+
+Lemma lpnormrc_swap p m n l k (A : 'M[C]_(m * n, l * k)) : 
+  lpnormrc p (mxswap A) = lpnormrc p A.
+Proof. by rewrite mxswap_permE lpnormrc_row_perm lpnormrc_col_perm lpnormrc_castmx. Qed.
+
+Lemma ptrace1E m n (A : 'M[C]_(m * n)) i j :
+  ptrace1 A i j = \sum_k A (mxtens_index (k,i)) (mxtens_index (k,j)).
+Proof.
+rewrite castmxE/= summxE; apply eq_bigr=>k _.
+rewrite !mxtens_1index mxE (bigD1 (mxtens_index (k, j)))//=.
+rewrite mxE (bigD1 (mxtens_index (k, i)))//= !big1.
+  by rewrite !tensmxE !mxE !eqxx/= !mulr1 !addr0 mul1r.
+all: move=>l; case: (mxtens_indexP l)=>a b;
+  rewrite (inj_eq (@mxtens_index_inj _ _))=>/pair_neq/= [|]P;
+  by rewrite tensmxE !mxE ?P/= ?(mulr0, mul0r)// [i == b]eq_sym P mulr0 mul0r.
+Qed.
+
+Lemma lpnormrc_ptrace1_plt1 p m n (A : 'M[C]_(m * n)) : 
+  p < 1 -> lpnormrc p (ptrace1 A) <= m%:R * lpnormrc p A.
+Proof.
+rewrite lpnormrc.unlock=>->.
+apply/bigmax_leP; split=>[|/=[] i j _ /=].
+  by rewrite mulr_ge0//; apply/bigmax_geP; left.
+rewrite ptrace1E; apply/(le_trans (ler_normrc_sum _ _ _)).
+rewrite -[m in m%:R]card_ord mulr_natl -sumr_const.
+apply/ler_sum=>k _; apply/bigmax_geP; right.
+by exists (mxtens_index (k, i), mxtens_index (k, j)).
+Qed.
+
+Lemma lpnormrc_ptrace2_plt1 p m n (A : 'M[C]_(m * n)) : 
+  p < 1 -> lpnormrc p (ptrace2 A) <= n%:R * lpnormrc p A.
+Proof.
+move=>Pp; rewrite ptrace2E1 -[in leRHS]lpnormrc_swap.
+by apply/(le_trans (lpnormrc_ptrace1_plt1 _ Pp)).
+Qed.
+
+Lemma test I (s : seq I) (P : pred I) (F : I -> C) p :
+  1 <= p ->
+  let m := (\sum_(i <- s | P i) 1) in
+  ``|\sum_(i <- s | P i) F i| `^ p <= m `^ (p - 1) * \sum_(i <- s | P i) ``|F i| `^ p.
+Proof.
+move=>Pp /=; move: (lt_le_trans ltr01 Pp)=>Pp1; move: (ltW Pp1)=>Pp2.
+set m := \sum_(i <- s | P i) 1.
+have [/eqP Pm|Pm] := boolP (m == 0).
+  suff -> : \sum_(i <- s | P i) F i = 0.
+    by rewrite normrc0 powR0// ?gt_eqF// mulr_ge0// sumr_ge0.
+  move: Pm; rewrite /m; clear.
+  elim: s=>[|a s IH]; first by rewrite !big_nil.
+  rewrite !big_cons; case: (P a)=>// /eqP;
+  rewrite eq_sym addrC -subr_eq sub0r -[_ == _]negbK=>/negP Pv.
+  exfalso; apply/Pv; rewrite eq_sym gt_eqF//.
+  apply/(lt_le_trans (y := 0)); first by apply/ltrN10.
+  by apply sumr_ge0.
+have Pm1: 0 < m by rewrite lt_neqAle eq_sym Pm sumr_ge0.
+move: (ltW Pm1)=>Pm2.
+pose f := fun i : I => ``|F i|.
+under [in leRHS]eq_bigr do rewrite -/(f _).
+apply/(le_trans (y := (\sum_(i <- s | P i) f i) `^ p)).
+  rewrite ge0_ler_powR// ?nnegrE// ?sumr_ge0 /f//; apply/ler_normrc_sum.
+rewrite powRD ?Pm ?implybT// powRN powRr1// mulrAC -mulrA -ler_pdivrMl;
+  last by apply powR_gt0.
+rewrite mulrC powRN_inv ?sumr_ge0// -powRM ?invr_ge0// ?sumr_ge0//;
+  last by rewrite /f.
+apply: (@convex_average_seq _ (@powR _ ^~ p) `[0, +oo[).
+by move=>t a b; rewrite !in_itv/= !andbT; apply/convex_powR.
+by move=>i _; rewrite in_itv/= andbT /f.
+by rewrite powR0// gt_eqF.
+Qed.
+
+Lemma lpnormrc_ptrace1_pge1 p m n (A : 'M[C]_(m * n)) : 
+  1 <= p -> lpnormrc p (ptrace1 A) <= (m%:R) `^ ((p-1)/p) * lpnormrc p A.
+Proof.
+move=>Pp; rewrite lpnormrc.unlock ltNge Pp/= powRrM -powRM//;
+  last by apply/sumr_ge0.
+rewrite ge0_ler_powR// ?nnegrE ?mulr_ge0// ?sumr_ge0// ?invr_ge0 ?(le_trans ler01 Pp)//.
+rewrite mulr_sumr !pair_bigV/= reindex_mxtens_index/= pair_bigV/= [leRHS]exchange_big/=.
+apply ler_sum=>i _; rewrite exchange_big/= reindex_mxtens_index pair_bigV/= [leRHS]exchange_big/=.
+apply ler_sum=>j _; rewrite ptrace1E.
+apply/(le_trans (test _ _ _ Pp)).
+rewrite sumr_const card_ord/= mulr_sumr; apply ler_sum=>k _.
+by rewrite -mulr_sumr ler_wpM2l// (bigD1 k)//= lerDl sumr_ge0.
+Qed.
+
+Lemma lpnormrc_ptrace2_pge1 p m n (A : 'M[C]_(m * n)) : 
+  1 <= p -> lpnormrc p (ptrace2 A) <= (n%:R) `^ ((p-1)/p) * lpnormrc p A.
+Proof.
+move=>Pp; rewrite ptrace2E1 -[in leRHS]lpnormrc_swap.
+by apply/(le_trans (lpnormrc_ptrace1_pge1 _ Pp)).
+Qed.
+
 End lpnormrc_basic.
 
 (* Redefine for complex number R[i] *)
@@ -1525,6 +1644,8 @@ Definition lpnorm (R : realType) (p : R) m n (A : 'M[R[i]]_(m,n))
 
 Notation "\l_ ( p ) | M |" := (lpnorm p M) : ring_scope.
 Notation "\l_ p | M |" := (lpnorm p M) : ring_scope.
+Notation l0norm := (lpnorm 0).
+Notation "\loo| M |" := (l0norm M) : ring_scope.
 Notation l1norm := (lpnorm 1).
 Notation "\l1| M |" := (l1norm M) : ring_scope.
 Notation l2norm := (lpnorm 2).
@@ -1898,6 +2019,45 @@ Lemma lpnorm_cauchy m (u : 'rV[C]_m) (v : 'cV[C]_m) :
   `| \tr (u *m v) | <= l2norm u * l2norm v.
 Proof. rewrite lpnorm.unlock -realcM -normrcE lecR; exact: lpnormrc_cauchy. Qed.
 
+Lemma lpnorm_tens x (m n p q : nat) (A : 'M[C]_(m,n)) (B : 'M_(p,q)) :
+  lpnorm x (A *t B) = lpnorm x A * lpnorm x B.
+Proof. by rewrite lpnorm.unlock lpnormrc_tens realcM. Qed.
+
+Lemma lpnorm_swap p m n l k (A : 'M[C]_(m * n, l * k)) : 
+  lpnorm p (mxswap A) = lpnorm p A.
+Proof. by rewrite lpnorm.unlock lpnormrc_swap. Qed.
+
+Lemma lpnorm_ptrace1_plt1 p m n (A : 'M[C]_(m * n)) : 
+  p < 1 -> lpnorm p (ptrace1 A) <= m%:R * lpnorm p A.
+Proof. by move=>Pp; rewrite lpnorm.unlock -natrC -realcM lecR lpnormrc_ptrace1_plt1. Qed.
+
+Lemma lpnorm_ptrace2_plt1 p m n (A : 'M[C]_(m * n)) : 
+  p < 1 -> lpnorm p (ptrace2 A) <= n%:R * lpnorm p A.
+Proof. by move=>Pp; rewrite lpnorm.unlock -natrC -realcM lecR lpnormrc_ptrace2_plt1. Qed.
+
+Lemma lpnorm_ptrace1_pge1 p m n (A : 'M[C]_(m * n)) : 
+  1 <= p -> lpnorm p (ptrace1 A) <= ((m%:R) `^ ((p-1)/p))%:C * lpnorm p A.
+Proof. by move=>Pp; rewrite lpnorm.unlock -realcM lecR lpnormrc_ptrace1_pge1. Qed.
+
+Lemma lpnorm_ptrace2_pge1 p m n (A : 'M[C]_(m * n)) : 
+  1 <= p -> lpnorm p (ptrace2 A) <= ((n%:R) `^ ((p-1)/p))%:C * lpnorm p A.
+Proof. by move=>Pp; rewrite lpnorm.unlock -realcM lecR lpnormrc_ptrace2_pge1. Qed.
+
+Lemma l0norm_dmul m n (M : 'M[C]_(m,n)) :
+  l0norm (M .^+ 2) = (l0norm M) ^+ 2.
+Proof.
+rewrite l0norm_norm.
+case: m M=>[|m]; case: n=>[|n]; intros; rewrite ?mx_dim0 ?normr0 ?expr0n//.
+apply/le_anti/andP; split; rewrite /Num.norm/= /mx_norm;
+rewrite (bigmax_eq_arg _ (ord0,ord0))//=.
+2,4: move=>? _; rewrite -num_le//=.
+all: set t := [arg max_(i > (ord0, ord0)) _]%O.
+rewrite mxE normrX ler_pXn2r// ?nnegrE// num_le.
+by apply/bigmax_geP; right; exists t=>//; rewrite -num_le/=.
+rewrite -normrX num_le.
+by apply/bigmax_geP; right; exists t=>//; rewrite -num_le/= mxE.
+Qed.
+
 Section L0L1L2Norm.
 Variable (m n: nat).
 Local Notation M := 'M[C]_(m,n).
@@ -1924,6 +2084,8 @@ Definition l1norm_triangle := (lpnorm_triangle (1 : R)).
 Definition ler_l1normD := l1norm_triangle.
 Definition l1norm_delta := (lpnorm_delta (1 : R)).
 Definition l1norm11 := (lpnorm11 (1 : R)).
+Definition l1norm_tens := (lpnorm_tens (1 : R)).
+Definition l1norm_swap := (lpnorm_swap (1 : R)).
 Definition l2norm_ge0 := (lpnorm_ge0 (2 : R)).
 Definition l2norm_nneg := (lpnorm_nneg (2 : R)).
 Definition l2norm_trmx := (lpnorm_trmx (2 : R)).
@@ -1935,6 +2097,8 @@ Definition l2norm_triangle := (lpnorm_triangle (2 : R)).
 Definition ler_l2normD := l2norm_triangle.
 Definition l2norm_delta := (lpnorm_delta (2 : R)).
 Definition l2norm11 := (lpnorm11 (2 : R)).
+Definition l2norm_tens := (lpnorm_tens (2 : R)).
+Definition l2norm_swap := (lpnorm_swap (2 : R)).
 
 Lemma l0norm_const (a : C) : 
   lpnorm 0 (const_mx a : 'M[C]_(m,n)) = `|a| * ((m != 0) && (n != 0))%:R.
@@ -2010,13 +2174,6 @@ move: E; rewrite ltr0n lt0n muln_eq0=>/negbFE/mx_dim0_cond/(_ A)/=->.
 by rewrite !lpnorm0 mulr0.
 Qed.
 
-Lemma l2normUl (U : 'M[C]_m) (M : 'M[C]_(m,n)): 
-  U \is unitarymx -> l2norm (U *m M) = l2norm M.
-Proof.
-by move=>P; rewrite l2norm_dot !adjmxM -!mulmxA 
-mxtrace_mulC mulmxA mulmxKtV// -l2norm_dot.
-Qed.
-
 Lemma l2norm_unitary (U : 'M[C]_(m,n)) :
   U \is unitarymx -> l2norm U = sqrtC m%:R.
 Proof. by move=>/unitarymxP PU; rewrite l2norm_dot PU mxtrace1. Qed.
@@ -2033,6 +2190,48 @@ Lemma l2normUr m n l (U : 'M[C]_(n,l)) (M : 'M[C]_(m,n)):
   U \is unitarymx -> l2norm (M *m U) = l2norm M.
 Proof.
 by move=>P; rewrite l2norm_dot !adjmxM !mulmxA mulmxtVK// -l2norm_dot.
+Qed.
+
+Lemma l2normUl_cond m n l (U : 'M[C]_(l,m)) (M : 'M[C]_(m,n)): 
+  U^*t \is unitarymx -> l2norm (U *m M) = l2norm M.
+Proof. by move=>PU; rewrite -l2norm_adjmx adjmxM l2normUr// l2norm_adjmx. Qed.
+
+Lemma l2normUl m n (U : 'M[C]_m) (M : 'M[C]_(m,n)): 
+  U \is unitarymx -> l2norm (U *m M) = l2norm M.
+Proof. by move=>PU; rewrite l2normUl_cond ?adjmx_unitary. Qed.
+
+Lemma l0norm_ptrace1 m n (A : 'M[C]_(m * n)) : 
+  l0norm (ptrace1 A) <= m%:R * l0norm A.
+Proof. by apply/lpnorm_ptrace1_plt1. Qed.
+
+Lemma l0norm_ptrace2 m n (A : 'M[C]_(m * n)) : 
+  l0norm (ptrace2 A) <= n%:R * l0norm A.
+Proof. by apply/lpnorm_ptrace2_plt1. Qed.
+
+Lemma l1norm_ptrace1 m n (A : 'M[C]_(m * n)) : 
+  l1norm (ptrace1 A) <= l1norm A.
+Proof.
+by move: (lpnorm_ptrace1_pge1 A (lexx 1)); rewrite subrr mul0r powRr0 mul1r.
+Qed.
+
+Lemma l1norm_ptrace2 m n (A : 'M[C]_(m * n)) : 
+  l1norm (ptrace2 A) <= l1norm A.
+Proof.
+by move: (lpnorm_ptrace2_pge1 A (lexx 1)); rewrite subrr mul0r powRr0 mul1r.
+Qed.
+
+Lemma l2norm_ptrace1 m n (A : 'M[C]_(m * n)) : 
+  l2norm (ptrace1 A) <= sqrtC m%:R * l2norm A.
+Proof.
+have /(lpnorm_ptrace1_pge1 A) : 1 <= 2 :> R by rewrite ler1n.
+by rewrite -{2}nat1r addrK mul1r powR12_sqrtCV// natrC.
+Qed.
+
+Lemma l2norm_ptrace2 m n (A : 'M[C]_(m * n)) : 
+  l2norm (ptrace2 A) <= sqrtC n%:R * l2norm A.
+Proof.
+have /(lpnorm_ptrace2_pge1 A) : 1 <= 2 :> R by rewrite ler1n.
+by rewrite -{2}nat1r addrK mul1r powR12_sqrtCV// natrC.
 Qed.
 
 End Lpnorm.
@@ -2451,6 +2650,17 @@ apply/(le_trans _ (ipqnormrcPV p q _ v)).
 by rewrite ler_wpM2r// ?invr_ge0// -row_mul lpnormrc_row_le.
 Qed.
 
+Lemma ipqnormrc_tens p q m n l k (A : 'M[C]_(m,n)) (B : 'M_(l,k)) :
+  ipqnormrc p q A * ipqnormrc p q B <= ipqnormrc p q (A *t B).
+Proof.
+move: (ipqnormrc_exist p q A) (ipqnormrc_exist p q B)=>[u <-] [v <-].
+by rewrite mulrACA -invfM -!lpnormrc_tens -tensmx_mul; apply/ipqnormrcPV.
+Qed.
+
+Lemma ipqnormrc_swap p q m n l k (A : 'M[C]_(m * n, l * k)) : 
+  ipqnormrc p q (mxswap A) = ipqnormrc p q A.
+Proof. by rewrite mxswap_permE ipqnormrc_row_perm ipqnormrc_col_perm ipqnormrc_castmx. Qed.
+
 End induced_normrc.
 
 #[global] Hint Extern 0 (is_true (0 <= ipqnormrc _ _ _)) => apply: ipqnormrc_ge0 : core.
@@ -2698,6 +2908,14 @@ Lemma ipqnorm_row_le p q m n (A : 'M[C]_(m,n)) i :
   ipqnorm p q (row i A) <= ipqnorm p q A.
 Proof. by rewrite ipqnorm.unlock lecR ipqnormrc_row_le. Qed.
 
+Lemma ipqnorm_tens p q m n l k (A : 'M[C]_(m,n)) (B : 'M_(l,k)) :
+  ipqnorm p q A * ipqnorm p q B <= ipqnorm p q (A *t B).
+Proof. by rewrite ipqnorm.unlock -realcM lecR ipqnormrc_tens. Qed.
+
+Lemma ipqnorm_swap p q m n l k (A : 'M[C]_(m * n, l * k)) : 
+  ipqnorm p q (mxswap A) = ipqnorm p q A.
+Proof. by rewrite ipqnorm.unlock ipqnormrc_swap. Qed.
+
 End inherited.
 
 Lemma i1normE m n (A : 'M[C]_(m,n)) :
@@ -2722,6 +2940,50 @@ rewrite powRr1// -mulr_suml ler_wpM2r//.
 apply/bigmax_geP; right; exists i=>//.
 rewrite powRr1 ?sumr_ge0// pair_bigV/= exchange_big/= big_ord1 ler_sum// =>j _.
 by rewrite mxE powRr1.
+Qed.
+
+Lemma col_tens m n l k (A : 'M[C]_(m,n)) (B : 'M_(l,k)) i :
+  col i (A *t B) = col (mxtens_unindex i).1 A *t col (mxtens_unindex i).2 B.
+Proof.
+case: (mxtens_indexP i)=>a b; rewrite !mxtens_indexK/= tensvE.
+apply/matrixP=>j ?; rewrite ord1 castmxE/= cast_ord_id mxtens_1index.
+by case: (mxtens_indexP j)=>c d; rewrite mxE !tensmxE !mxE.
+Qed.
+
+Lemma row_tens m n l k (A : 'M[C]_(m,n)) (B : 'M_(l,k)) i :
+  row i (A *t B) = row (mxtens_unindex i).1 A *t row (mxtens_unindex i).2 B.
+Proof.
+case: (mxtens_indexP i)=>a b; rewrite !mxtens_indexK/= tensvE.
+apply/matrixP=>? j; rewrite ord1 castmxE/= cast_ord_id mxtens_1index.
+by case: (mxtens_indexP j)=>c d; rewrite mxE !tensmxE !mxE.
+Qed.
+
+Lemma i1norm_tens m n l k (A : 'M[C]_(m,n)) (B : 'M_(l,k)) :
+  ipnorm 1 (A *t B) = ipnorm 1 A * ipnorm 1 B.
+Proof.
+rewrite !i1normE lpnorm.unlock !bigmax_r2c -realcM; f_equal.
+apply/le_anti/andP; split.
+  apply/bigmax_leP; split=>[|/= i _].
+    by apply/mulr_ge0; apply/bigmax_geP; left.
+  case: (mxtens_indexP i)=>[a b].
+  rewrite col_tens tensvE castmx_funE lpnormrc_tens mxtens_indexK/=.
+  by apply ler_pM=>//; apply/bigmax_geP; right; [exists a | exists b].
+set x := \big[maxr/0]_i lpnormrc 1 (col i A).
+have [/eqP ->| Px ] := boolP (x == 0).
+  by rewrite mul0r; apply/bigmax_geP; left.
+have Px0 : 0 < x by rewrite lt_neqAle eq_sym Px/=; apply/bigmax_geP; left.
+rewrite -ler_pdivlMl//; apply/bigmax_leP; split=>[|/= i _].
+  apply/mulr_ge0; first by rewrite invr_ge0 ltW.
+  by apply/bigmax_geP; left.
+rewrite ler_pdivlMl//.
+have [/eqP ->| P1 ] := boolP (lpnormrc 1 (col i B) == 0).
+  by rewrite mulr0; apply/bigmax_geP; left.
+have P2 : 0 < lpnormrc 1 (col i B) by rewrite lt_neqAle eq_sym P1/=.
+rewrite -ler_pdivlMr//; apply/bigmax_leP; split=>[|/= j _].
+  by rewrite divr_ge0//; apply/bigmax_geP; left.
+rewrite ler_pdivlMr//; apply/bigmax_geP; right.
+exists (mxtens_index (j,i))=>//;
+by rewrite col_tens tensvE castmx_funE mxtens_indexK/= lpnormrc_tens.
 Qed.
 
 Lemma i0normE m n (A : 'M[C]_(m,n)) :
@@ -2761,6 +3023,34 @@ apply/ler_pM.
   by rewrite powRr1// mxE.
 apply/bigmax_leP; split=>[|/=[k l] _]; first by apply/bigmax_geP; left.
 by apply/bigmax_geP; right; exists (k,0)=>//; rewrite ord1.
+Qed.
+
+Lemma i0norm_tens m n l k (A : 'M[C]_(m,n)) (B : 'M_(l,k)) :
+  ipnorm 0 (A *t B) = ipnorm 0 A * ipnorm 0 B.
+Proof.
+rewrite !i0normE lpnorm.unlock !bigmax_r2c -realcM; f_equal.
+apply/le_anti/andP; split.
+  apply/bigmax_leP; split=>[|/= i _].
+    by apply/mulr_ge0; apply/bigmax_geP; left.
+  case: (mxtens_indexP i)=>[a b].
+  rewrite row_tens tensvE castmx_funE lpnormrc_tens mxtens_indexK/=.
+  by apply ler_pM=>//; apply/bigmax_geP; right; [exists a | exists b].
+set x := \big[maxr/0]_i lpnormrc 1 (row i A).
+have [/eqP ->| Px ] := boolP (x == 0).
+  by rewrite mul0r; apply/bigmax_geP; left.
+have Px0 : 0 < x by rewrite lt_neqAle eq_sym Px/=; apply/bigmax_geP; left.
+rewrite -ler_pdivlMl//; apply/bigmax_leP; split=>[|/= i _].
+  apply/mulr_ge0; first by rewrite invr_ge0 ltW.
+  by apply/bigmax_geP; left.
+rewrite ler_pdivlMl//.
+have [/eqP ->| P1 ] := boolP (lpnormrc 1 (row i B) == 0).
+  by rewrite mulr0; apply/bigmax_geP; left.
+have P2 : 0 < lpnormrc 1 (row i B) by rewrite lt_neqAle eq_sym P1/=.
+rewrite -ler_pdivlMr//; apply/bigmax_leP; split=>[|/= j _].
+  by rewrite divr_ge0//; apply/bigmax_geP; left.
+rewrite ler_pdivlMr//; apply/bigmax_geP; right.
+exists (mxtens_index (j,i))=>//;
+by rewrite row_tens tensvE castmx_funE mxtens_indexK/= lpnormrc_tens.
 Qed.
 
 Lemma normrc_r2c (x : R) (T : extNumType R) : ``| r2c x : T | = `|x|.
@@ -2816,7 +3106,7 @@ rewrite pair_bigV/= big_ord1.
 by under [in leRHS]eq_bigr do rewrite mxE.
 Qed.
 
-Lemma i10normE m n (A : 'M[C]_(m,n)) :
+Lemma i12normE m n (A : 'M[C]_(m,n)) :
   ipqnorm 1 2 A = \big[maxr/0]_i l2norm (col i A).
 Proof.
 rewrite ipqnorm.unlock lpnorm.unlock bigmax_r2c; f_equal.
@@ -2898,7 +3188,7 @@ Lemma max_svd_diag_Sn m n (D : 'rV[C]_(minn m.+1 n.+1)) : D \is svd_diag ->
 Proof.
 move=>PD. apply/bigmax_find=>//[|i _].
 by apply/nnegmxP/svd_diag_nneg.
-by apply/rv_nonincreasingP=>//=; apply/svd_diag_nonincreasing.
+by apply/rv_nincrP=>//=; apply/svd_diag_nincr.
 Qed.
 
 End svd_move.
@@ -2929,6 +3219,22 @@ Definition i2norm_cdiag := (ipnorm_cdiag (R := R) 2).
 Definition i2norm_scale := (ipnorm_scale (R := R) 2).
 Definition i2norm1 := (ipnorm1 (R := R) 2).
 Definition i2norm11 := (ipnorm11 (R := R) 2).
+Definition i2norm_col_perm := (ipqnorm_col_perm (R := R) 2 2).
+Definition i2norm_row_perm := (ipqnorm_row_perm (R := R) 2 2).
+Definition i2norm_permMl := (ipqnorm_permMl (R := R) 2 2).
+Definition i2norm_permMr := (ipqnorm_permMr (R := R) 2 2).
+Definition i2norm_castmx := (ipqnorm_castmx (R := R) 2 2).
+Definition i2norm_row0mx := (ipqnorm_row0mx (R := R) 2 2).
+Definition i2norm_rowmx0 := (ipqnorm_rowmx0 (R := R) 2 2).
+Definition i2norm_col0mx := (ipqnorm_col0mx (R := R) 2 2).
+Definition i2norm_colmx0 := (ipqnorm_colmx0 (R := R) 2 2).
+Definition i2norm_rowmxl_le := (ipqnorm_rowmxl_le (R := R) 2 2).
+Definition i2norm_rowmxr_le := (ipqnorm_rowmxr_le (R := R) 2 2).
+Definition i2norm_colmxl_le := (ipqnorm_colmxl_le (R := R) 2 2).
+Definition i2norm_colmxr_le := (ipqnorm_colmxr_le (R := R) 2 2).
+Definition i2norm_col_le := (ipqnorm_col_le (R := R) 2 2).
+Definition i2norm_row_le := (ipqnorm_row_le (R := R) 2 2).
+Definition i2norm_swap := (ipqnorm_swap (R := R) 2 2).
 
 Lemma i2normUl m n (U : 'M[C]_m) (A : 'M[C]_(m,n)) : 
   U \is unitarymx -> i2norm (U *m A) = i2norm A.
@@ -2940,7 +3246,7 @@ move: (i2norm_exist A)=>[v <-].
 by apply/(le_trans _ (i2normPV _ v)); rewrite -mulmxA l2normUl.
 Qed.
 
-Lemma i2normUr m n (A : 'M[C]_(m,n)) (U : 'M[C]_n) : 
+#[local] Lemma i2normUr_temp m n (A : 'M[C]_(m,n)) (U : 'M[C]_n) : 
   U \is unitarymx -> i2norm (A *m U) = i2norm A.
 Proof.
 move=>PU; apply/le_anti/andP; split.
@@ -2949,7 +3255,7 @@ move=>PU; apply/le_anti/andP; split.
   by rewrite l2normUl// mulmxA.
 move: (i2norm_exist A)=>[v <-].
 apply/(le_trans _ (i2normPV _ (U^*t *m v))).
-by rewrite mulmxA mulmxtVK// l2normUl ?trmxC_unitary.
+by rewrite mulmxA mulmxtVK// l2normUl ?adjmx_unitary.
 Qed.
 
 Lemma i2normE m n (M : 'M[C]_(m,n)) :
@@ -2959,7 +3265,7 @@ case: n M=>[M|n M]; first by rewrite mx_dim0 i2norm0/= big_ord0.
 case: m M=>[M|m M].
   have P1: 0%N = minn 0 n.+1 by rewrite minnC.
   by set t := svd_d M; move: t; rewrite -P1/==>t; rewrite big_ord0 mx_dim0 i2norm0.
-rewrite {1}(svdE M) i2normUr// i2normUl//.
+rewrite {1}(svdE M) i2normUr_temp// i2normUl//.
 rewrite /cdiag_mx ipqnorm_castmx /block_mx row_mx0 ipqnorm_colmx0 ipqnorm_rowmx0.
 have -> : \big[maxr/0]_i svd_d M 0 i = (\big[maxr/0]_i c2r (svd_d M 0 i))%:C.
   by rewrite -bigmax_r2c; apply eq_bigr=>i _; rewrite c2rK// ger0_real.
@@ -3080,9 +3386,9 @@ by apply/matrixP=>a b; rewrite ord1 mxE delta_mx_mulEr !mxE eqxx andbT mulrC eq_
 Qed.
 
 Lemma i2norm_svd m n (A : 'M[C]_(m,n)) : i2norm A = i2norm (cdiag_mx (svd_d A)).
-Proof. by rewrite {1}[A]svdE i2normUr// i2normUl. Qed.
+Proof. by rewrite {1}[A]svdE i2normUr_temp// i2normUl. Qed.
 Lemma i2norm_svds m (A : 'M[C]_m) : i2norm A = i2norm (diag_mx (svds_d A)).
-Proof. by rewrite {1}[A]svdsE i2normUr// i2normUl. Qed.
+Proof. by rewrite {1}[A]svdsE i2normUr_temp// i2normUl. Qed.
 
 End i2norm.
 
@@ -3127,7 +3433,7 @@ Lemma schnormUl p m n (U : 'M[C]_m) (A : 'M[C]_(m,n)) :
   U \is unitarymx -> schnorm p (U *m A) = schnorm p A.
 Proof. by move=>UU; rewrite schnorm.unlock svd_d_Ul. Qed.
 
-Lemma schnormUr p m n (U : 'M[C]_n) (A : 'M[C]_(m,n)) :
+#[local] Lemma schnormUr_temp p m n (U : 'M[C]_n) (A : 'M[C]_(m,n)) :
   U \is unitarymx -> schnorm p (A *m U) = schnorm p A.
 Proof. by move=>UU; rewrite schnorm.unlock svd_d_Ur. Qed.
 
@@ -3137,7 +3443,7 @@ Proof. by rewrite schnormUl// perm_mx_unitary. Qed.
 
 Lemma schnorm_permMr p m n (s : 'S_n) (A : 'M[C]_(m,n)) :
   schnorm p (A *m perm_mx s) = schnorm p A.
-Proof. by rewrite schnormUr// perm_mx_unitary. Qed.
+Proof. by rewrite schnormUr_temp// perm_mx_unitary. Qed.
 
 Lemma schnorm_col_perm p m n (s : 'S_n) (A : 'M[C]_(m,n)) :
   schnorm p (col_perm s A) = schnorm p A.
@@ -3186,6 +3492,22 @@ Proof.
 rewrite !(schnormcE _ erefl) csvd_d_row_0mx; 
 by set P := etrans _ _; case: _ / P.
 Qed.
+
+Lemma schnormUr p m n l (U : 'M[C]_(n,l)) (A : 'M[C]_(m,n)) :
+  U \is unitarymx -> schnorm p (A *m U) = schnorm p A.
+Proof.
+move=>PU; move: (unitary_dim PU)=>nl.
+move: (unitary_ext PU)=>PU1.
+have -> : A *m U = row_mx A 0 *m schmidt (col_mx U (0 : 'M_(l - n, l))).
+  by rewrite -[X in _ = _ *m X]vsubmxK mul_row_col mul0mx addr0 -PU1.
+rewrite -[_ *m _](castmx_id (erefl, erefl)) -(castmx_mul (subnKC nl)).
+rewrite schnormUr_temp ?schnorm_castmx ?schnorm_row_mx0//.
+by rewrite castmx_funE; apply/schmidt_unitarymx; rewrite subnKC.
+Qed.
+
+Lemma schnormUl_cond p m n l (U : 'M[C]_(l,m)) (A : 'M[C]_(m,n)) :
+  U^*t \is unitarymx -> schnorm p (U *m A) = schnorm p A.
+Proof. by move=>PU; rewrite -schnorm_adjmx adjmxM schnormUr// schnorm_adjmx. Qed.
 
 Lemma schnorm_block_mx000 p m n k l (A : 'M[C]_(m,n)) :
   schnorm p (block_mx A 0 0 (0 : 'M_(k,l))) = schnorm p A.
@@ -3243,7 +3565,7 @@ have PDa : Da \is svd_diag.
     1,2: by rewrite c2r_ge0// divr_ge0.
     by rewrite ler_c2r// ler_wpM2r ?invr_ge0.
 exists (svd_v B *m (cdiag_mx Da)^*t *m (svd_u B)^*t).
-rewrite schnormUr// schnormUl// schnorm.unlock {2}cdiag_adjmx svd_cdiagmx//;
+rewrite schnormUr// schnormUl// schnorm.unlock {2}cdiag_mx_adj svd_d_cdiag//;
   last by rewrite castmx_funE svd_diag_conj.
 rewrite lpnorm_castmx lpnorm_conjmx {3}(svdE B) -!mulmxA mxtrace_mulC 
   !mulmxA !mulmxKtV// cdiag_mx_mulr svd_diag_conj// mxtrace_diag.
@@ -3262,7 +3584,7 @@ have -> : lpnorm p Da = 1.
 rewrite invr1 mulr1 ger0_norm ?sumr_ge0//= =>[|i _]; last first.
   by rewrite !mxE mulr_ge0//; apply/svd_diag_ge0/svd_diag_exdr.
 transitivity (\sum_j c2r (svd_d B 0 j) `^ q / c2r (schnorm q B) `^ ((q:R)/p))%:C.
-  rewrite svd_d_exdr_dmul -(svd_d_exd_sumr _ (f := id))//.
+  rewrite svd_d_exdr_dmul -(svd_d_exdr_sum _ (f := id))//.
   rewrite rmorph_sum/=; apply eq_bigr=>i _.
   rewrite !mxE -{2}[svd_d B 0 i]c2rK ?ger0_real//.
   rewrite -!ger0_normrc// ?divr_ge0// -realcM normrcM.
@@ -3282,11 +3604,11 @@ have PDa : Da \is svd_diag.
   apply/svd_diagP=>i; split; first by rewrite mxE ler01.
   by move=>j _; rewrite !mxE lexx.
 exists (svd_v B *m (cdiag_mx Da)^*t *m (svd_u B)^*t).
-rewrite schnormUr// schnormUl// schnorm.unlock {2}cdiag_adjmx svd_cdiagmx//;
+rewrite schnormUr// schnormUl// schnorm.unlock {2}cdiag_mx_adj svd_d_cdiag//;
   last by rewrite castmx_funE svd_diag_conj.
 rewrite lpnorm_castmx lpnorm_conjmx {3}(svdE B) -!mulmxA mxtrace_mulC 
   !mulmxA !mulmxKtV// cdiag_mx_mulr svd_diag_conj// mxtrace_diag.
-rewrite svd_d_exdr_dmul -(svd_d_exd_sumr _ (f := id))//.
+rewrite svd_d_exdr_dmul -(svd_d_exdr_sum _ (f := id))//.
 rewrite lpnorm_const_plt1//= l1normE big_ord1 ger0_norm;
   last by rewrite sumr_ge0=>// i _; rewrite !mxE mul1r.
 rewrite mulr_suml; apply eq_bigr=>/= i _.
@@ -3301,11 +3623,11 @@ have PDa : Da \is svd_diag.
   move=>j; rewrite !mxE eqxx/= ler_nat; case: eqP=>// ->.
   by case: eqP=>//= P Pi; exfalso; apply/P/val_inj/eqP; rewrite /= -leqn0.
 exists (svd_v B *m (cdiag_mx Da)^*t *m (svd_u B)^*t).
-rewrite schnormUr// schnormUl// schnorm.unlock {2}cdiag_adjmx svd_cdiagmx//;
+rewrite schnormUr// schnormUl// schnorm.unlock {2}cdiag_mx_adj svd_d_cdiag//;
   last by rewrite castmx_funE svd_diag_conj.
 rewrite lpnorm_castmx lpnorm_conjmx {3}(svdE B) -!mulmxA mxtrace_mulC 
   !mulmxA !mulmxKtV// cdiag_mx_mulr svd_diag_conj// mxtrace_diag.
-rewrite svd_d_exdr_dmul -(svd_d_exd_sumr _ (f := id))//.
+rewrite svd_d_exdr_dmul -(svd_d_exdr_sum _ (f := id))//.
 rewrite lpnorm_delta divr1 (bigD1 minnSS_ord0)//= big1=>[|i/negPf Pi];
   last by rewrite !mxE eqxx Pi mul0r.
 rewrite !mxE !eqxx/= mul1r addr0 lpnorm.unlock lpnormrc.unlock ltr01.
@@ -3314,7 +3636,7 @@ apply/le_anti/andP; split.
   by apply/bigmax_geP; right; exists (0,minnSS_ord0).
 apply/bigmax_leP; split=>// [[i j]] _ /=.
 rewrite ord1 !ger0_normrc// ler_c2r//.
-by move: (svd_d_svd_diag B)=>/svd_diag_nonincreasing/rv_nonincreasingP/(_ minnSS_ord0 j); apply.
+by move: (svd_d_svd_diag B)=>/svd_diag_nincr/rv_nincrP/(_ minnSS_ord0 j); apply.
 Qed.
 
 Lemma schnorm_existsr p (q : ecindexType p) m n (B : 'M[C]_(m,n)): 
@@ -3445,9 +3767,9 @@ Proof. rewrite schnorm.unlock; exact: lpnorm_is_cvg. Qed.
 Lemma schnorm_formC p m n (x : 'M[C]_(m,n)) :
   schnorm p (x^*t *m x) = schnorm p (x *m x^*t).
 Proof.
-rewrite (svdE x) !adjmxM !adjmxK -!mulmxA !schnormUl// !mulmxA !schnormUr//
-  !mulmxKtV// cdiag_mx_mull cdiag_mx_mulr svd_d_exdr_dmul svd_d_exdl_dmul.
-by rewrite /svd_d_exdr /svd_d_exdl !diagmx_cast !schnorm_castmx !diag_mx_row
+rewrite (svdE x) !adjmxM !adjmxK -!mulmxA !schnormUl// !mulmxA !mulmxKtV//
+  cdiag_mx_mull cdiag_mx_mulr !schnormUr// svd_d_exdr_dmul svd_d_exdl_dmul.
+by rewrite /svd_d_exdr /svd_d_exdl !diag_mx_cast !schnorm_castmx !diag_mx_row
   /block_mx !linear0 !row_mx0 !schnorm_col_mx0 !schnorm_row_mx0 dmulmxC.
 Qed.
 
@@ -3480,11 +3802,11 @@ have UD1 : diag_mx D1 \is unitarymx.
 rewrite -(schnormUr _ _ UD1) diag_mx_dmul.
 have PD1 : D .* D1 \is a nnegmx.
   by apply/nnegmxP=>i j; rewrite !mxE ord1 -norm_directcE.
-move: (descreasing_row_vec PD1)=>[s Ps].
+move: (permv_sortv (D .* D1)) (nnegmx_svd_diag PD1)=>[s <- Ps].
 move: (perm_mx_unitary C s) (diag_perm s (D .* D1))=>Ps1.
 rewrite -mulmxU// -mulUCmx// =><-.
 rewrite schnormUl ?trmxC_unitary// schnormUr// schnorm.unlock.
-rewrite svd_diagmx// lpnorm_castmx lpnorm.unlock lpnormrc_col_perm; f_equal.
+rewrite svd_d_diag// lpnorm_castmx lpnorm.unlock lpnormrc_col_perm; f_equal.
 rewrite lpnormrc.unlock; case: ltP=> _;
 under eq_bigr do rewrite !mxE ord1 -norm_directcE normrc_idV;
 by under [in RHS]eq_bigr do rewrite ord1.
@@ -3540,6 +3862,143 @@ by rewrite schnorm_block_mx000 block_mx_perm schnorm_castmx schnormUr
   ?schnormUl ?perm_mx_unitary// -diag_mx_row schnorm_diag.
 Qed.
 
+Lemma schnorm_tens p m n k l (A : 'M[C]_(m,n)) (B : 'M_(k,l)) :
+  schnorm p (A *t B) = schnorm p A * schnorm p B.
+Proof.
+rewrite !(schnormcE _ (rank_tens A B)).
+move: (csvdr_d_tens erefl erefl (rank_tens A B))=>[] s ->. 
+by rewrite lpnorm_col_perm tensvE castmx_funE lpnorm_tens !(schnormcE _ erefl).
+Qed.
+
+Lemma schnorm_swap p m n l k (A : 'M[C]_(m * n, l * k)) : 
+  schnorm p (mxswap A) = schnorm p A.
+Proof. by rewrite mxswap_permE schnorm_row_perm schnorm_col_perm castmx_funE. Qed.
+
+(* TODO : https://arxiv.org/pdf/1202.3853 *)
+(* about partial trace *)
+
+Definition PauliX_genmx m (i : 'I_m.+1) : 'M[C]_(m.+1) :=
+  perm_mx (perm (@subIr _ i)).
+Definition PauliZ_genmx m (i : 'I_m.+1) : 'M[C]_(m.+1) :=
+  diag_mx (\row_j expip (2 * i%:R * j%:R / m.+1%:R)).
+
+(* Lemma PauliX_genmx_sumE m i : 
+  @PauliX_genmx m i = \sum_j delta_mx (j + i) j.
+Proof.
+apply/matrixP=>j k; rewrite !mxE summxE permE (bigD1 k)//= big1.
+by rewrite addr0 mxE eqxx andbT subr_eq.
+by move=>l /negPf nlk; rewrite mxE andbC eq_sym nlk.
+Qed.
+
+Lemma PauliX_genmx_adj m i : (@PauliX_genmx m i)^*t = @PauliX_genmx m (-i).
+Proof. by apply/matrixP=>j k; rewrite !mxE !permE conj_Creal// opprK subr_eq eq_sym. Qed.
+
+Lemma PauliZ_genmx_adj m i : (@PauliZ_genmx m i)^*t = @PauliZ_genmx m (-i).
+Proof.
+apply/matrixP=>j k; rewrite !mxE eq_sym.
+case: eqP=>[->|]; rewrite ?mulr0n ?conjC0// !mulr1n -expipNC.
+have [/eqP -> | Pi ] := boolP (i == 0).
+  by rewrite {2}/GRing.opp/= subn0 modnn !(mulr0, mul0r) oppr0.
+rewrite {2}/GRing.opp/= modn_small; last by rewrite ltn_subrL lt0n Pi.
+rewrite natrB 1?ltnW// mulrBr mulrBl mulrBl -!mulNr addrC expipD -[LHS]mulr1.
+by f_equal; rewrite mulrAC mulfK// -natrM expip2n.
+Qed.
+
+Lemma PauliX_genmxE m i j k : @PauliX_genmx m i j k = (k + i == j)%:R.
+Proof.
+rewrite PauliX_genmx_sumE summxE (bigD1 k)//= big1.
+by rewrite addr0 mxE eqxx andbT eq_sym.
+by move=>l /negPf nl; rewrite mxE andbC eq_sym nl.
+Qed.
+
+Lemma PauliZ_genmxE m i j k : @PauliZ_genmx m i j k = 
+  expip (2 * i%:R * j%:R / m.+1%:R) * (j == k)%:R.
+Proof. by rewrite mxE -[LHS]mulr_natr mxE. Qed. *)
+
+Lemma PauliX_genmx_unitary m i : @PauliX_genmx m i \is unitarymx.
+Proof. by apply/perm_mx_unitary. Qed.
+Lemma PauliZ_genmx_unitary m i : @PauliZ_genmx m i \is unitarymx.
+Proof.
+apply/unitarymxPV; rewrite diag_mx_adj diag_mx_dmul -diag_const_mx.
+f_equal; apply/matrixP=>? j.
+by rewrite !mxE -expipNC -expipD addNr expip0.
+Qed.
+
+Lemma ptrace1_unitary_sum m n (A : 'M[C]_(m.+1 * n)) :
+  1%:M *t ptrace1 A = m.+1%:R^-1 *: (\sum_i\sum_j 
+    ((PauliX_genmx i *m PauliZ_genmx j) *t 1%:M)^*t *m A *m 
+    ((PauliX_genmx i *m PauliZ_genmx j) *t 1%:M)).
+Proof.
+apply/matrix_tenP=>a b c d; rewrite tensmxE !mxE summxE/=.
+transitivity (m.+1%:R^-1 *  \sum_(i < m.+1) \sum_(j < m.+1) 
+  expip (2 * (c%:R - a%:R) * j%:R / m.+1%:R) * 
+  A (mxtens_index (a + i,b)) (mxtens_index (c + i,d))).
+- under eq_bigr do rewrite -mulr_suml.
+  rewrite -mulr_sumr expip_sum_ord// eq_sym.
+  case: eqP=>[->|]; last by rewrite !mul0r mulr0.
+  rewrite !mul1r mulrA mulVf// mul1r ptrace1E (reindex_perm (perm (@addrI _ a)))/=.
+  by apply eq_bigr=>i _; rewrite !permE.
+f_equal; apply eq_bigr=>i _; rewrite summxE; apply eq_bigr=>j _.
+rewrite tensmxE_mid (bigD1 (c + i))//= (bigD1 d)//= !big1 ?addr0.
+rewrite tensmxE tensmxE_mid (bigD1 (a + i))//= (bigD1 b)//= !big1 ?addr0.
+rewrite adjmx_tens adjmx1 adjmxM tensmxE diag_mx_adj mul_diag_mx mul_mx_diag !mxE.
+rewrite !permE !addrK !eqxx conjC1 !mulr1 mul1r [RHS]mulrAC -expipNC -expipD.
+rewrite -mulNr -mulrDl -mulrN -mulrDr addrC; 
+by do 3 f_equal; rewrite -!mulrA; f_equal; rewrite mulrC.
+by move=>k /negPf nk; rewrite big1// =>? _; 
+  rewrite adjmx_tens adjmx1 adjmxM tensmxE diag_mx_adj 
+  mul_diag_mx !mxE permE subr_eq nk conjC0 mulr0 !mul0r.
+by move=>k /negPf nk; rewrite adjmx_tens adjmx1 adjmxM tensmxE 
+  diag_mx_adj mul_diag_mx mxE !mxE [b == k]eq_sym nk mulr0 !mul0r.
+by move=>k /negPf nk; rewrite big1// =>? _;
+  rewrite tensmxE mul_mx_diag !mxE permE subr_eq nk !mul0r mulr0.
+by move=>k /negPf nk; rewrite tensmxE !mxE nk !mulr0.
+Qed.
+
+Lemma schnorm_ptrace1_plt1 p m n (A : 'M[C]_(m * n)) :
+  p < 1 -> schnorm p (ptrace1 A) <= m%:R * schnorm p A.
+Proof.
+case: m A=>[A _ | m A Pp ].
+  have -> : A = 0 by move: A; rewrite mul0n=>A; rewrite mx_dim0.
+  by rewrite mul0r linear0 normv0.
+have -> : \s_p| ptrace1 A | = \s_p| (1%:M : 'M_m.+1) *t ptrace1 A |.
+  by rewrite schnorm_tens schnorm1_plt1//= mul1r.
+rewrite ptrace1_unitary_sum schnormZ pair_big/= normfV ler_pdivrMl ?normr_gt0//.
+apply/(le_trans (normv_sum _ _ _))/(le_trans (y := \sum_(i : 'I_m.+1 * 'I_m.+1) \s_p| A |)).
+  apply/ler_sum=>[[i j] _]; rewrite /= schnormUr ?schnormUl//.
+  1,2: by rewrite ?adjmx_unitary unitarymx_tens// mul_unitarymx// 
+    ?PauliX_genmx_unitary ?PauliZ_genmx_unitary.
+by rewrite sumr_const -[leLHS]mulr_natl card_prod card_ord ger0_norm// mulrA natrM.
+Qed.
+
+Lemma schnorm_ptrace2_plt1 p m n (A : 'M[C]_(m * n)) :
+  p < 1 -> schnorm p (ptrace2 A) <= n%:R * schnorm p A.
+Proof. by move=>Pp; rewrite ptrace2E1 -schnorm_swap schnorm_ptrace1_plt1. Qed.
+
+Lemma schnorm_ptrace1_pge1 p m n (A : 'M[C]_(m * n)) : 
+  1 <= p -> schnorm p (ptrace1 A) <= ((m%:R) `^ ((p-1)/p))%:C * schnorm p A.
+Proof.
+case: m A=>[A _ | m A Pp ].
+  have -> : A = 0 by move: A; rewrite mul0n=>A; rewrite mx_dim0.
+  by rewrite linear0 !normv0 mulr0.
+have -> : \s_p| ptrace1 A | = ((m.+1%:R `^ p^-1) ^-1)%:C * \s_p| (1%:M : 'M_m.+1) *t ptrace1 A |.
+  by rewrite schnorm_tens schnorm1_pge1//= mulrA -realcM mulVf ?mul1r// gt_eqF// powR_gt0.
+rewrite ptrace1_unitary_sum schnormZ pair_big/= normfV realcI ler_pdivrMl 
+  ?ltc0R ?powR_gt0// ler_pdivrMl ?normr_gt0//.
+apply/(le_trans (normv_sum _ _ _))/(le_trans (y := \sum_(i : 'I_m.+1 * 'I_m.+1) \s_p| A |)).
+  apply/ler_sum=>[[i j] _]; rewrite /= schnormUr ?schnormUl//.
+  1,2: by rewrite ?adjmx_unitary unitarymx_tens// mul_unitarymx// 
+    ?PauliX_genmx_unitary ?PauliZ_genmx_unitary.
+rewrite sumr_const -[leLHS]mulr_natl card_prod card_ord ger0_norm//.
+rewrite natrM -!mulrA ler_wpM2l// mulrA -realcM -powRD;
+  last by rewrite natrS_neq0 implybT.
+by rewrite mulrBl div1r addrC subrK mulfV ?gt_eqF// ?powRr1// ?natrC// (lt_le_trans ltr01 Pp).
+Qed.
+
+Lemma schnorm_ptrace2_pge1 p m n (A : 'M[C]_(m * n)) : 
+  1 <= p -> schnorm p (ptrace2 A) <= ((n%:R) `^ ((p-1)/p))%:C * schnorm p A.
+Proof. by move=>Pp; rewrite ptrace2E1 -schnorm_swap schnorm_ptrace1_pge1. Qed.
+
 Lemma sch0norm_i2norm : @schnorm R 0 = i2norm.
 Proof.
 apply/functional_extensionality_dep=>m.
@@ -3556,6 +4015,30 @@ Qed.
 
 Lemma i2norm_sch0norm : i2norm = @schnorm R 0.
 Proof. by rewrite sch0norm_i2norm. Qed.
+
+Lemma i2norm_tens m n k l (A : 'M[C]_(m,n)) (B : 'M_(k,l)) :
+  i2norm (A *t B) = i2norm A * i2norm B.
+Proof. by rewrite i2norm_sch0norm schnorm_tens. Qed.
+
+Lemma i2norm_formC m n (x : 'M[C]_(m,n)) :
+  i2norm (x^*t *m x) = i2norm (x *m x^*t).
+Proof. by rewrite i2norm_sch0norm schnorm_formC. Qed.
+
+Lemma i2norm_ptrace1 m n (A : 'M[C]_(m * n)) :
+  i2norm (ptrace1 A) <= m%:R * i2norm A.
+Proof. by rewrite i2norm_sch0norm schnorm_ptrace1_plt1. Qed.
+
+Lemma i2norm_ptrace2 m n (A : 'M[C]_(m * n)) :
+  i2norm (ptrace2 A) <= n%:R * i2norm A.
+Proof. by rewrite i2norm_sch0norm schnorm_ptrace2_plt1. Qed.
+
+Lemma i2normUr m n l (U : 'M[C]_(n,l)) (A : 'M[C]_(m,n)) :
+  U \is unitarymx -> i2norm (A *m U) = i2norm A.
+Proof. by rewrite i2norm_sch0norm; apply schnormUr. Qed.
+
+Lemma i2normUl_cond m n l (U : 'M[C]_(l,m)) (A : 'M[C]_(m,n)) :
+  U^*t \is unitarymx -> i2norm (U *m A) = i2norm A.
+Proof. by rewrite i2norm_sch0norm; apply schnormUl_cond. Qed.
 
 Lemma schnormf0E m n (A : 'M[C]_(m,n)) : 
   schnorm 0 A = (svd_fR A 0)%:C.
@@ -3599,7 +4082,7 @@ by rewrite gt_eqF//= -!invf_le1//; apply: le_trans; rewrite -Ppq lerDl invr_ge0.
   rewrite -realcM lecR -[svd_fR A 0](powRrK (r := r))// ?gt_eqF//.
   rewrite -powRM// ?sumr_ge0// ge0_ler_powR// ?invr_ge0// 
     ?nnegrE ?mulr_ge0// ?sumr_ge0// mulr_sumr.
-  apply/(le_trans (svd_fR_powM _ _ _ Pr))/ler_sum=>/= i _.
+  apply/(le_trans (svd_fR_powM _ _ _ rgt0))/ler_sum=>/= i _.
   by rewrite -powRM// ge0_ler_powR// ?nnegrE ?mulr_ge0// ler_pM// svd_fR_nincr.
 have /orP[/eqP qeq0|qge1] : (q == 0) || (1 <= q).
   move: Pq Pr; rewrite le_eqVlt=>/orP[/eqP<-|Pq]; first by rewrite eqxx.
@@ -3609,7 +4092,7 @@ have /orP[/eqP qeq0|qge1] : (q == 0) || (1 <= q).
   rewrite -realcM lecR -[svd_fR B 0](powRrK (r := r))// ?gt_eqF//.
   rewrite -powRM// ?sumr_ge0// ge0_ler_powR// ?invr_ge0// 
     ?nnegrE ?mulr_ge0// ?sumr_ge0// mulr_suml.
-  apply/(le_trans (svd_fR_powM _ _ _ Pr))/ler_sum=>/= i _.
+  apply/(le_trans (svd_fR_powM _ _ _ rgt0))/ler_sum=>/= i _.
   by rewrite -powRM// ge0_ler_powR// ?nnegrE ?mulr_ge0// ler_pM// svd_fR_nincr.
 rewrite (schnormf_pge1_E A_r)// (schnormf_pge1_E B_r)// (schnormf_pge1_E AB_r)//.
 rewrite -realcM lecR.
@@ -3701,6 +4184,7 @@ Definition fbnorm0P := (schnorm0P 2).
 Definition fbnorm_eq0 := (schnorm_eq0 2).
 Definition fbnormZ := (schnormZ 2).
 Definition fbnormUl := (schnormUl 2).
+Definition fbnormUl_cond := (schnormUl_cond 2).
 Definition fbnormUr := (schnormUr 2).
 Definition fbnorm_permMl := (schnorm_permMl 2).
 Definition fbnorm_permMr := (schnorm_permMr 2).
@@ -3718,6 +4202,8 @@ Definition fbnorm_cdiag := (schnorm_cdiag 2).
 Definition fbnorm_formC := (schnorm_formC 2).
 Definition fbnorm_delta := (schnorm_delta 2).
 Definition fbnorm11 := (schnorm11 2).
+Definition fbnorm_tens := (schnorm_tens 2).
+Definition fbnorm_swap := (schnorm_swap 2).
 
 Definition trnorm_adjmx := (schnorm_adjmx 1).
 Definition trnorm_conjmx := (schnorm_conjmx 1).
@@ -3730,6 +4216,7 @@ Definition trnorm0P := (schnorm0P 1).
 Definition trnorm_eq0 := (schnorm_eq0 1).
 Definition trnormZ := (schnormZ 1).
 Definition trnormUl := (schnormUl 1).
+Definition trnormUl_cond := (schnormUl_cond 1).
 Definition trnormUr := (schnormUr 1).
 Definition trnorm_permMl := (schnorm_permMl 1).
 Definition trnorm_permMr := (schnorm_permMr 1).
@@ -3747,6 +4234,8 @@ Definition trnorm_cdiag := (schnorm_cdiag 1).
 Definition trnorm_formC := (schnorm_formC 1).
 Definition trnorm_delta := (schnorm_delta 1).
 Definition trnorm11 := (schnorm11 1).
+Definition trnorm_tens := (schnorm_tens 1).
+Definition trnorm_swap := (schnorm_swap 1).
 
 Lemma fbnorm_scale m (c : C) :
   fbnorm (c%:M : 'M[C]_m) = sqrtC (m%:R) * `|c|.
@@ -3761,6 +4250,25 @@ Proof. by rewrite fbnorm_scale normr1 mulr1. Qed.
 
 Lemma trnorm1 m : trnorm (1%:M : 'M[C]_m) = m%:R.
 Proof. by rewrite trnorm_scale normr1 mulr1. Qed.
+
+Lemma fbnorm_ptrace1 m n (A : 'M[C]_(m * n)) : 
+  fbnorm (ptrace1 A) <= sqrtC m%:R * fbnorm A.
+Proof. by rewrite fbnorm_l2norm l2norm_ptrace1. Qed.
+
+Lemma fbnorm_ptrace2 m n (A : 'M[C]_(m * n)) : 
+  fbnorm (ptrace2 A) <= sqrtC n%:R * fbnorm A.
+Proof. by rewrite fbnorm_l2norm l2norm_ptrace2. Qed.
+
+Lemma trnorm_ptrace1 m n (A : 'M[C]_(m * n)) : 
+  trnorm (ptrace1 A) <= trnorm A.
+Proof.
+move: (schnorm_ptrace1_pge1 A (lexx 1)).
+by rewrite subrr mul0r powRr0 mul1r.
+Qed.
+
+Lemma trnorm_ptrace2 m n (A : 'M[C]_(m * n)) : 
+  trnorm (ptrace2 A) <= trnorm A.
+Proof. by rewrite ptrace2E1 -trnorm_swap trnorm_ptrace1. Qed.
 
 Lemma fbnorm_dotV m n (M : 'M[C]_(m,n)) :
   \fb| M | = sqrtC (\tr (M^*t *m M)).
@@ -3801,7 +4309,7 @@ by rewrite i2normUr ?trmxC_unitary ?i2normUl// i2norm_adjmx i2norm_cdiag
   lpnorm_const_plt1// oner_eq0/= normr1 minnSS/= mulr1.
 rewrite {3 4}(svdE B) -!mulmxA mxtrace_mulC !mulmxA !mulmxKtV// 
   trnormUr// trnormUl// trnorm_cdiag cdiag_mx_mulr conjmx_const svd_d_exdr_dmul.
-rewrite conjC1 ger0_norm mxtrace_diag -(svd_d_exd_sumr _ (f := id))//.
+rewrite conjC1 ger0_norm mxtrace_diag -(svd_d_exdr_sum _ (f := id))//.
   by rewrite l1normE big_ord1; apply eq_bigr=>i _; rewrite !mxE mul1r ger0_norm.
 by apply sumr_ge0=>i _ ; rewrite !mxE mul1r.
 Qed.
@@ -3853,16 +4361,27 @@ Lemma fbnorm_trnorm m n (M : 'M[C]_(m,n)) :
 Proof. by apply/schnorm_nincr; rewrite lexx//= mulr2n lerDr. Qed.
 
 Import MxLownerOrder.
+
+Lemma lemx_psd_ub m (M : 'M[C]_m) : M \is psdmx -> M <= (\tr M)%:M.
+Proof.
+move=>P1; rewrite le_lownerE. apply/psdmx_dot=>u.
+rewrite nnegrE linearB/= mulmxBl/= linearB/= subr_ge0 mul_mx_scalar -scalemxAl linearZ/=.
+rewrite -(psdmx_trnorm P1). apply: (le_trans _ (trnorm_inner _ _)).
+by apply/real_ler_norm/hermmx_dot/psdmx_herm.
+Qed.
+
 Lemma trnormD_eq n (x y : 'M[C]_n) : 
   (0 : 'M[C]_n) <= x -> (0 : 'M[C]_n) <= y 
     -> trnorm x  + trnorm y = trnorm (x + y).
 Proof.
-rewrite !le_lownerE !subr0=>P1 P2. move: (psdmx_add P1 P2).
+rewrite !le_lownerE !subr0=>P1 P2. move: (psdmxD P1 P2).
 move: P1 P2=>/psdmx_trnorm->/psdmx_trnorm->/psdmx_trnorm->.
 by rewrite linearD.
 Qed.
 
 End schnorm_baisc.
+
+#[global] Hint Extern 0 (is_true (0 <= schnorm _ _)) => apply: schnorm_ge0 : core.
 
 Section CmxLownerOrder.
 Import MxLownerOrder.

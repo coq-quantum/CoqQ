@@ -1,16 +1,16 @@
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra perm.
 From mathcomp.classical Require Import boolp cardinality mathcomp_extra
-  classical_sets functions set_interval.
-From mathcomp.analysis Require Import ereal reals signed topology 
-  prodnormedzmodule normedtype sequences.
+  classical_sets functions.
+From mathcomp.analysis Require Import ereal reals exp trigo signed
+  derive topology prodnormedzmodule normedtype sequences.
 From mathcomp.analysis Require Import -(notations)forms.
 (* From mathcomp.real_closed Require Import complex. *)
 From quantum.external Require Import complex.
 Require Import mcextra autonat.
 
 Import Order.TTheory GRing.Theory Num.Theory ComplexField Num.Def complex.
-Import VectorInternalTheory.
+Import VectorInternalTheory numFieldNormedType.Exports.
 
 (*****************************************************************************)
 (*                  Extra theories for Mathcomp-Analysis                     *)
@@ -222,20 +222,25 @@ Lemma sqrtCNX_nat (x : nat) n :
   sqrtC ((x%:R : C) ^- n) = sqrtC x%:R ^- n.
 Proof. by rewrite rootCV// ?sqrtCX_nat// exprn_ge0// ler0n. Qed.
 
-(* TODO : move to mcaextra *)
-Definition directc (c : C) := if c == 0 then 1 else c / `|c|.
+End RealC.
 
-Lemma directc_norm c : `| directc c | = 1.
+Definition directc (C : numFieldType) (c : C) := 
+  if c == 0 then 1 else c / `|c|.
+
+Lemma directc_norm (C : numFieldType) (c : C) : `| directc c | = 1.
 Proof.
 rewrite /directc; case: eqP=>[|/eqP Pc]; first by rewrite normr1.
 by rewrite normrM normfV normr_id mulfV// normr_eq0.
 Qed.
 
-Lemma norm_directcE c : `|c| = c / (directc c).
+Lemma norm_directcE (C : numFieldType) (c : C) : `|c| = c / (directc c).
 Proof.
 rewrite /directc; case: eqP=>[->|/eqP Pc]; first by rewrite normr0 mul0r.
 by rewrite invfM mulVKf// invrK.
 Qed.
+
+Lemma directcE (C : numFieldType) (c : C) : (directc c) * `|c| = c.
+Proof. by rewrite norm_directcE mulrC mulfVK// -normr_eq0 directc_norm oner_neq0. Qed.
 
 Lemma invf_prod (F : fieldType) I (r : seq I) (P : pred I) (f : I -> F) :
   ((\prod_(i <- r | P i) (f i))^-1 = \prod_(i <- r | P i) (f i)^-1)%R.
@@ -262,9 +267,6 @@ Proof.
 by move=>Px; apply/eqP; rewrite -(@eqrXn2 _ 2%N)// ?invr_ge0 
   ?sqrtC_ge0// ?invr_ge0// exprVn !sqrtCK.
 Qed.
-
-End RealC.
-
 
 Local Open Scope classical_set_scope.
 
@@ -588,7 +590,7 @@ Lemma compact_min (S: set R) :
 Proof.
 move=>P1 P2; have cS : compact [set - x | x in S]
   by apply/continuous_compact=>//; apply/continuous_subspaceT=>x?; apply: opp_continuous.
-have nS : [set - x | x in S] !=set0 by apply nonemptyN.
+have nS : [set - x | x in S] !=set0 by apply set_interval.nonemptyN.
 have inS: forall x, [set - x | x in S] (-x) <-> S x.
 move=>x; split=>[[y Py /oppr_inj<-//]|Px]; by exists x.
 move: (compact_max cS nS)=>[x Px lex].
@@ -842,3 +844,335 @@ Lemma fright_rconsE n T (u : 'I_n -> T) (x : T) (i : 'I_n) :
 Proof. by apply/funext=>j; rewrite fright_rconsEE cast_fun_ordEV. Qed.
 
 End FFunLRShift.
+
+Local Close Scope classical_set_scope.
+
+Lemma natrS_neq0 (T : numDomainType) n : (n.+1%:R : T) != 0.
+Proof. by rewrite pnatr_eq0. Qed.
+Lemma natr_nneg (F : numDomainType) n : (n%:R : F) \is Num.nneg.
+Proof. by rewrite nnegrE. Qed.
+Global Hint Extern 0 (is_true (_.+1%:R != 0)) => solve [apply: natrS_neq0] : core.
+Global Hint Extern 0 (is_true (0 <= _%:R)) => solve [apply: ler0n] : core.
+Global Hint Extern 0 (is_true (0 < _.+1%:R)) => solve [apply: ltr0Sn] : core.
+Global Hint Extern 0 (is_true (_%:R \is Num.nneg)) => solve [apply: natr_nneg] : core.
+
+Section ExpTrigoDef.
+Variable (R : realType).
+
+Definition expi (x : R) := (cos x +i* sin x)%C.
+Lemma expi0 : expi 0 = 1. Proof. by rewrite /expi cos0 sin0. Qed.
+Lemma expiD (x y : R) : expi (x + y) = expi x * expi y.
+Proof. by rewrite /expi cosD sinD; simpc; f_equal; rewrite addrC. Qed.
+Lemma expiN (x : R) : expi (- x) = (expi x)^-1.
+Proof. by rewrite /expi /GRing.inv/= cos2Dsin2 !divr1 cosN sinN. Qed.
+
+End ExpTrigoDef.
+
+HB.lock
+Definition expip (R : realType) (x : R) : R[i] := expi (pi * x).
+HB.lock
+Definition sinp (R : realType) (x : R) : R := sin (pi * x).
+HB.lock
+Definition cosp (R : realType) (x : R) : R := cos (pi * x).
+Canonical expip_unlockable := Unlockable expip.unlock.
+Canonical sinp_unlockable := Unlockable sinp.unlock.
+Canonical cosp_unlockable := Unlockable cosp.unlock.
+
+Section ExpTrigoDef.
+Variable (R : realType).
+
+(* we absorb pi into exp sin and cos. to work on rational number *)
+(* set up theories on rat - C *)
+(* remark: there already some automation of rat, ring_theory and field_theory *)
+
+Lemma expipD (x y : R) : expip (x + y) = expip x * expip y.
+Proof. by rewrite !unlock /expip -expiD -mulrDr/=. Qed.
+Lemma expipN (x : R) : expip (- x) = (expip x)^-1.
+Proof. by rewrite !unlock /expip -expiN mulrN. Qed.
+Lemma expipNC (x : R) : expip (- x) = (expip x)^*.
+Proof. by rewrite !unlock /expi; simpc; rewrite cosN sinN. Qed.
+Lemma expipB (x y : R) : expip (x - y) = expip x / expip y.
+Proof. by rewrite expipD expipN. Qed.
+Lemma expip0 : expip (0 : R) = 1. Proof. by rewrite !unlock /expip mulr0 expi0. Qed.
+Lemma expip1 : expip (1 : R) = -1. 
+Proof. by rewrite !unlock /expip mulr1 /expi cospi sinpi; simpc. Qed.
+Lemma expip2 : expip (2%:R : R) = 1. 
+Proof.
+rewrite !unlock /expip /expi mulr_natr -[_*+2]mulr1n -[_*+_*+_]add0r 
+  !periodicn ?cos0 ?sin0//. apply cosD2pi. apply sinD2pi.
+Qed.
+Lemma expip_half : expip ((2%:R)^-1 : R) = 'i.
+Proof. by rewrite !unlock /expip /expi cos_pihalf sin_pihalf. Qed.
+Lemma expipX (r : R) (n : nat) : expip (r * n%:R) = (expip r) ^+ n.
+Proof.
+elim: n=>[|n IH]. by rewrite mulr0 expr0 expip0.
+by rewrite -{1}addn1 natrD mulrDr expipD mulr1 IH exprSr.
+Qed.
+Lemma expip2n (n : nat) : expip ((2 * n)%:R : R) = 1.
+Proof. by rewrite natrM expipX expip2 expr1n. Qed.
+Lemma expip_prod I (r : seq I) (P : pred I) (f : I -> R):
+  \prod_(i <- r | P i) expip (f i) = expip (\sum_(i <- r | P i) f i).
+Proof. by elim/big_rec2: _=>[|i?? _ ->]; rewrite ?expip0//expipD. Qed.
+
+Lemma periodicN [U V : zmodType] [f : U -> V] [T : U] :
+  periodic f T -> periodic f (-T).
+Proof. by move=> + u => /(_ (u - T)); rewrite addrNK => /esym. Qed.
+
+Lemma periodicz [U V : zmodType] [f : U -> V] [T : U] :
+  periodic f T -> forall (n : int) (a : U), f (a + T *~ n) = f a.
+Proof.
+move=> prd_f [] /= n; first by rewrite -pmulrn; apply: periodicn.
+move=> u; rewrite NegzE -nmulrn -mulNrn.
+by apply/periodicn/periodicN.
+Qed.
+
+Lemma cos_eq1 (x : R) : `|x| < pi * 2%:R -> cos x = 1 -> x = 0.
+Proof.
+suff wlog: forall (y : R), 0 <= y < pi * 2%:R -> cos y = 1 -> y = 0.
+- case: (lerP 0 x) => [ge0_x|/ltW le0_x].
+  - by rewrite ger0_norm // => ?; apply: wlog; apply/andP; split.
+  - rewrite ltr_norml => /andP[+ _]; rewrite ltrNl -cosN => bd_Nx.
+    move/wlog; rewrite bd_Nx oppr_ge0 le0_x /= => /(_ (erefl true)).
+    by rewrite (rwP eqP) oppr_eq0 => /eqP ->.
+move=> {}x bd_x; case: (lerP x pi) => [le_x_pi|le_pi_x].
+- rewrite -cos0 => /cos_inj; apply; rewrite in_itv /=.
+  - by rewrite le_x_pi andbT; case/andP: bd_x.
+  - by rewrite lexx /= pi_ge0.
+- move=> /(congr1 -%R); rewrite -cosDpi -(periodicz (@cosD2pi _) (-1)).
+  rewrite mulrN1z mulr2n opprD addrA addrK -cospi.
+  move/cos_inj; rewrite !in_itv /=.
+  rewrite pi_ge0 lexx /= subr_ge0 [pi <= x]ltW //=.
+  rewrite lerBlDr -mulr2n -mulr_natr.
+  case/andP: (bd_x) => _ /ltW -> /(_ (erefl true) (erefl true)).
+  move/(congr1 (fun x => x + pi)); rewrite subrK -mulr2n -mulr_natr => xE.
+  by case/andP: bd_x => _; rewrite xE ltxx.
+Qed.
+
+Section IsDeriveV.
+Variables (T : numFieldType) (V : normedModType T).
+
+Global Instance is_deriveV (f : V -> T) (x v : V) (df : T) :
+     f x != 0
+  -> is_derive x v f df
+  -> is_derive x v (fun x => (f x)^-1) (- (f x) ^- 2 * df).
+Proof.
+move=> nz_fx dfx; apply: DeriveDef; first exact: derivableV.
+by rewrite deriveV // !derive_val.
+Qed.
+End IsDeriveV.
+
+Section IsDeriveDiv.
+Variables (T : numFieldType) (V : normedModType T).
+
+Lemma derive_div (f g : V -> T) (x v : V) :
+     g x != 0
+  -> derivable f x v
+  -> derivable g x v
+  -> derivable (fun y => f y / g y) x v.
+Proof.
+move=> nz_gx df dg; apply: derivableM; first exact df.
+by apply: derivableV.
+Qed.
+
+Global Instance is_derive_div (f g : V -> T) (x v : V) (df dg : T) :
+     g x != 0
+  -> is_derive x v f df
+  -> is_derive x v g dg
+  -> is_derive x v (fun y => f y / g y) ((g x) ^- 2 * (df * g x - f x * dg)).
+Proof.
+move=> nz_g dfv dgv; have dgIv := is_deriveV nz_g dgv.
+move: (is_deriveM dfv dgIv); set d := (X in is_derive _ _ _ X -> _).
+move=> h; set d' := (X in is_derive _ _ _ X).
+(suff ->//: d' = d by apply: h); rewrite {h}/d {}/d'.
+rewrite /GRing.scale /= !(mulNr, mulrN) [RHS]addrC mulrBr.
+congr (_ - _); last by rewrite mulrCA.
+rewrite mulrA [LHS]mulrAC; congr (_ * _).
+by rewrite mulrC expr2 invfM mulrCA divff // mulr1.
+Qed.
+End IsDeriveDiv.
+
+Lemma pi_gt1 : 1 < pi :> R.
+Proof. by apply:(lt_le_trans _ (pi_ge2 R)) => //; rewrite (natrD _ 1 1) ltrDl. Qed.
+
+Lemma pi_le4 : pi <= 4%:R :> R.
+Proof.
+rewrite /pi; case xgetP => /= [x _ | _]; last by rewrite mul0rn.
+case=> /andP[_ le2_x] _; rewrite mulr2n -[4%:R]/(2+2)%:R.
+by rewrite natrD lerD.
+Qed.
+
+Lemma ger_tan x : x \in `[0, pi / 2%:R[ -> x <= tan x :> R.
+Proof.
+rewrite in_itv /= => /andP[+ lt_pihalf].
+rewrite le_eqVlt => /orP[/eqP<-|gt0_x]; first by rewrite tan0.
+have le2_x: x <= 2%:R.
+- apply/ltW/(lt_le_trans lt_pihalf); rewrite ler_pdivrMr //.
+  by rewrite -natrM /= pi_le4.
+have nz_cos c: c \in `[0, x] -> cos c != 0.
+- rewrite in_itv /= => /andP[gt0_c le_cx].
+  apply/contraL: (lt_pihalf) => /eqP z_cosc.
+  rewrite -leNgt; have <-// := @cos_02_uniq _ c (pi / 2%:R).
+  - by rewrite gt0_c //= (le_trans le_cx).
+  - rewrite mulr_ge0 //= ?(invr_ge0, pi_ge0) //.
+    by rewrite ler_pdivrMr // -natrM pi_le4.
+  - by rewrite cos_pihalf.
+have dt: forall y, y \in `]0, x[ -> is_derive y 1 tan (cos y ^- 2).
+- move=> y rg_y; apply: is_derive_tan.
+  by apply: nz_cos; apply: subset_itv rg_y.
+have ct: {within `[0, x], continuous tan}%classic.
+- apply: continuous_in_subspaceT=>c; rewrite mem_setE /= => rg_c.
+  by apply/continuous_tan/nz_cos; apply: subset_itv rg_c.
+have [d +] := MVT gt0_x dt ct; rewrite in_itv /= => /andP[gt0_d lt_dx].
+rewrite tan0 !subr0 => ->; rewrite ler_peMl //; first by apply/ltW.
+rewrite invf_ge1; last first.
+- rewrite exprn_ile1 // (cos_le1, cos_ge0_pihalf) //.
+  by rewrite -ler_norml gtr0_norm // ltW // (lt_trans lt_dx).
+rewrite exprn_gt0 // cos_gt0_pihalf // -ltr_norml gtr0_norm //.
+by rewrite (lt_trans lt_dx).
+Qed.
+
+Lemma ler_abs_sin (a : R) : `|sin a| <= `|a|.
+Proof.
+suff wlog: forall (a : R), 0 <= a <= 1 -> sin a <= a.
+- case: (lerP 1 `|a|) => [|lt1_a].
+  - by move=> le; apply: (le_trans (sin_max a) le).
+  wlog: a lt1_a / (0 <= a) => [{}wlog|ge0_a].
+  case: (ler0P a) => [|/ltW ge0_a]; last first.
+  - by rewrite -[X in _ <= X]ger0_norm //; apply: wlog.
+  move=> le0_a; have := wlog (-a).
+  rewrite normrN oppr_ge0 => /(_ lt1_a le0_a).
+  by rewrite sinN normrN [ `|a|]ler0_norm.
+  rewrite !ger0_norm //; last first.
+  - by apply/wlog/andP; split=> //; apply/ltW/ltr_normlW.
+  apply/sin_ge0_pi; rewrite ge0_a /= (@le_trans _ _ 1) //.
+  - by apply/ltW/ltr_normlW.
+  - by apply/ltW/pi_gt1.
+move=> {}a /andP[+ le1_a]; rewrite le_eqVlt => /orP[|lt0_a].
+- by move/eqP=> <-; rewrite sin0.
+have := @MVT R sin cos 0 a lt0_a (fun x _ => is_derive_sin x).
+case; first by apply/continuous_subspaceT/continuous_sin.
+move=> c rg_c; rewrite sin0 !subr0 => ->.
+by rewrite ler_piMl //; [apply/ltW | apply/cos_le1].
+Qed.
+
+Lemma ger_abs_sin (a : R) : `|a| <= pi / 2%:R -> (2%:R * `|a| / pi) <= `|sin a|.
+Proof.
+wlog: a / (0 <= a) => [wlog|ge0_a].
+- case: (ler0P a) => [le0_a|/ltW ge0_a]; last first.
+  - by have := wlog a ge0_a; rewrite ger0_norm.
+  move=> bd_a; rewrite -ler0_norm //.
+  have := wlog (-a); rewrite oppr_ge0 sinN !normrN.
+  by apply=> //; rewrite ler0_norm.
+rewrite [ `|a|]ger0_norm // => bd_a; rewrite ger0_norm.
+- apply: sin_ge0_pi; rewrite ge0_a /=; apply: (le_trans bd_a).
+  rewrite ler_pdivrMr // ler_pMr ?pi_gt0 //.
+  by rewrite (natrD _ 1 1) lerDl.
+move: ge0_a; rewrite le_eqVlt => /orP[/eqP <-|gt0_a].
+- by rewrite !Monoid.simpm sin0.
+move: bd_a; rewrite le_eqVlt => /orP[/eqP->|bd_a].
+- rewrite sin_pihalf mulrAC -[pi / _]invf_div divff //.
+  by rewrite mulf_neq0 //= invr_eq0 gt_eqF // pi_gt0.
+pose f (x : R) := sin x / x.
+pose F (x : R) := (x * cos x - sin x) / (x ^+ 2).
+have fF (c : R): c \in `[a, pi / 2%:R] -> is_derive c 1 f (F c).
+- rewrite in_itv /= => /andP[lt_ac lt_c_pi].
+  have nz_c: c != 0 by rewrite gt_eqF // (lt_le_trans gt0_a).
+  have := @is_derive_div R R sin idfun c 1 (cos c) 1 nz_c (is_derive_sin c) (is_derive_id c 1).
+  set d := (X in is_derive _ _ _ X -> _) => h; suff <-: d = F c by done.
+  by rewrite {h}/d {}/F /= [LHS]mulrC mulr1 [c * cos c]mulrC.
+have h1 (c : R): c \in `]a, pi / 2%:R[ -> is_derive c 1 f (F c).
+- by move=> rg_c; apply: fF; apply: subset_itv rg_c.
+have h2: {within `[a, pi / 2%:R], continuous f}%classic.
+  (* this should be a direct consequence of `fF`! *)
+- apply: continuous_in_subspaceT => c rg_c.
+  apply: cvgM; first by apply: continuous_sin.
+  apply: cvgV; last by apply: cvg_id.
+  move: rg_c; rewrite mem_setE in_itv /= => /andP[+ _].
+  by apply: contraL => /eqP->; rewrite -ltNge.
+have {h1 h2 fF}[c] := @MVT R f F a (pi / 2%:R) bd_a h1 h2.
+rewrite in_itv /= => /andP[lt_ac bd_c]; rewrite {}/f {}/F.
+rewrite sin_pihalf invf_div mul1r (rwP eqP) subr_eq.
+rewrite [_ + (sin a / a)]addrC -subr_eq => /eqP /esym sinaVaE.
+rewrite mulrAC -ler_pdivlMr // {}sinaVaE lerBrDl.
+rewrite ler_wnDl //; apply: mulr_le0_ge0; last first.
+- by rewrite subr_ge0; apply/ltW.
+apply: mulr_le0_ge0; last first.
+- by rewrite invr_ge0 exprn_ge0 //; apply/ltW/(lt_trans gt0_a).
+rewrite subr_le0; rewrite -ler_pdivlMr.
+- apply: cos_gt0_pihalf; rewrite -ltr_norml ger0_norm //.
+  by apply/ltW/(lt_trans gt0_a).
+rewrite -/(tan c); apply: ger_tan; rewrite in_itv /=.
+by rewrite !ltW // (lt_trans gt0_a).
+Qed.
+
+Lemma pi_neq0 : (pi : R) != 0.
+Proof. by move: (pi_gt0 R)=>/lt0r_neq0/negPf->/=. Qed.
+
+Lemma pi_eq0 : (pi : R) == 0 = false.
+Proof. apply/eqP/eqP/pi_neq0. Qed.
+
+Lemma expip_sum_cst n (r : R) :
+  expip r = 1 -> \sum_(k < n) expip (r * k%:R) = n%:R.
+Proof. by move=>P; under eq_bigr do rewrite expipX P expr1n; rewrite sumr_const card_ord. Qed.
+
+Lemma expip_sum n (r : R) :
+  expip r != 1 -> \sum_(k < n) expip (r * k%:R) = (1 - expip (r * n%:R)) / (1 - expip r).
+Proof.
+rewrite -subr_eq0=>/eqP/eqP=>P; apply/(mulfI P); under eq_bigr do rewrite expipX.
+by rewrite -subrX1 expipX mulrC -[X in _ / X]opprB invrN mulrN mulNr mulfVK// opprB.
+Qed.
+
+Lemma expip_eq1_uniq (r : R) : `|r| < 2%:R -> expip r = 1 -> r = 0.
+Proof.
+move=>Pr; have P1: `|pi * r| < pi * 2%:R 
+  by rewrite normrM ger0_norm ?pi_ge0// ltr_pM2l// ?pi_gt0.
+rewrite unlock /expi=>P2; inversion P2.
+by move: (cos_eq1 P1 H0)=>/eqP; rewrite mulf_eq0 pi_eq0/==>/eqP.
+Qed.
+
+Lemma expip_neq1 (r : R) : `|r| < 2%:R -> r != 0 -> expip r != 1.
+Proof. by move=>/expip_eq1_uniq P1; apply contraNN=>/eqP/P1->. Qed.
+
+Lemma expip_sum_ord (m n : nat) (i j : 'I_m) : (m <= n)%N ->
+  \sum_(k < n) expip (2%:R * (i%:R - j%:R) * k%:R / n%:R :> R) = ((i == j))%:R * n%:R.
+Proof.
+under eq_bigr do rewrite mulrC mulrA.
+case: eqP=>[->|]; first by rewrite expip_sum_cst ?mul1r// subrr !mulr0 expip0.
+move=>/eqP P1 P2; case: n P2=>[_|n P2]; first by rewrite big_ord0 mulr0.
+rewrite expip_sum; first apply/expip_neq1.
+rewrite !normrM 2?ger0_norm ?invr_ge0 ?ler0n// ltr_pdivrMl ?ltr0n// 
+  mulrC ltr_pM2r ?ltr0n// lter_distl ltrBlDl addrC; apply/andP; 
+  by split; apply/ltr_wpDl; rewrite ?ler0n// ltr_nat; apply: (leq_trans _ P2).
+by rewrite !mulf_eq0 invr_eq0 !negb_or !natrS_neq0/= subr_eq0 eqr_nat.
+by rewrite mulrC mulfVK ?natrS_neq0// mulrBr 
+  expipB -!natrM !expip2n invr1 mulr1 subrr mul0r mul0n.
+Qed.
+
+Lemma expip_period n (r : R) : expip ( (2 * n)%:R + r) = expip r.
+Proof.
+rewrite unlock mulrDr natrM mulrA !mulr_natr addrC /expi.
+rewrite !periodicn//. apply cosD2pi. apply sinD2pi.
+Qed.
+
+End ExpTrigoDef.
+
+Section trigoExtra.
+Variable (R : realType).
+Implicit Type (x y z : R).
+Local Notation "2" := (2%:R : R).
+
+Lemma sinB x y : sin (x - y) = sin x * cos y - cos x * sin y.
+Proof. by rewrite sinD cosN sinN mulrN. Qed.
+Lemma cosB x y : cos (x - y) = cos x * cos y + sin x * sin y.
+Proof. by rewrite cosD cosN sinN mulrN opprK. Qed.
+
+Lemma sin2x x : sin (x *+ 2) = (sin x * cos x) *+ 2.
+Proof. by rewrite mulr2n sinD [cos _* _]mulrC -mulr2n -mulr_natl mulrA. Qed.
+Lemma cos2x x : cos (x *+ 2) = (cos x) ^+ 2 - (sin x) ^+ 2.
+Proof. by rewrite mulr2n cosD -!expr2. Qed.
+Lemma cos2x_cos x : cos (x *+ 2) = ((cos x) ^+ 2) *+ 2 - 1.
+Proof. by rewrite cos2x -(cos2Dsin2 x) mulr2n opprD addrACA subrr add0r. Qed.
+Lemma cos2x_sin x : cos (x *+ 2) = 1 - ((sin x) ^+ 2) *+ 2.
+Proof. by rewrite cos2x -(cos2Dsin2 x) mulr2n opprD addrACA subrr addr0. Qed.
+
+End trigoExtra.

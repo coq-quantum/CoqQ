@@ -100,8 +100,6 @@ by rewrite /trace_presv bool_index unlock/= /reducebig/=
 Qed.
 HB.instance Definition _ (P : {hspace U}) := 
   isQMeasure.Build _ _ bool (@measure_proj P) (@measure_proj_tp P).
-(* elemso (measure_proj P true) : P rho P *)
-(* elemso (measure_proj P false) : ~` P rho ~` P *)
 
 Lemma elemso_projTE (P : {hspace U}) : 
   elemso (measure_proj P) true = formso P.

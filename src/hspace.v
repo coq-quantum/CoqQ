@@ -60,8 +60,12 @@ Reserved Notation "{ 'hspace' V }" (at level 0, format "{ 'hspace'  V }").
 Reserved Notation "A `&` B" (at level 48, left associativity).
 Reserved Notation "A `|` B" (at level 52, left associativity).
 Reserved Notation "A `\` B" (at level 50, left associativity).
+Reserved Notation "A `=>` B" (at level 70, no associativity).
+Reserved Notation "A `&&` B" (at level 70, no associativity).
 Reserved Notation "A `<=` B" (at level 70, no associativity).
 Reserved Notation "A `<` B" (at level 70, no associativity).
+Reserved Notation "x '_|_' y" (at level 69, no associativity).
+Reserved Notation "x '_C_' y" (at level 69, no associativity).
 Reserved Notation "`0`".
 Reserved Notation "`1`".
 Reserved Notation "~` x" (at level 35, right associativity).
@@ -146,14 +150,18 @@ Delimit Scope hspace_scope with HS.
 Local Open Scope hspace_scope.
 Fact hspace_display : unit. Proof. by []. Qed.
 
-Notation "x '`<=`' y" := (@Order.le hspace_display _ x y) (at level 70, no associativity) : hspace_scope.
-Notation "x '`<`' y" := (@Order.lt hspace_display _ x y) (at level 70, no associativity) : hspace_scope.
-Notation "x '`|`' y" := (@Order.join hspace_display _ x y) (at level 52, left associativity) : hspace_scope.
-Notation "x '`&`' y" := (@Order.meet hspace_display _ x y) (at level 48, left associativity) : hspace_scope.
+Notation "x `<=` y" := (@Order.le hspace_display _ x y) : hspace_scope.
+Notation "x `<` y" := (@Order.lt hspace_display _ x y) : hspace_scope.
+Notation "x `|` y" := (@Order.join hspace_display _ x y) : hspace_scope.
+Notation "x `&` y" := (@Order.meet hspace_display _ x y) : hspace_scope.
+Notation "x `=>` y" := (@sasaki_hook hspace_display _ x y) : hspace_scope.
+Notation "x `&&` y" := (@sasaki_projection hspace_display _ x y) : hspace_scope.
+Notation "x '_|_' y" := (@orthogonal hspace_display _ x y) : hspace_scope.
+Notation "x '_C_' y" := (@commute hspace_display _ x y) : hspace_scope.
 Notation "`0`" := (@Order.bottom hspace_display _) : hspace_scope.
 Notation "`1`" := (@Order.top hspace_display _) : hspace_scope.
 Notation "~` x" := (@orthomodular.ocompl hspace_display _ x) (at level 35, right associativity) : hspace_scope.
-Reserved Notation "A `\` B" (at level 50, left associativity).
+
 Notation "\cup_ ( i <- r | P ) U" :=
   (\big[ @Order.join hspace_display _ /`0`]_(i <- r | P%B) U%HS) : hspace_scope.
 Notation "\cup_ ( i <- r ) U" :=
@@ -375,7 +383,7 @@ Lemma pinvmx_rank m n (A : 'M[T]_(m,n)) :
   \rank (pinvmx_ A) = \rank A.
 Proof. 
 rewrite /pinvmx_ {4}(svdE A). do 2 rewrite mxrank_mulmxUC ?svd_pE// mxrank_mulUmx ?svd_pE//.
-rewrite !rank_cdiagmx !rank_diagmx; apply eq_bigr=>i _.
+rewrite !rank_cdiagmx !rank_diag_mx; apply eq_bigr=>i _.
 by rewrite mxE invr_eq0.
 Qed.
 
@@ -1641,6 +1649,24 @@ Proof. by rewrite /cokerh cosupph_id. Qed.
 Lemma cokerhK H (U : {hspace H}) : cokerh (cokerh U) = U.
 Proof. by rewrite !cokerhO hsOK. Qed.
 
+Lemma supph1 H : supph (\1 : 'End(H)) = `1`.
+Proof.
+apply/le_anti; rewrite leh1/= -lehO; apply/lehP=>v.
+rewrite -kerhE memh_kerE lfunE/==>/eqP->; exact: mem0h.
+Qed.
+
+Lemma supph0 H : supph (0 : 'End(H)) = `0`.
+Proof.
+apply/le_anti; rewrite le0h andbT -lehO; apply/lehP=>v.
+by rewrite -kerhE memh_kerE lfunE.
+Qed.
+
+Lemma kerh1 H : kerh (\1 : 'End(H)) = `0`.
+Proof. by rewrite kerhE supph1 hsO1. Qed.
+
+Lemma kerh0 H : kerh (0 : 'End(H)) = `1`.
+Proof. by rewrite kerhE supph0 hsO0. Qed.
+
 End CoHspace.
 
 HB.lock Definition sumoutp (H G : chsType) (F : finType) (l : F -> C) 
@@ -1993,7 +2019,7 @@ Lemma eigen_index_card (U : 'End(H)) : h2mx U \is normalmx ->
 Proof.
 move=>/eigen_dec P.
 rewrite /eigen_index_sig card_sig -[RHS]muln1 -sum_nat_const /lfrank.
-rewrite P mxrank_mulmxUC ?mxrank_mulUmx ?spectral_unitarymx// rank_diagmx /eigenval_all.
+rewrite P mxrank_mulmxUC ?mxrank_mulUmx ?spectral_unitarymx// rank_diag_mx /eigenval_all.
 rewrite (bigID (fun i=>(spectral_diag (h2mx U) 0 i != 0)))/= [X in (_ + X)%N]big1 ?addn0.
 by move=>i/negbNE/eqP->; rewrite eqxx.
 by apply eq_bigr=>i; rewrite inE=>->.
@@ -2289,6 +2315,20 @@ Proof. simph2v; exact: memv_cap. Qed.
 
 Lemma memhIP {w U V} : reflect (w \in U /\ w \in V) (w \in U `&` V).
 Proof. simph2v; exact: memv_capP. Qed.
+
+Lemma memh_cap I (r : seq I) (P : pred I) (f : I -> {hspace H}) v :
+  (forall i, P i -> v \in f i) -> (v \in \cap_(i <- r | P i) f i).
+Proof.
+move=>H1; elim: r=>[|a r]; first by rewrite big_nil memh1.
+by rewrite big_cons=>H2; case E: (P a)=>//; rewrite memhI H2 H1.
+Qed.
+
+Lemma memh_capP (I : finType) (P : pred I) (f : I -> {hspace H}) v :
+  reflect (forall i, P i -> v \in f i) (v \in \cap_(i | P i) f i).
+Proof.
+apply/(iffP idP); last by apply/memh_cap.
+by move=>+ i Pi; apply/lehP/caphs_inf.
+Qed.
 
 Lemma hs_modl U V W : U `<=` W -> U `|` (V `&` W) = (U `|` V) `&` W.
 Proof. simph2v=>P; f_equal; exact: vspace_modl. Qed.

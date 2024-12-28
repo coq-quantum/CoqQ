@@ -143,7 +143,7 @@ Reserved Notation "( 'tuple:' x )"
   (in custom reg at level 0, x constr). (* only parsing *)
 Reserved Notation "x : T"
   (in custom reg at level 99, T constr). (* only parsing *)
-Reserved Notation "` x" (at level 5, format "` x").
+(* Reserved Notation "` x" (at level 5, format "` x"). *)
 
 (* qvar is a nat, QVar 0 for local, QVar 1 for arg, QVar n.+2 for global variables *)
 (* we can declare global qvar at the beginning of a section *)
@@ -474,6 +474,8 @@ Inductive expr_ : Type -> Type :=
 | app_  {Te Ue} of expr_ (Te -> Ue) & expr_ Te : expr_ Ue
 | lam_ {Te Ue} of (Te -> expr_ Ue) : expr_ (Te -> Ue).
 
+Coercion var_ : cvar >-> expr_.
+
 Section VarsEqType.
 Variables (T : cType).
 
@@ -563,11 +565,11 @@ Notation "x %:US" := (cst_ (x : 'FU)) (at level 2, format "x %:US").
 Notation "x %:DS" := (cst_ (x : 'FD)) (at level 2, format "x %:DS").
 Notation "x %:MS" := (cst_ (x : 'QM)) (at level 2, format "x %:MS").
 Notation app2_ f x1 x2 := (app_ (app_ f x1%X) x2%X).
-Notation "c %:S"    := (@cst_ _ c) (at level 2, format "c %:S").
-Notation "c %:F e"    := (app_ (@cst_ _ c) (e)%X)
-  (at level 2, format "c %:F  e").
-Notation "c %:FF e1 e2"    := (app2_ (@cst_ _ c) e1 e2)
-  (at level 2, e1 at next level, format "c %:FF  e1 e2").
+Notation "c %:CS"    := (@cst_ _ c) (at level 2, format "c %:CS").
+Notation "c '%:F1' e"    := (app_ (@cst_ _ c) (e)%X)
+  (at level 2, format "c %:F1  e").
+Notation "c '%:F2' e1 e2"    := (app2_ (@cst_ _ c) e1 e2)
+  (at level 2, e1 at next level, format "c %:F2  e1 e2").
 Notation "e1 == e2" := (app2_ (cst_ (fun x y=> (x == y)%B)) e1 e2) : xsyn_scope.
 Notation "e1 <= e2" := (app2_ (cst_ (fun x y=> (x <= y)%O)) e1 e2) : xsyn_scope.
 Notation "e1 < e2" := (app2_ (cst_ (fun x y=> (x < y)%O)) e1 e2)   : xsyn_scope.
@@ -581,7 +583,7 @@ Notation "e1 - e2"  :=
   (app2_ (cst_ +%R) e1 (app_ (cst_ GRing.opp) e2%X)) : xsyn_scope.
 Notation "e1 * e2"  := (app2_ (cst_ *%R) e1 e2)    : xsyn_scope.
 Notation "e1 :: e2" := (app2_ (cst_ cons) e1 e2)   : xsyn_scope.
-Notation "` x"      := (@var_ _ x%V) : xsyn_scope.
+(* Notation "` x"      := (@var_ _ x%V) : xsyn_scope. *)
 Notation "m %/ d"   := (app2_ (cst_ divn) m d)     : xsyn_scope.
 Notation "m %% d"   := (app2_ (cst_ modn) m d)     : xsyn_scope.
 Notation "m %| d"   := (app2_ (cst_ dvdn) m d)     : xsyn_scope.
@@ -2894,8 +2896,8 @@ Check [wf_qreg of <{(x.[ (@half_ord _ i) ], x.[rev_ord (half_ord i)])}>]. *)
 
 Variable (n : nat) (x : 'QRegExpr[QArray n.+2 QBool]).
 Let i := CVar (QType (QOrd (n./2))) "rev_tuple" "i".
-Check <{{ (x.[half_ord%:F `i], x.[(@rev_ord _)%:F (half_ord%:F `i)]) }}>.
-Goal forall m, valid_qreg (qsem_of <{{ (x.[half_ord%:F `i], x.[(@rev_ord _)%:F (half_ord%:F `i)]) }}> m).
+Check <{{ (x.[half_ord%:F1 i], x.[(@rev_ord _)%:F1 (half_ord%:F1 i)]) }}>.
+Goal forall m, valid_qreg (qsem_of <{{ (x.[half_ord%:F1 i], x.[(@rev_ord _)%:F1 (half_ord%:F1 i)]) }}> m).
 Proof. time QRegAuto.tac_expose. Qed. *)
 
 (* Fixpoint index_prime_disjoint x (s : seq qnat) (q : qreg_index) : bool :=

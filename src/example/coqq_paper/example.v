@@ -547,7 +547,7 @@ rewrite /HHL_body /R.
   rewrite -tend_suml -tendZl tket_sum tketZ dotdTll/=; try tac_qwhile_auto.
   f_equal; rewrite tlin_ket.
   under eq_bigr do rewrite mulrA -[ _ / pi]mulrA [_%:R * _]mulrC !mulrA -Hyp -[ _ / pi]mulrC.
-  under eq_bigr do rewrite !mulrA (mulVf pi_neq0) mul1r -[_%:R * _ * _]mulrA -natrM -runityE.
+  under eq_bigr do rewrite !mulrA (mulVf (pi_neq0 _)) mul1r -[_%:R * _ * _]mulrA -natrM -runityE.
   by rewrite -QFTvE IQFTEt.
 + apply: (RS_SC _ _ (AxV_UT _))=>/=.
   rewrite dotd_sumr.
@@ -569,7 +569,7 @@ apply eq_bigr=>i _.
 rewrite linearZl/= [in RHS]linearZ/= -[in RHS]tketZ linear_suml/= linear_sum/= -tket_sum.
 under eq_bigr do rewrite 2!linearZ/= MultiplexerEt expmxipEt -tentvZS -linearZr/= -tketT
   mulrA -[ _ / pi]mulrA [_%:R * _]mulrC !mulrA -Hyp -[ _ / pi]mulrC 
-  !mulrA (mulVf pi_neq0) mul1r -[_%:R * _ * _]mulrA -natrM -runityE.
+  !mulrA (mulVf (pi_neq0 _)) mul1r -[_%:R * _ * _]mulrA -natrM -runityE.
 rewrite -tend_suml -tendZl tket_sum tketZ -QFTvE dotdTll/=; try tac_qwhile_auto.
 by rewrite tlin_ket IQFTEt.
 Qed.
@@ -1034,7 +1034,7 @@ move=>P1; move: (RS_QPE a);
 by rewrite /c expip_sum_cst ?P1 ?mulfK ?mulfV/= ?scale1r// subrr mulr0 expip0.
 Qed.
 
-Lemma abs_expip_sin a : `|1 - expip (2%:R * a)| = 2%:R * `|sin (pi * a)|%:C.
+Lemma abs_expip_sin a : `|1 - expip (2%:R * a)| = 2%:R * `|sin (pi * a)|%:C :> C.
 Proof.
 have ->: 2%:R * `|sin (pi * a)|%:C = `|2%:R * sinp a|%:C.
 by rewrite [sinp]unlock normrM ger0_norm// realcM natrC.
@@ -1160,7 +1160,7 @@ Canonical ZZ_baseFinGroupType := Eval hnf in [baseFinGroupType of ZZ for +%R].
 Canonical ZZ_finGroupType := Eval hnf in [finGroupType of ZZ for +%R]. *)
 (* Local Notation ZZ' := ZZ_finGroupType. *)
 
-Definition charZZ (x y : ZZ) := 
+Definition charZZ (x y : ZZ) : C := 
     \prod_k expip (2%:R * (x k)%:R * (y k)%:R / (fn k).+2%:R).
 Lemma charZZ_D (x y z : ZZ) :
   charZZ x y * charZZ x z = charZZ x (y + z).
@@ -1372,7 +1372,7 @@ rewrite dotp_sumr (bigD1 i)//= big1 ?addr0 ?dotp_norm//.
 move=>j/andP[Pj/negPf nj]; by rewrite P1// eq_sym nj.
 Qed.
 
-Lemma expip_norm r : `|expip r| = 1.
+Lemma expip_norm r : `|expip r| = 1 :> C.
 Proof. by rewrite normC_def -expipNC -expipD subrr expip0 sqrtC1. Qed.
 
 Lemma charZZ_norm (i j : G) : `|charZZ i j| = 1.

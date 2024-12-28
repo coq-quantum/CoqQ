@@ -177,10 +177,10 @@ HB.lock
 Definition ihb_chsType (T : ihbFinType) := 
   CanonicalHermitianSpace.Pack (CanonicalHermitianSpace.Class (@ihb_chsMixin T)).
 
-Notation "''Hs' T" := (ihb_chsType T) (at level 8, T at level 2, format "''Hs'  T").
+Notation "''Hs' T" := (ihb_chsType T%type) (at level 8, T at level 2, format "''Hs'  T").
 (* Notation "''Hs' T" := (ihb_chsType [ihbFinType of T]) (at level 8, T at level 2, format "''Hs'  T"). *)
-Notation "''Hom[' T1 , T2 ]" := ('Hom('Hs T1, 'Hs T2)) (at level 8, format "''Hom[' T1 ,  T2 ]").
-Notation "''End[' T ]" := ('End('Hs T)) (at level 8, format "''End[' T ]").
+Notation "''Hom[' T1 , T2 ]" := ('Hom('Hs T1%type, 'Hs T2%type)) (at level 8, format "''Hom[' T1 ,  T2 ]").
+Notation "''End[' T ]" := ('End('Hs T%type)) (at level 8, format "''End[' T ]").
 Notation "x %:V" := (x : 'Hs _) 
   (at level 2, left associativity, format "x %:V") : lfun_scope.
 
@@ -783,18 +783,14 @@ Qed.
 Lemma tentf_norm (T3 T4 : ihbFinType) (f : 'Hom[T1,T3]) (g : 'Hom[T2,T4]) :
   `|f ⊗f g| = `|f| * `|g|.
 Proof.
-rewrite /Num.norm/= /trfnorm h2mx_tentf schnormUr_eq_dim 
-  ?schnormUl_eq_dim ?schnorm_tens//.
-2: apply/tentv_mxU_adj_unitarymx. 3: apply/tentv_mxU_unitarymx.
-all: by rewrite -!ihb_dim_cast card_prod.
+rewrite /Num.norm/= /trfnorm h2mx_tentf schnormUr ?schnormUl_cond ?schnorm_tens//.
+all: apply/tentv_mxU_adj_unitarymx.
 Qed.
 Lemma tentf_i2fnorm (T3 T4 : ihbFinType) (f : 'Hom[T1,T3]) (g : 'Hom[T2,T4]) :
   i2fnorm (f ⊗f g) = i2fnorm f * i2fnorm g.
 Proof.
-rewrite /Num.norm/= /i2fnorm h2mx_tentf i2normUr_eq_dim 
-  ?i2normUl_eq_dim ?i2norm_tens//.
-2: apply/tentv_mxU_adj_unitarymx. 3: apply/tentv_mxU_unitarymx.
-all: by rewrite -!ihb_dim_cast card_prod.
+rewrite /Num.norm/= /i2fnorm h2mx_tentf i2normUr ?i2normUl_cond ?i2norm_tens//.
+all: apply/tentv_mxU_adj_unitarymx.
 Qed.
 
 Lemma tentf_normal (f : 'FN('Hs T1)) (g : 'FN('Hs T2)) : f ⊗f g \is normallf.
