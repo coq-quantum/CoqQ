@@ -1,10 +1,51 @@
-# Validation record
+# Validation
+
+Date: 2026-10-04. The reorganized project passes:
+
+```sh
+opam exec --switch=rocq.9.1 -- dune build
+```
+
+All **67 Rocq source files** are covered: 39 original foundation/veriQEC
+files, eight classical topic files, eight distributed topic files, and the
+12 examples imported from upstream `main` at `b169ea4`.
+The 39 original files, dependency manifest, and Dune configuration are
+unchanged. The compilation log is
+`/private/tmp/coqq-reorganization-full-build.log` (exit status 0).
+
+A source audit of all 28 reorganized/imported files found no `Admitted`,
+`admit`, axiom/parameter/conjecture declarations, or unfinished/debug proof
+commands. The two developments each contain eight `.v` files and three
+Markdown guides. All project imports and documentation links resolve.
+
+Fresh `Print Assumptions` checks cover 15 results: assertion completeness,
+bounded operational completions, both classical loop soundness theorems,
+classical completeness, memory replay, the phase counterexample, Shor
+counting, both public distributed completeness theorems, sequentialization,
+distributed memory replay, teleportation, remote CNOT, and the imported
+CoqQ total-loop rule. The public `DistributedHoare.Local` and `.Network`
+judgments were also checked against their `sound_complete` statements.
+Only the inherited real/choice/extensionality foundations and existing
+finite-memory parameter `qreg.G` were reported; the exact inherited
+assumptions are listed in the historical record below. The audit files are
+in `/private/tmp/coqq-reorganization-audit/`.
+
+The reorganization retains the existing mathematical boundaries, including
+the C4 liberal-precondition issue, the C6 phase counterexample, the C7
+order-finding counterexample, and the one-step boundary of arbitrary-memory
+replay. See [coverage](README.md#coverage) and
+[proof notes](PROOF_NOTES.md#proof-gaps). No repair of those statements is
+introduced by reorganizing or importing examples.
+
+## Validation before reorganization
+
+The following checkpoints refer to the former 233-file layout.
 
 Date: 2026-10-03. The development uses the existing `rocq.9.1` opam switch and
 qualified Dune theory `quantum`. The dependency versions, project settings,
 foundations, and `veri_QEC/cqwhile.v` are preserved.
 
-## Current build boundary
+### Build boundary before reorganization
 
 A final whole-project build passed on 2026-10-03 with all 233 Rocq sources,
 including the 39 existing sources, 105 classical modules, and 89 distributed
@@ -24,7 +65,7 @@ Only Dune manages `_build`. The final command passed:
 opam exec --switch=rocq.9.1 -- dune build
 ```
 
-## Checked behaviors and central results
+### Checked behaviors and central results
 
 * Shared cqwhile types and expressions include unbounded integers and
   unrestricted classical memories. Measurements use its finite `qType`
@@ -55,10 +96,10 @@ opam exec --switch=rocq.9.1 -- dune build
   The remote-CNOT theorem allows arbitrary entangled two-qubit input.
 
 These are theorem boundaries, not a claim that every paper result is complete.
-[COVERAGE.md](COVERAGE.md) and the [distributed map](../distributive/COVERAGE.md)
+[the coverage map](README.md#coverage) and the [distributed map](../distributive/README.md#coverage)
 track the precise proved coverage and remaining results.
 
-## Assumptions
+### Assumptions
 
 Fresh `Print Assumptions` audits cover the classical core completeness and
 loop rules, assertion limits and expectation continuity, actual Fourier/phase

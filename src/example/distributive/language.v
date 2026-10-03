@@ -1,7 +1,4 @@
-(* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
-   ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
-   The typed variables, expressions and quantum registers come from CoqQ's
-   existing veri_QEC/cqwhile example; that development is left unchanged. *)
+(* Distributive: language. See README.md and PROOF_NOTES.md. *)
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect finmap.
 From quantum Require Import compat.
@@ -10,18 +7,25 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
+  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
+From quantum Require Import extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From Stdlib Require Import String.
-From quantum.example.classical Require Import language.
+From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
+Module DistributedLanguage.
+(* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
+   ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
+   The typed variables, expressions and quantum registers come from CoqQ's
+   existing veri_QEC/cqwhile example; that development is left unchanged. *)
+
 
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-
-Module DistributedLanguage.
+Import ClassicalSemantics.
 Import Bounded.Exports Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Local Open Scope ring_scope.
 Local Open Scope fset_scope.
@@ -202,5 +206,119 @@ Definition term n (p : 'I_n -> process) (m : cmem) :=
 Lemma no_enabled_alternative n (g : 'I_n -> expression bool) m :
   [forall i, ~~ eval (g i) m] -> forall i, eval (g i) m = false.
 Proof. by move=>/forallP H i; apply/negbTE/H. Qed.
-
 End DistributedLanguage.
+
+
+Module DistributedFootprint.
+(* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
+   ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
+   The typed variables, expressions and quantum registers come from CoqQ's
+   existing veri_QEC/cqwhile example; that development is left unchanged. *)
+
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Import ClassicalSemantics.
+Import DistributedLanguage.
+Local Open Scope fset_scope.
+
+Lemma atom_changes_reads a x : x \in atom_changes a -> atom_reads a x.
+Proof.
+case: a=>[| |t y e|t y p|t q phi|t q U|t u y q M] /=;
+  rewrite ?inE //; move=>/eqP->; by left.
+Qed.
+
+Lemma statement_changes_reads s : forall x,
+  x \in statement_changes s -> statement_reads s x.
+Proof.
+elim: s=>[|a|s IHs t IHt|n g b IHb|n g b IHb] x /=.
+- by rewrite inE.
+- exact: atom_changes_reads.
+- rewrite in_fsetU=>/orP[Hx|Hx].
+  + left; exact: IHs.
+  + right; exact: IHt.
+- move=>/bigfcupP[i _ Hi]; exists i=>//; right; exact: IHb i x Hi.
+- move=>/bigfcupP[i _ Hi]; exists i=>//; right; exact: IHb i x Hi.
+Qed.
+
+Lemma communication_changes_reads a x :
+  x \in communication_changes a -> communication_reads a x.
+Proof. by case: a=>t c y /=; rewrite inE // =>/eqP->. Qed.
+
+Lemma process_changes_reads p x : x \in process_changes p -> process_reads p x.
+Proof.
+rewrite /process_changes in_fsetU=>/orP[Hx|Hx].
+- left; exact: statement_changes_reads Hx.
+- right; move/bigfcupP: Hx=>[j _]; rewrite in_fsetU=>/orP[Hx|Hx].
+  + exists j=>//; left; right; exact: communication_changes_reads Hx.
+  + exists j=>//; right; exact: statement_changes_reads Hx.
+Qed.
+
+Lemma private_changes_disjoint n (p : 'I_n -> process) : pairwise_private p ->
+  forall i j, i != j -> [disjoint process_changes (p i) & process_changes (p j)].
+Proof.
+move=>Hprivate i j Hij; apply/fdisjointP=>x Hx.
+exact: (proj1 (Hprivate i j Hij) x (process_changes_reads Hx)).
+Qed.
+End DistributedFootprint.
+
+
+Module DistributedCommunication.
+(* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
+   ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
+   The typed variables, expressions and quantum registers come from CoqQ's
+   existing veri_QEC/cqwhile example; that development is left unchanged. *)
+
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Import ClassicalSemantics.
+Import DistributedLanguage.
+Definition cast_expression (t u : CL.sort) (E : t = u)
+    (e : expression (CL.value t)) : expression (CL.value u) :=
+  match E in _ = u return expression (CL.value u) with erefl => e end.
+
+Definition communication_effect (a b : communication) : option atom :=
+  match a, b with
+  | Input t c x, Output u d e =>
+      if asbool (c = d) then
+        match asboolP (u = t) with
+        | ReflectT E => Some (AAssign x (cast_expression E e))
+        | _ => None
+        end
+      else None
+  | Output u d e, Input t c x =>
+      if asbool (c = d) then
+        match asboolP (u = t) with
+        | ReflectT E => Some (AAssign x (cast_expression E e))
+        | _ => None
+        end
+      else None
+  | _, _ => None
+  end.
+
+Lemma matching_effect a b effect : matches a b effect ->
+  communication_effect a b = Some effect.
+Proof.
+case=>t c x e; rewrite /communication_effect asboolT;
+  case: (asboolP (t = t))=>[E|//]; by rewrite ?(eq_irrelevance E erefl).
+Qed.
+
+Lemma effect_matches a b effect : communication_effect a b = Some effect ->
+  matches a b effect.
+Proof.
+case: a=>t c x; case: b=>u d e //=.
+- case: (asboolP (c = d))=>// Ec; subst d.
+  case: (asboolP (u = t))=>// Et; subst t.
+  rewrite /cast_expression /=; move=>[= <-]; constructor.
+- case: (asboolP (d = c))=>// Ec; subst c.
+  case: (asboolP (t = u))=>// Et; subst u.
+  rewrite /cast_expression /=; move=>[= <-]; constructor.
+Qed.
+
+
+End DistributedCommunication.

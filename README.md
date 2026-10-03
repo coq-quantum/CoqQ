@@ -1,11 +1,16 @@
 # Compiling the development
 
-The dependency manifest targets Rocq 9.1.1 and the latest stable MathComp
-releases available on 2026-10-02:
+The example developments are indexed in [src/example/README.md](src/example/README.md).
+The [classical](src/example/classical/README.md) and
+[distributed](src/example/distributive/README.md) developments each have eight
+topic files, including a single `hoare.v` entry point for their proof systems.
+The original CoqQ paper, QLaws, refinement, and Dirac examples have also been
+imported from upstream `main` and adapted to this toolchain. Build and
+assumption-check results are recorded in
+[the validation record](src/example/classical/VALIDATION.md).
 
-The existing foundation and veriQEC examples compile with these versions.
-The added classical/distributed developments and their current build status
-are documented in [the validation record](src/example/classical/VALIDATION.md).
+The dependency manifest targets Rocq 9.1.1 and the MathComp versions selected
+on 2026-10-02:
 
 ```opam
   "rocq-core"                  { = "9.1.1" }
@@ -65,12 +70,12 @@ development but inherited from mathcomp analysis.
 
 The new developments in `src/example/classical/` and
 `src/example/distributive/` formalize the syntax, semantic foundations, and
-initial proof rules of the two root PDFs. See the
+soundness and relative completeness of their core Hoare calculi, and case studies from the two papers. See the
 [development guide](src/example/classical/README.md),
-[classical coverage](src/example/classical/COVERAGE.md), and
-[distributed coverage](src/example/distributive/COVERAGE.md) for theorem names
+[classical coverage](src/example/classical/README.md#coverage), and
+[distributed coverage](src/example/distributive/README.md#coverage) for theorem names
 and remaining obligations. These are partial formalizations. The
-[proof-gap notes](src/example/classical/PROOF_GAPS.md) record the approved
+[proof-gap notes](src/example/classical/PROOF_NOTES.md#proof-gaps) record the approved
 assertion-domain correction and other diagnosed issues.
 
 # Development of veriQEC

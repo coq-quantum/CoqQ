@@ -9,6 +9,9 @@ dune-project
 # Proofs
 src/dune
 find:src:*.v
+find:src:*.md
+src/example/UPSTREAM-LICENSE
+src/example/classical/UPSTREAM-LICENSE
 
 # Scripts
 scripts/install-sh
