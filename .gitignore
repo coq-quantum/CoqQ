@@ -1,0 +1,20 @@
+/_opam/
+/_build/
+/.vscode/
+
+# Rocq compilation products and tactic caches
+*.vo
+*.vos
+*.vok
+*.glob
+*.aux
+*.vio
+.coq-native/
+.lia.cache
+.nia.cache
+
+# Local editor and operating-system files
+.DS_Store
+*.swp
+*.swo
+*~

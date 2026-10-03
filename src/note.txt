@@ -1,0 +1,152 @@
+addrN x - x = 0
+addNr -x + x = 0
+addrK x + y - y = x
+addKr -y + (y + x) = x
+addrNK/subrK x - y + y = x
+addNKr y + (-y + x) = x
+subKr y - (y - x) = x
+
+addrAC ?x ?y ?z
+	 : ?x + ?y + ?z = ?x + ?z + ?y
+addrCA ?x ?y ?z
+	 : ?x + (?y + ?z) = ?y + (?x + ?z)
+addrACA ?x ?y ?z
+	 : forall t : ?V, ?x + ?y + (?z + t) = ?x + ?z + (?y + t)
+
+mulVf  x^-1 * x = 1
+mulfV  x * x^-1 = 1
+mulfK  x * y / y = x
+mulKf  y^-1 * (y * x) = x
+mulVKf y * (y^-1 * x) = x
+mulfVK x / y * y = x
+
+mcaextra
+mcextra
+notation
+cpo
+extnum
+cmxtopology
+mxpred
+hermitian
+prodvect
+tensor
+lfundef
+quantum
+orthomodular
+hspace
+inhabited
+qwhile
+qtype
+qhl
+example
+
+
+quantum.v : mxrank_mulmxU, mxrank_mulUmx, mxrank_mulmxUC, mxrank_mulUCmx, mxrank_conj, projmx_tr : move to mxpred1.
+
+
+
+change:
+
+add: mxpred 
+conjmx_tens
+mxtens_index_distr
+ptrace1_mulImx
+ptrace2_mulImx
+mxswap_conj
+ptrace1_psd
+ptrace1_le
+
+add: svd
+normalmx_tens
+hermmx_tens
+symmx_tens
+diagmx_tens
+pdmx_tens
+den1mx_tens
+obsmx_tens
+projmx_tens
+rank_tens
+proj1mx_tens
+rank_spectral
+
+move: quantum -> mxpred
+linear_tensmx
+linear_tensmxr
+adjmx_tens
+mxtrace_tens
+big_nat_mul_mxtens (rename mxtens_index_pairV)
+tr_tens
+matrix_tenP
+mxswap
+mxswapK
+mxswap_is_linear
+mxswap_inj
+mxswap_trace
+mxswap_mul
+mxswap_trmx -> mxswap_tr
+mxswap_map_mx -> mxswap_map
+
+mxtens_index1
+mxtens_1index
+tens_mx_cast1l
+tens_mx_cast1r
+tens_mx_cast1lE
+tens_mx_cast1rE
+
+ptrace2
+ptrace1
+tensmxE_mid
+tens_delta_mx1_mulEl
+tens_delta_mx1_mulEr
+tensmx11
+
+mxswap_trmxC -> mxswap_adj
+
+mxswap_tens
+ptrace2E1
+ptrace1E2
+ptrace2_is_linear
+ptrace1_is_linear
+tr_ptrace2
+tr_ptrace1
+ptrace1_mul_tens1mx -> ptrace1_mulmxI
+ptrace2_mulmxI
+psdmx_sum
+lemx_trace
+diag_mx_tens
+ptrace2_psd
+ptrace2_perserves_order -> ptrace2_le
+
+mxrank_mulmxU
+mxrank_mulUmx
+mxrank_mulmxUC
+mxrank_mulUCmx
+projmx_tr
+
+move: quantum.v -> svd.v
+form_psdmx
+formV_psdmx
+unitarymx_tens
+psdmx_tens
+denmx_tens
+spectral_tens (reformulate)
+rank_svd_d
+
+rename: mxpred
+psdmx_add -> psdmxD
+
+remove: quantum
+mx_decomp_psd_mull -- polar_PU
+mx_decomp_psd_mulr -- polar_UP
+
+
+TODO
+
+rename
+rank_diagmx -> rank_diag_mx
+diagmx_nnegmx_psd -> diag_mx_psd
+
+xxx_diagmx -> xxx_diag_mx (if diag_mx appears)
+
+
+

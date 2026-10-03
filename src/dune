@@ -1,0 +1,9 @@
+(coq.theory
+ (name quantum)
+ (package coq-mathcomp-quantum)
+ (flags -w -ambiguous-paths
+        -w -notation-overridden
+        -w -redundant-canonical-projection
+        -w -projection-no-head-constant))
+
+(include_subdirs qualified)

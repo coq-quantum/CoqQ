@@ -1,0 +1,15 @@
+# --------------------------------------------------------------------
+Makefile
+MANIFEST
+README.md
+_CoqProject
+coq-mathcomp-quantum.opam
+dune-project
+
+# Proofs
+src/dune
+find:src:*.v
+
+# Scripts
+scripts/install-sh
+scripts/distribution

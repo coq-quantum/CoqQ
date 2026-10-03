@@ -1,0 +1,25 @@
+opam-version: "2.0"
+name: "coq-mathcomp-quantum"
+maintainer: "coq-mathcomp-quantum@anonymous"
+license: "CeCILL-B"
+authors: ["Coq Quantum Dev. Team"]
+build: [ "dune" "build" "-p" name "-j" jobs ]
+depends: [
+  "rocq-core"                  { = "9.1.1" }
+  "coq-core"                   { = "9.1.1" }
+  "rocq-stdlib"                { = "9.2.0" }
+  "rocq-elpi"                  { = "3.5.1" }
+  "dune"                       { >= "3.13" & < "3.24" }
+  "rocq-hierarchy-builder"     { = "1.10.3" }
+  "rocq-mathcomp-ssreflect"     { = "2.6.0" }
+  "rocq-mathcomp-algebra"       { = "2.6.0" }
+  "rocq-mathcomp-finite-group"  { = "2.6.0" }
+  "rocq-mathcomp-classical"     { = "1.18.0" }
+  "rocq-mathcomp-reals"         { = "1.18.0" }
+  "rocq-mathcomp-reals-stdlib"  { = "1.18.0" }
+  "rocq-mathcomp-experimental-reals" { = "1.18.0" }
+  "rocq-mathcomp-analysis"      { = "1.18.0" }
+  "rocq-mathcomp-real-closed"   { = "2.0.6" }
+  "rocq-mathcomp-finmap"        { = "2.2.4" }
+]
+synopsis: "Quantum et al"
