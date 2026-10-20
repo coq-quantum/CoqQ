@@ -7,23 +7,23 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace hspace_extra summable qreg qmem.
+From quantum Require Import hspace_extra.
 From quantum.example.classical Require Import language state assertion semantics hoare.
-Module CQInvariant.
-(* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
-Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+Module CQInvariant.
+(* Order separation and continuous expectations. See PROOF_NOTES.md. *)
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
+Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -100,17 +100,11 @@ exact: valid_invariant fresh V.
 Qed.
 End CQInvariant.
 
-
 Module CQAuxiliary.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -254,18 +248,12 @@ exact: valid_disjunction Vp Vq.
 Qed.
 End CQAuxiliary.
 
-
 Module CQParameterized.
 (* Finite parameter and register selection, classical paper pp. 16, 23, 31.
    The Param rule uses the correct wp formula; see C4 in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -471,7 +459,6 @@ Theorem derives_param total n k K T (q : wf_qreg T.[n]) (U : 'I_K -> 'FU('Ht T.[
   CQHoare.derives total (selected_pre q U es e Q) (selected_unitary q U es e) Q.
 Proof. exact: derives_selector. Qed.
 
-
 Lemma parameter_selector_zero K m :
   eval (parameter_selector K (EConst (0 : int))) m = None.
 Proof.
@@ -516,17 +503,11 @@ exact: (@register_selector_duplicate n k K es e m j l Hne Ejl).
 Qed.
 End CQParameterized.
 
-
 Module CQProbabilisticComposition.
 (* Probabilistic composition via saturated projector support. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -675,17 +656,11 @@ Qed.
 End Rule.
 End CQProbabilisticComposition.
 
-
 Module CQAssertionLocality.
 (* Predicate-transformer locality and existential elimination. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -795,7 +770,6 @@ elim: c Q=>[| |u x e|u x p|u v x q M|u q phi|u q U|
       (cvg_lim (@norm_hausdorff _ _) Ct).
 Qed.
 
-
 Definition exists_update u (x : variable u) (p : pred cmem) : pred cmem :=
   fun s => asbool (exists v, p (s.[x <- v])%M).
 
@@ -825,17 +799,11 @@ exact: valid_exist Hc Hx HQ V.
 Qed.
 End CQAssertionLocality.
 
-
 Module CQClassicalRanking.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -957,17 +925,11 @@ exact: derives_sound (decrease k).
 Qed.
 End CQClassicalRanking.
 
-
 Module CQQuantumFrame.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1187,18 +1149,12 @@ exact: valid_supoper Hdis V.
 Qed.
 End CQQuantumFrame.
 
-
 Module CQParameterizedCounterexample.
 (* A counterexample to classical.pdf Lemma 4.15(3), partial mode.
    See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1242,17 +1198,11 @@ by move/eqP: H; rewrite /= oner_eq0.
 Qed.
 End CQParameterizedCounterexample.
 
-
 Module CQProbabilisticPure.
 (* Probabilistic composition via saturated projector support. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1330,17 +1280,11 @@ exact: valid_probcomp Vc Vd.
 Qed.
 End CQProbabilisticPure.
 
-
 Module CQGhostRanking.
 (* Fresh integer ghosts and the paper's C-WhileT rule. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1429,17 +1373,11 @@ apply: derives_complete; exact: valid_fresh_integer_while Hc Hb Hp Hr Hz support
 Qed.
 End CQGhostRanking.
 
-
 Module CQQuantumSelector.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1530,17 +1468,11 @@ rewrite -ER -ER'; exact: derives_supoper Hc Hder.
 Qed.
 End CQQuantumSelector.
 
-
 Module CQQuantumSpaceRules.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1618,17 +1550,11 @@ move=>Hc Hder; exact: (@derives_tens total c S T P Q M
 Qed.
 End CQQuantumSpaceRules.
 
-
 Module CQQuantumSuperposition.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1738,18 +1664,12 @@ by move: HV; rewrite ler_pM2l.
 Qed.
 End CQQuantumSuperposition.
 
-
 Module CQQuantumTrace.
 (* Normalized partial trace and the Trace rule, classical.pdf Table 5.
    See PROOF_NOTES.md for the matrix-unit argument. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1857,17 +1777,11 @@ Theorem derives_trace total P c Q (T : {set mlab}) :
 Proof. exact: derives_supoper. Qed.
 End CQQuantumTrace.
 
-
 Module CQPrimitiveFrame.
 (* Table-5 Init0, Unit0 and Meas0; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1977,17 +1891,11 @@ by rewrite measurement_pre_frame // meas0_assertionE.
 Qed.
 End CQPrimitiveFrame.
 
-
 Module CQAuxiliaryDerivations.
 (* Derived Sum and Linear rules; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2058,17 +1966,11 @@ exact: derives_sound (HD j).
 Qed.
 End CQAuxiliaryDerivations.
 
-
 Module CQQuantumCrossSpace.
 (* Rectangular assertion-space SupOper; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2207,18 +2109,12 @@ exact: derives_supoper Hc HD.
 Qed.
 End CQQuantumCrossSpace.
 
-
 Module CQMemoryExtension.
 (* Independence from unused finite quantum memory.
    See PROOF_NOTES.md for the depolarizer and partial-trace argument. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -2300,17 +2196,11 @@ by rewrite !partial_trace_product !den1f_trlf.
 Qed.
 End CQMemoryExtension.
 
-
 Module CQPredicateAlgebra.
 (* Lemma 4.16(3--5); see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2411,17 +2301,11 @@ exact: (@wlp_image_unital c (S :|: T) (square_extension F)
 Qed.
 End CQPredicateAlgebra.
 
-
 Module CQPredicateSupport.
 (* Lemma 4.14(1); see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.

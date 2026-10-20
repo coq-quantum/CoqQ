@@ -2,6 +2,15 @@
 
 These notes consolidate the original proof arguments. Historical build checkpoints refer to the former file layout; current validation is in [VALIDATION.md](VALIDATION.md). Source-file references have been updated to the topic files.
 
+The distributed QFT development has its own
+[semantic audit guide and proof notes](QFT_PROOF_NOTES.md#semantic-audit-guide).
+Its source model and Fourier circuit are in [qft_model.v](qft_model.v), its
+reusable teleport and register-reduction proofs are in
+[qft_teleport.v](qft_teleport.v), and its native distributed-program correctness
+proof is in [qft.v](qft.v). In Rocq, use
+`From quantum.example.distributive Require Import qft.` and navigate to
+`DistributedQFTCorrectness` for the final program and initialization theorems.
+
 <a id="boundary-lower-notes"></a>
 
 ## BOUNDARY LOWER NOTES
@@ -1453,5 +1462,3 @@ assumptions audit reports only inherited real/classical foundations and the
 existing `qreg.G` memory parameter. The equivalences quantify over
 arbitrary cq assertions and every well-formed distributed `program`; their
 left side uses the existing independent distributed execution semantics.
-
-

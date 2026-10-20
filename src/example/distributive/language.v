@@ -7,24 +7,25 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From quantum Require Import extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From Stdlib Require Import String.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
 Module DistributedLanguage.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import Bounded.Exports Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Local Open Scope ring_scope.
@@ -208,18 +209,13 @@ Lemma no_enabled_alternative n (g : 'I_n -> expression bool) m :
 Proof. by move=>/forallP H i; apply/negbTE/H. Qed.
 End DistributedLanguage.
 
-
 Module DistributedFootprint.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedLanguage.
 Local Open Scope fset_scope.
@@ -264,18 +260,13 @@ exact: (proj1 (Hprivate i j Hij) x (process_changes_reads Hx)).
 Qed.
 End DistributedFootprint.
 
-
 Module DistributedCommunication.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedLanguage.
 Definition cast_expression (t u : CL.sort) (E : t = u)
@@ -319,6 +310,5 @@ case: a=>t c x; case: b=>u d e //=.
   case: (asboolP (t = u))=>// Et; subst u.
   rewrite /cast_expression /=; move=>[= <-]; constructor.
 Qed.
-
 
 End DistributedCommunication.

@@ -1,0 +1,128 @@
+/*
+* Distributed Quantum Fourier Transform (QFT) example using isQ.
+*
+* All *n* qubits are distributed across *np* nodes. All nodes hold the same
+* number of qubits except for node 0, which may hold fewer qubits.
+*
+* No final SWAP.
+*
+* Corrected source: FIX F1 repairs unequal-block phase indices; FIX F2
+* rejects invalid allocations. CLARIFICATION C1 explains the return path.
+* See src/example/distributive/QFT_PROOF_NOTES.md, "Source corrections",
+* for the original expressions, examples, and formal correspondence checks.
+*/
+
+import std;
+import qmpi;
+import lib;
+
+unit teleport_send(qbit q, int to) {
+    qbit pair; // Communicating qubit
+    create_epr(to, 99, pair);
+    CNOT(q, pair);
+    H(q);
+    qmpi_csend(M(pair), to, 88);
+    qmpi_csend(M(q), to, 88);
+}
+
+unit teleport_recv(qbit q, int from) {
+    qbit pair; // Communicating qubit
+    create_epr(from, 99, pair);
+    if (qmpi_crecv(from, 88)) {
+        X(pair);
+    }
+    if (qmpi_crecv(from, 88)) {
+        Z(pair);
+    }
+
+    // Transfer the state from pair to q
+    SWAP(pair, q);
+}
+
+procedure R(int k, qbit q) {
+    double phase = pi / 2 ** (k - 1);
+    ctrl GPhase(phase, q);
+} deriving gate
+
+unit qft(qbit q[], int n, int np, int rank, int nqubit_normal) {
+    int nqubit = q.length;
+
+    // Process earlier qubits
+    for ir in np-1:rank:-1 {
+        qbit anc;
+        int send_target = rank - 1;
+        if (rank == 0) {
+            send_target = ir;
+        }
+        for i in nqubit_normal-1:-1:-1 {
+            int index = (ir - rank) * nqubit_normal + i;
+            if (rank == 0) {
+                // Original command (wrong at rank 0 when its block is shorter):
+                // int index = (ir - rank) * nqubit_normal + i;
+                // FIX F1: the original index above counts a full normal block
+                // at node 0. If this block is shorter, it overcounts the
+                // distance by nqubit_normal - nqubit and halves the angle
+                // when n=8, np=3. Use the actual q.length at node 0.
+                index = nqubit + (ir - 1) * nqubit_normal + i;
+            }
+            teleport_recv(anc, rank + 1);
+            for j in 0:nqubit {
+                ctrl R(index - j + 1, q[j], anc);
+            }
+            teleport_send(anc, send_target);
+        }
+    }
+
+    // Process earlier qubits in the current node
+    for i in nqubit-1:-1:-1 {
+        H(q[i]);
+        for j in 0:i {
+            ctrl R(i - j + 1, q[j], q[i]);
+        }
+
+        if (rank != 0) {
+            teleport_send(q[i], rank - 1);
+
+            // CLARIFICATION C1: the original "result is always produced at
+            // node 0" comment described the last phase application. This
+            // receive returns the state to its original owner's q[i].
+            teleport_recv(q[i], 0);
+        }
+    }
+}
+
+procedure main()
+{
+    // Total qubit number that will be applied with QFT
+    int n = 8;
+    int np = qmpi_size();
+    if (np < 2) {
+        print -1;
+        return;
+    }
+
+    int nqubit_normal = (n + np - 1) / np;
+    int nqubit_left = n - (np - 1) * nqubit_normal;
+    // Original guard (insufficient by itself):
+    // if (np < 2) { print -1; return; }
+    // Original allocation/access proceeded without checking nqubit_left:
+    // qbit q[nqubit];
+    // X(q[0]);
+    // FIX F2: the original np>=2 check also allowed zero/negative lengths
+    // at node 0: n=8 gives left=0 for np=5 and left=-2 for np=6.
+    // Reject before q allocation and X(q[0]); accepted np are 2,3,4,8.
+    if (nqubit_left < 1) {
+        // Every node must own q[0], which is initialized below.
+        print -1;
+        return;
+    }
+
+    int rank = qmpi_comm_rank();
+    int nqubit = nqubit_normal;
+    if (rank == 0) {
+        nqubit = nqubit_left;
+    }
+    qbit q[nqubit];
+    X(q[0]);
+    qft(q, n, np, rank, nqubit_normal);
+}

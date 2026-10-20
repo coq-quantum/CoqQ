@@ -7,27 +7,28 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From mathcomp.classical Require Import boolp classical_sets functions.
 From quantum Require Import qtype.
 From quantum Require Import hspace_extra.
-From quantum Require Import extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From Stdlib Require Import String.
-From quantum.example.distributive Require Import language operational confluence semantics sequentialization hoare auxiliary.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
-Module DistributedProtocolQuantum.
-(* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
+From quantum.example.distributive Require Import language operational confluence
+  semantics sequentialization hoare auxiliary.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
 
-
-Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+Module DistributedProtocolQuantum.
+(* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
+Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -144,17 +145,11 @@ all: by rewrite ?mul0r ?scale0r ?addr0 ?add0r !linearZr /= !scalerA
 Qed.
 End DistributedProtocolQuantum.
 
-
 Module DistributedProtocolEffect.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -190,18 +185,13 @@ by rewrite subrr subr0 subv_ge0.
 Qed.
 End DistributedProtocolEffect.
 
-
 Module DistributedProtocolProcesses.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -396,17 +386,11 @@ apply: two_round_finite.
 Qed.
 End DistributedProtocolProcesses.
 
-
 Module DistributedProtocolState.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -502,18 +486,13 @@ by rewrite -invfM -natrM.
 Qed.
 End DistributedProtocolState.
 
-
 Module DistributedProtocolExecution.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -710,18 +689,13 @@ by rewrite /teleport_step_store !get_set_nex.
 Qed.
 End DistributedProtocolExecution.
 
-
 Module DistributedProtocolOwnership.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -903,17 +877,11 @@ apply: (@Program 2 (pair_processes (remote_alice qa) (remote_bob qb)) erefl).
 Defined.
 End DistributedProtocolOwnership.
 
-
 Module DistributedProtocolLocal.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -969,17 +937,11 @@ exact: is_obslf.
 Qed.
 End DistributedProtocolLocal.
 
-
 Module DistributedProtocolRemoteLocal.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1069,17 +1031,11 @@ by rewrite -[LHS]mulr_natr /= mulVf ?pnatr_eq0.
 Qed.
 End DistributedProtocolRemoteLocal.
 
-
 Module DistributedProtocolRegister.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1161,18 +1117,13 @@ by rewrite !comp_lfunA !tentf_comp !comp_lfun1l !comp_lfun1r.
 Qed.
 End DistributedProtocolRegister.
 
-
 Module DistributedProtocolSuffix.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -1312,17 +1263,11 @@ apply: remote_terminationE; exact: remote_step_synchronized.
 Qed.
 End DistributedProtocolSuffix.
 
-
 Module DistributedProtocolRemoteOutput.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1345,17 +1290,11 @@ apply/lfunP=>u; rewrite [LHS]comp_lfunE /remote_output sum_lfunE
 Qed.
 End DistributedProtocolRemoteOutput.
 
-
 Module DistributedProtocolPredicate.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1385,18 +1324,13 @@ by rewrite tf2f_adj !tf2f_comp.
 Qed.
 End DistributedProtocolPredicate.
 
-
 Module DistributedProtocolRemoteSerial.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -1445,18 +1379,13 @@ by [].
 Qed.
 End DistributedProtocolRemoteSerial.
 
-
 Module DistributedProtocolSerial.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -1511,18 +1440,13 @@ by [].
 Qed.
 End DistributedProtocolSerial.
 
-
 Module DistributedProtocolPre.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -1575,18 +1499,13 @@ by rewrite /teleport_physical_branch !dualso_comp !comp_soE.
 Qed.
 End DistributedProtocolPre.
 
-
 Module DistributedProtocolRemotePre.
 (* Source: Feng, Li and Ying, Verification of Distributed Quantum Programs,
    ACM TOCL 23(3), article 19 (2022), Sections 2.1--2.3.
    The typed variables, expressions and quantum registers come from CoqQ's
    existing veri_QEC/cqwhile example; that development is left unchanged. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLocalMaps DistributedGuardSemantics.
@@ -1629,17 +1548,11 @@ rewrite remote_tail_pre.
 Qed.
 End DistributedProtocolRemotePre.
 
-
 Module DistributedTeleportCorrectness.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1708,17 +1621,11 @@ Qed.
 End Protocol.
 End DistributedTeleportCorrectness.
 
-
 Module DistributedRemoteCorrectness.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1787,17 +1694,11 @@ Qed.
 End Protocol.
 End DistributedRemoteCorrectness.
 
-
 Module DistributedOwnedProtocolCorrectness.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1843,17 +1744,11 @@ exact: (@DistributedRemoteCorrectness.remote_correct q v Hv total).
 Qed.
 End DistributedOwnedProtocolCorrectness.
 
-
 Module DistributedProtocolCorrectness.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1884,17 +1779,11 @@ exact: remote_network_correct.
 Qed.
 End DistributedProtocolCorrectness.
 
-
 Module DistributedProtocolDerivations.
 (* Branch equations for distributed protocols; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1921,7 +1810,6 @@ Proof.
 apply: DistributedPartialCompleteness.derives_complete_partial.
 exact: DistributedProtocolCorrectness.remote_correct.
 Qed.
-
 
 Theorem teleport_derive total q v (Hv : [< v; v >] = 1) :
   DistributedNetworkRules.derives total

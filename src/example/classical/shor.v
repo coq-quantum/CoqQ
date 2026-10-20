@@ -1,42 +1,33 @@
 (* Classical: shor. See README.md and PROOF_NOTES.md. *)
 From HB Require Import structures.
-
 From mathcomp Require Import all_ssreflect finmap ring_tactic.
-From mathcomp Require Import all_ssreflect fingroup perm
-  morphism quotient action ssrnum zmodp cyclic.
-From mathcomp Require Import all_ssreflect.
-From mathcomp Require Import all_ssreflect fingroup morphism
-  quotient cyclic nilpotent abelian.
-From mathcomp Require Import all_ssreflect all_fingroup cyclic.
-From mathcomp Require Import all_ssreflect.
-From mathcomp Require Import all_ssreflect finmap  cyclic.
+From mathcomp Require Import fingroup perm morphism quotient action ssrnum zmodp cyclic.
+From mathcomp Require Import nilpotent abelian.
+From mathcomp Require Import all_fingroup.
 From quantum Require Import compat.
 From quantum.external Require Import complex.
 From mathcomp.classical Require Import boolp classical_sets functions cardinality.
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem qtype.
+From quantum Require Import qtype.
+From mathcomp.analysis Require Import exp trigo.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary algorithms.
 
-
-From mathcomp.analysis Require Import topology normedtype sequences exp trigo.
-
-
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary algorithms.
-Module ClassicalModularUnitary.
-(* Equation (17), classical.pdf. See PROOF_NOTES.md. *)
-
-
-Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+Module ClassicalModularUnitary.
+(* Equation (17), classical.pdf. See PROOF_NOTES.md. *)
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope nat_scope.
@@ -158,16 +149,10 @@ Proof. by move=>H1; rewrite residue_bits_value modn_small. Qed.
 End Modular.
 End ClassicalModularUnitary.
 
-
 Module ClassicalShorCRT.
 (* Concrete unit-group CRT for the counting argument in Lemma 7.2(2).
    See PROOF_NOTES.md. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Import GRing.Theory GroupScope.
 Local Open Scope ring_scope.
 Local Open Scope group_scope.
@@ -352,14 +337,10 @@ Proof. by rewrite /units_Zp !cardsT (bij_eq_card crt_units_bijective) card_prod.
 End Binary.
 End ClassicalShorCRT.
 
-
 Module ClassicalShorComposite.
 (* The printed cmp(N) implies at least two distinct prime divisors.
    See PROOF_NOTES.md for the prior mathematical argument. *)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Definition not_perfect_power N :=
   forall a b, 1 < a -> 1 < b -> N != a ^ b.
@@ -392,14 +373,10 @@ exact: distinct_prime_count_gt1 (ltnW HN) Hcomposite Hpower.
 Qed.
 End ClassicalShorComposite.
 
-
 Module ClassicalShorArithmetic.
 (* Classical arithmetic used by Shor's factor extraction, Lemma 7.2(1).
    The canonical-residue argument is in PROOF_NOTES.md. *)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Definition nontrivial_factor N d := (1 < d < N) && (d %| N).
 
@@ -494,14 +471,10 @@ case=>[//|[|[|[|k]]]] //=.
 Qed.
 End ClassicalShorArithmetic.
 
-
 Module ClassicalShorProductCounting.
 (* Finite product counting for classical.pdf Lemma 7.2(2).
    The independent combinatorial argument is in PROOF_NOTES.md. *)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Section ScalarCounting.
 Variables (I K : finType) (i0 : I).
@@ -622,13 +595,9 @@ Qed.
 End NaturalLabels.
 End ClassicalShorProductCounting.
 
-
 Module ClassicalShorGroupCounting.
 (* Finite-group counting for Lemma 7.2(2); see PROOF_NOTES.md. *)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Lemma dvdn_half_logn d n : 0 < n -> d %| n -> 2 %| n ->
   (d %| n %/ 2) = (logn 2 d < logn 2 n).
@@ -712,14 +681,10 @@ Qed.
 End FiniteGroup.
 End ClassicalShorGroupCounting.
 
-
 Module ClassicalShorFactorization.
 (* The distinct prime-power decomposition used in Lemma 7.2(2).
    See PROOF_NOTES.md for the mathematical argument. *)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Section Factorization.
 Variable N : nat.
@@ -784,15 +749,9 @@ Qed.
 End Factorization.
 End ClassicalShorFactorization.
 
-
 Module ClassicalShorCRTProduct.
 (* Iterated concrete unit CRT. See PROOF_NOTES.md. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Import GRing.Theory GroupScope.
 Local Open Scope ring_scope.
 Local Open Scope group_scope.
@@ -891,15 +850,10 @@ Proof. apply: inj_card_bij unit_tuple_injective _; by rewrite unit_tuple_card. Q
 End Product.
 End ClassicalShorCRTProduct.
 
-
 Module ClassicalPostprocessCounterexample.
 (* The literal printed postprocessor cannot return a denominator above two.
    See C7 and its finite-list proof in PROOF_NOTES.md. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import ClassicalShorArithmetic.
 
@@ -991,18 +945,12 @@ by have := printed_denominator_at_most_two Hab Hd.
 Qed.
 End ClassicalPostprocessCounterexample.
 
-
 Module ClassicalOrderFinding.
 (* Literal Section 7.4 source, with explicit partial postprocessing result.
    See PROOF_NOTES.md; no disputed success estimate is assumed. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1102,14 +1050,9 @@ Definition order_finding
 End Program.
 End ClassicalOrderFinding.
 
-
 Module ClassicalShorOrderEvent.
 (* Failure means equal component order valuations; see PROOF_NOTES.md. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import ClassicalShorGroupCounting.
 
@@ -1223,15 +1166,10 @@ Qed.
 End Components.
 End ClassicalShorOrderEvent.
 
-
 Module ClassicalShorPrimePower.
 (* Odd-prime-power square roots for classical paper Lemma 7.2(2).
    The prior mathematical argument is in PROOF_NOTES.md. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Section NaturalRoots.
 Variables p e : nat.
@@ -1375,7 +1313,6 @@ case: (@root_representative p e prime_p odd_p positive_e (val u) Huq Hnat)=>E.
   by rewrite negative_one_nat.
 Qed.
 
-
 Theorem prime_power_fiber_half k :
   (2 * #|[set u : {unit 'Z_q} | logn 2 #[u] == k]| <= #|{: {unit 'Z_q}}|)%N.
 Proof.
@@ -1390,17 +1327,11 @@ Qed.
 End UnitRoots.
 End ClassicalShorPrimePower.
 
-
 Module ClassicalOrderFindingState.
 (* Exact finite Fourier amplitudes for the printed order-finding circuit. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1483,18 +1414,12 @@ Proof. move=>Hb; apply: eq_bigr=>y _; by rewrite output_amplitude. Qed.
 End Circuit.
 End ClassicalOrderFindingState.
 
-
 Module ClassicalOrderFindingFailure.
 (* Actual printed command cannot return denominators above two.
    See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1562,18 +1487,12 @@ Proof. exact: order_finding_output_zero (isT : (2 < 4)%N). Qed.
 End Program.
 End ClassicalOrderFindingFailure.
 
-
 Module ClassicalShorProgram.
 (* Literal Table 6 Shor wrapper and partial factor-output safety.
    The mathematical argument is recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1650,7 +1569,6 @@ case E: (0 < x < N)%N.
 - exact: uniform_mass_inside E.
 - apply: uniform_mass_outside; by rewrite E.
 Qed.
-
 
 Definition direct_ordinal_weights : {summable 'I_N.-1 -> C} :=
   Summable.build (fin_dom_summable (fun i : 'I_N.-1 =>
@@ -1805,7 +1723,6 @@ Qed.
 Theorem derives_shor_with OF : derives false semantic_top (shor_with OF) factor_post.
 Proof. apply: derives_complete; exact: shor_with_partial_safe. Qed.
 
-
 Definition direct_guard (s : cmem) :=
   (0 < (s.[x])%M < N)%N && (1 < gcdn (s.[x])%M N)%N.
 Definition direct_assertion : cmem -> 'FO(Hq) := mask direct_guard semantic_top.
@@ -1880,7 +1797,6 @@ Proof. exact: shor_with_partial_safe. Qed.
 Theorem derives_shor : derives false semantic_top shor factor_post.
 Proof. exact: derives_shor_with. Qed.
 
-
 Theorem shor_direct_total : CQHoare.valid true direct_pre shor factor_post.
 Proof. exact: shor_with_direct_total. Qed.
 
@@ -1892,15 +1808,10 @@ End ConcreteOrderFinding.
 End Wrapper.
 End ClassicalShorProgram.
 
-
 Module ClassicalShorModularEvent.
 (* Concrete distinguished-involution reduction for Lemma 7.2(2).
    See PROOF_NOTES.md for the prior mathematical argument. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import ClassicalShorCRT ClassicalShorPrimePower.
 
@@ -1922,18 +1833,12 @@ exact: predecessor_mod_divisor HN HM D.
 Qed.
 End ClassicalShorModularEvent.
 
-
 Module ClassicalOrderFindingExecution.
 (* Concrete source prepares the exact order-finding output state.
    See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2032,14 +1937,9 @@ Qed.
 End Program.
 End ClassicalOrderFindingExecution.
 
-
 Module ClassicalShorCounting.
 (* Concrete failure count for Lemma 7.2(2); see PROOF_NOTES.md. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import ClassicalShorFactorization ClassicalShorCRT ClassicalShorCRTProduct ClassicalShorPrimePower ClassicalShorModularEvent ClassicalShorOrderEvent ClassicalShorProductCounting.
 Local Open Scope group_scope.
@@ -2155,16 +2055,10 @@ Qed.
 End Modulus.
 End ClassicalShorCounting.
 
-
 Module ClassicalShorSampleEvent.
 (* The paper's natural-number order event on actual uniform samples.
    See PROOF_NOTES.md. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Import ClassicalSemantics.
 Import ClassicalShorCRT ClassicalShorPrimePower ClassicalShorCounting.
 Local Open Scope group_scope.
@@ -2235,15 +2129,10 @@ Qed.
 End Modulus.
 End ClassicalShorSampleEvent.
 
-
 Module ClassicalShorProbability.
 (* Numerical finite-probability corollary for Lemma 7.2(2).
    See PROOF_NOTES.md for the prior argument. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import GRing.Theory Num.Def Num.Theory.
 Local Open Scope ring_scope.
 Import ClassicalSemantics.
@@ -2301,16 +2190,10 @@ by rewrite E lerDl.
 Qed.
 End ClassicalShorProbability.
 
-
 Module ClassicalShorFactorExtraction.
 (* Equation (20) for the actual arithmetic order-success event.
    See PROOF_NOTES.md; independent of the OrderFinding program. *)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Import ClassicalSemantics.
 Import ClassicalShorArithmetic ClassicalShorSampleEvent.
 
@@ -2358,17 +2241,11 @@ Qed.
 End Modulus.
 End ClassicalShorFactorExtraction.
 
-
 Module ClassicalOrderFindingOrbit.
 (* The exact modular orbit used by the eigenstates on classical.pdf p.39.
    See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2465,17 +2342,11 @@ Proof. by rewrite /orbit_basis /orbit_bits expn0. Qed.
 End Orbit.
 End ClassicalOrderFindingOrbit.
 
-
 Module ClassicalShorUniform.
 (* The actual printed Random command conditioned on coprimality.
    See PROOF_NOTES.md. *)
 
-
 Import GRing.Theory Num.Def Num.Theory.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Import ClassicalSemantics.
 Import ClassicalShorCRT ClassicalShorProgram ClassicalLanguage ClassicalShorCounting ClassicalShorSampleEvent ClassicalShorProbability.
 Local Notation C := hermitian.C.
@@ -2589,18 +2460,12 @@ Qed.
 End Uniform.
 End ClassicalShorUniform.
 
-
 Module ClassicalOrderFindingEigenstates.
 (* Exact modular-orbit Fourier eigenstates, classical.pdf p.39.
    See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2770,17 +2635,11 @@ Proof. exact: modular_eigenstate_sum. Qed.
 End ModularOrbit.
 End ClassicalOrderFindingEigenstates.
 
-
 Module ClassicalShorSampling.
 (* The actual sampler partition and scalar Equation (21).
    See PROOF_NOTES.md for the prior argument. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory Summable.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Import ClassicalSemantics.
 Import ClassicalLanguage ClassicalShorProgram ClassicalShorSampleEvent ClassicalShorProbability ClassicalShorUniform.
 Local Notation C := hermitian.C.

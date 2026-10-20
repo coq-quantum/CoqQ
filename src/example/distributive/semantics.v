@@ -7,25 +7,25 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From quantum Require Import mcextra extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From Stdlib Require Import String.
-From quantum Require Import mcextra notation mxpred extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From quantum.example.distributive Require Import language operational confluence.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
 Module DistributedSchedulerResults.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedDistribution DistributedWeighted DistributedResults DistributedResidual DistributedGlobalActions DistributedSchedulerSemantics.
@@ -137,16 +137,11 @@ Definition denote_program (P : program) m (rho : 'FD1(Hq)) :=
   denote_configuration P (c := initial_configuration (processes P) m rho) (is_den1lf rho).
 End DistributedSchedulerResults.
 
-
 Module DistributedGlobalValue.
 (* Total successful-state value, Bellman equation, and leastness.
    See PROOF_NOTES.md for the monotone mixture argument. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedDistribution DistributedWeighted DistributedResults DistributedResidual DistributedGlobalActions DistributedSchedulerSemantics DistributedSchedulerResults.
@@ -391,16 +386,11 @@ Qed.
 End Global.
 End DistributedGlobalValue.
 
-
 Module DistributedCQInput.
 (* Summable mixtures of cq-states for the two papers' distribution semantics. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.

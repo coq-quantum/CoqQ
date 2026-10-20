@@ -7,19 +7,21 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology.
-From quantum Require Import hermitian cpo quantum summable.
-From quantum Require Import hermitian quantum summable.
 From quantum Require Import cpo.
 From quantum.example.classical Require Import language state.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Unset SsrOldRewriteGoalsOrder.
+
 Module CQAssertion.
 (* Classical-quantum assertions and expectation, following Feng and Ying,
    Definitions 3.5 and 3.7. See PROOF_NOTES.md and README.md. *)
-
 
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
@@ -27,10 +29,6 @@ Local Notation C := hermitian.C.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 (* Approved domain repair, 2026-10-03: limits use all effect-valued
    functions; the paper's countable/definable assertions remain below. *)
 Section SemanticAssertions.
@@ -275,17 +273,11 @@ Proof. by rewrite -(expect_complement_sum P rho) addrK. Qed.
 End Expectation.
 End CQAssertion.
 
-
 Module CQAssertionAlgebra.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -341,17 +333,11 @@ Qed.
 End Algebra.
 End CQAssertionAlgebra.
 
-
 Module CQExpectation.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -458,18 +444,13 @@ Qed.
 End Pairing.
 End CQExpectation.
 
-
 Module CQAssertionExamples.
 (* Checked assertion examples over unbounded natural-number memory. *)
-
 
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import CQAssertion.
 
 (* A small, explicit classical formula language, with unbounded memories. *)
@@ -545,17 +526,11 @@ Proof. by rewrite expect_mask_true expect_identity. Qed.
 End ZeroTest.
 End CQAssertionExamples.
 
-
 Module CQAssertionSeries.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -655,17 +630,11 @@ Qed.
 End Series.
 End CQAssertionSeries.
 
-
 Module CQMixtureExpectation.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -701,17 +670,11 @@ Qed.
 End Mixtures.
 End CQMixtureExpectation.
 
-
 Module CQExpectationLimits.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -814,17 +777,11 @@ Qed.
 End Limits.
 End CQExpectationLimits.
 
-
 Module CQStateExpectation.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -885,17 +842,11 @@ Qed.
 End Separation.
 End CQStateExpectation.
 
-
 Module CQStateDecreasingExpectation.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.

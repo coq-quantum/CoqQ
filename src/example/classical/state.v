@@ -7,21 +7,23 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
 From quantum.example.classical Require Import language.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Unset SsrOldRewriteGoalsOrder.
+
 Module CQState.
 (* Classical-quantum states: classical.pdf, Definition 3.1 and Lemma 3.3.
    Reuses the trace-norm summability foundation of CoqQ's cqwhile example. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Section States.
@@ -142,17 +144,11 @@ Proof. by move=>inc i; apply: vdlimEE; apply: chain_converges. Qed.
 End States.
 End CQState.
 
-
 Module CQStateDecreasing.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -208,16 +204,11 @@ End States.
 
 End CQStateDecreasing.
 
-
 Module CQStateMixture.
 (* Summable mixtures of cq-states for the two papers' distribution semantics. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.

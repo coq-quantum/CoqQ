@@ -35,7 +35,29 @@ on 2026-10-02:
 Coq build rules. Rocq Stdlib has an independent version number: Stdlib 9.2.0
 supports Rocq 9.1.1. The Dune upper bound comes from Rocq-Elpi 3.5.1.
 
-To use the existing `rocq.9.1` opam switch:
+For the distributed QFT development, use the named `coqq` switch with
+OCaml 5.2.0. The local development stays on `cqwhile+distributive` and is
+not pushed:
+
+```bash
+opam switch create coqq ocaml-base-compiler.5.2.0 \
+  --repositories=rocq-released=https://rocq-prover.org/opam/released,default=https://opam.ocaml.org
+opam install --switch=coqq --deps-only .
+opam switch link coqq .
+opam exec --switch=coqq -- dune build
+```
+
+The primary total Hoare program and initialization theorems are in
+[qft.v](src/example/distributive/qft.v), in `DistributedQFTProgramCorrectness`.
+The supporting channel calculations are in `DistributedQFTCorrectness`. They
+cover the literal eight-qubit program for every accepted node count (`2`, `3`, `4`, `8`),
+using the ideal fresh Bell-pair service and a valid register allocation. The
+complete corrected [qft.isq](qft.isq) marks the phase-index repair as `FIX F1`
+and the allocation guard as `FIX F2`. The source correspondence, bit ordering,
+and proof organization are recorded in
+[the distributed QFT notes](src/example/distributive/QFT_PROOF_NOTES.md).
+
+To use an existing `rocq.9.1` opam switch instead:
 
 ```bash
 opam switch set rocq.9.1

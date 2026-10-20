@@ -7,22 +7,23 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
 From quantum.example.classical Require Import language state assertion semantics.
-Module CQHoare.
-Local Open Scope classical_set_scope.
-(* Core Hoare calculus, loop rankings, soundness, and relative completeness. See PROOF_NOTES.md. *)
 
-
-Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+Module CQHoare.
+Local Open Scope classical_set_scope.
+(* Core Hoare calculus, loop rankings, soundness, and relative completeness. See PROOF_NOTES.md. *)
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
+Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -273,7 +274,6 @@ move: (V1 s) (V0 s); rewrite /mask /conditional /=.
 by case: (esem b s).
 Qed.
 
-
 Lemma wp_unroll_chain b c Q :
   semantic_chain (fun n => wp_command (unroll b c n) Q).
 Proof.
@@ -351,7 +351,6 @@ have C := @wlp_unroll_cvg b c (mask (predC (esem b)) P) s.
 have H := limn_gev (cvgP _ C) (fun n => bound n s).
 by rewrite (cvg_lim (@norm_hausdorff _ _) C) in H.
 Qed.
-
 
 Lemma wp_unrollS b c Q n :
   wp_command (unroll b c n.+1) Q =
@@ -436,7 +435,6 @@ apply: (Ranking (ranking_assertion := tail b c)).
   rewrite /conditional E in W A.
   by rewrite W A.
 Qed.
-
 
 Theorem derives_sound total P c Q : derives total P c Q -> valid total P c Q.
 Proof.
@@ -568,20 +566,13 @@ Qed.
 Example partial_abort_top_sound : valid false semantic_top Abort semantic_top.
 Proof. apply: derives_sound; exact: partial_abort_top. Qed.
 
-
 End CQHoare.
-
 
 Module CQNormalizedValidity.
 (* Lemma 4.10; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -635,7 +626,6 @@ case: total=>H.
   by move: Hpoint; rewrite /CQHoare.run -expect_wp !CQExpectation.expect_point.
 Qed.
 
-
 Theorem valid_total_normalized P c Q :
   CQHoare.valid true P c Q <->
   forall m (rho : 'FD1(Hq)),
@@ -658,17 +648,11 @@ split=>V m rho; move: (V m rho);
 Qed.
 End CQNormalizedValidity.
 
-
 Module CQRanking.
 (* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -700,17 +684,11 @@ by rewrite infimum in C.
 Defined.
 End CQRanking.
 
-
 Module CQRuleExamples.
 (* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -759,20 +737,13 @@ apply: (CQHoare.abort_not_total_top s rho)=>d.
 move: (V d); by rewrite /CQHoare.run true_skip_loop_diverges.
 Qed.
 
-
 End CQRuleExamples.
-
 
 Module CQStateUpdate.
 (* Lemma 3.12; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -818,17 +789,11 @@ Lemma update_state_assignment t (x : variable t) (e : expression (value t)) rho 
 Proof. by []. Qed.
 End CQStateUpdate.
 
-
 Module CQRankingComplement.
 (* Complement rankings: Lemma 5.4 and WhileT′. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.

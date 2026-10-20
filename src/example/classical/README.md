@@ -13,12 +13,22 @@ The development is organized into eight topic files. Definitions and proofs rema
 | [algorithms.v](algorithms.v) | Grover, QFT, and phase estimation |
 | [shor.v](shor.v) | arithmetic, order finding, Shor, and postprocessing counterexamples |
 
+Every source file keeps its dependency commands and shared `Set`/`Unset`
+settings in the file prelude. Module-specific `Import`s, local notation, and
+scopes remain with the definitions that use them.
+
+For a semantic audit, start with `ClassicalLanguage.command` in `language.v`,
+then `ClassicalSemantics.denote` in `semantics.v`, and `CQHoare.valid` in
+`hoare.v`. These specify the program syntax, its actual output kernel, and
+the meaning of partial or total correctness. The separate `derives` relation
+and soundness/completeness results justify proof rules over that meaning.
+
 ## Reading and building
 
 Read the files in the order above. The distributed development reuses the classical language, states, assertions, and logic. The existing `veri_QEC/cqwhile.v` is preserved.
 
 ```sh
-opam exec --switch=rocq.9.1 -- dune build
+opam exec --switch=coqq -- dune build
 ```
 
 [PROOF_NOTES.md](PROOF_NOTES.md) retains the mathematical arguments and paper-gap diagnoses. [VALIDATION.md](VALIDATION.md) records compilation and assumption checks.

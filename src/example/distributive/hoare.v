@@ -7,26 +7,27 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From quantum.example.distributive Require Import language operational confluence semantics sequentialization.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
-Module DistributedGuardedRules.
-(* Independent guarded-command rules, quantum ranking assertions, and
-   soundness/completeness for their shared-language translation. *)
-
-
+From quantum.example.distributive Require Import language operational confluence
+  semantics sequentialization.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
 From Stdlib Require List.
 
-
-Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+Module DistributedGuardedRules.
+(* Independent guarded-command rules, quantum ranking assertions, and
+   soundness/completeness for their shared-language translation. *)
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
+Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -388,20 +389,11 @@ Theorem translate_sound_complete total P s Q : statement_wf s ->
 Proof. move=>Hwf; split; [exact: derives_translate_sound | exact: derives_translate_complete]. Qed.
 End DistributedGuardedRules.
 
-
 Module DistributedLocalHoare.
 (* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -451,20 +443,11 @@ Theorem sound_complete total P s Q : statement_wf s ->
 Proof. move=>Hs; split; [exact: derives_sound Hs | exact: derives_complete Hs]. Qed.
 End DistributedLocalHoare.
 
-
 Module DistributedNetworkRules.
 (* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -654,20 +637,11 @@ move=>D; induction D as
 Qed.
 End DistributedNetworkRules.
 
-
 Module DistributedGlobalPredicate.
 (* Finite operational horizons as effects; see the D5 completeness argument. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -763,20 +737,11 @@ Qed.
 End Step.
 End DistributedGlobalPredicate.
 
-
 Module DistributedNormalizedTests.
 (* Compatibility interface for classical normalized validity tests. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -786,20 +751,11 @@ Import DistributedLocalMaps DistributedGuardSemantics.
 Include CQNormalizedValidity.
 End DistributedNormalizedTests.
 
-
 Module DistributedNetworkPre.
 (* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -867,20 +823,11 @@ by rewrite /successful_sequentialize /sequentialize /initialization_command /net
 Qed.
 End DistributedNetworkPre.
 
-
 Module DistributedHorizonExpectation.
 (* Finite operational horizons as effects; see the D5 completeness argument. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -954,20 +901,11 @@ Qed.
 End Horizon.
 End DistributedHorizonExpectation.
 
-
 Module DistributedNetworkValidity.
 (* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1041,20 +979,11 @@ Theorem translated_derives_iff total P (S : program) Q :
 Proof. rewrite valid_translate_iff; exact: CQHoare.sound_complete. Qed.
 End DistributedNetworkValidity.
 
-
 Module DistributedHorizonRemainder.
 (* Finite operational horizons as effects; see the D5 completeness argument. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1165,7 +1094,6 @@ Lemma remainder_superharmonic k c mu : global_step p c mu ->
   family_observe mu (remainder k) <= remainder k c.
 Proof. move=>Hs Hr Ho; rewrite (remainder_step k Hs Hr Ho); exact: remainder_decreasing. Qed.
 
-
 Definition progress_potential k c :=
   if k is j.+1 then remainder j c else expect Q (V c).
 
@@ -1203,17 +1131,11 @@ Qed.
 End Remainder.
 End DistributedHorizonRemainder.
 
-
 Module DistributedSerialHoare.
 (* Lemma C.9 for the raw serializer; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1315,20 +1237,11 @@ by rewrite /successful_sequentialize pre_sequence final_test_partial_pre raw_par
 Qed.
 End DistributedSerialHoare.
 
-
 Module DistributedPartialCompleteness.
 (* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1376,20 +1289,11 @@ Theorem partial_sound_complete (P Q : assertion) (S : program) :
 Proof. split; [exact: DistributedNetworkValidity.derives_sound | exact: derives_complete_partial]. Qed.
 End DistributedPartialCompleteness.
 
-
 Module DistributedHorizonEffects.
 (* Finite operational horizons as effects; see the D5 completeness argument. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1531,20 +1435,11 @@ Qed.
 End Effects.
 End DistributedHorizonEffects.
 
-
 Module DistributedNetworkRanking.
 (* Finite operational horizons as effects; see the D5 completeness argument. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1649,20 +1544,11 @@ Qed.
 End Ranking.
 End DistributedNetworkRanking.
 
-
 Module DistributedTotalCompleteness.
 (* Relative completeness of the independent distributed inference rules. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.

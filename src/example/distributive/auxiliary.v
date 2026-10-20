@@ -7,25 +7,26 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From quantum.example.distributive Require Import language operational confluence semantics sequentialization hoare.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
-Module DistributedClassicalAuxiliary.
-(* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
-
-
+From quantum.example.distributive Require Import language operational confluence
+  semantics sequentialization hoare.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
 From Stdlib Require List.
 
-
-Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Unset SsrOldRewriteGoalsOrder.
+
+Module DistributedClassicalAuxiliary.
+(* Independent Table-4 rules, quantum ranking assertions, and completeness. *)
+
+Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
+Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -107,7 +108,6 @@ apply: (@valid_fresh_guarded_loop P p0 r z bs X Hc Hb Hp Hr Hz Hsupport Hnonneg)
     (proj2 Hwf i)) (Hdec i)).
 Qed.
 
-
 Theorem classical_distributed (P Q : assertion) (S : program) (p0 : expression bool)
     (r : expression int) (z : CL.variable CL.Integer) X :
   (CL.variables (conditional_chain (rendezvous_commands (processes S))) `<=` X)%classic ->
@@ -150,20 +150,11 @@ apply: (CQHoare.valid_sequence (Q := mask (blocked (processes S)) Q)).
 Qed.
 End DistributedClassicalAuxiliary.
 
-
 Module DistributedRankingComplement.
 (* Derived Rep-T′ and Dist-T′ rules; see PROOF_NOTES.md. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.

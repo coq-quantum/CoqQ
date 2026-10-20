@@ -7,27 +7,25 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From mathcomp.classical Require Import boolp classical_sets functions.
-From quantum Require Import mcextra extnum ctopology hermitian inhabited quantum hspace summable.
-From quantum Require Import mcextra mxpred extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From Stdlib Require Import String.
-From quantum Require Import mcextra extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From quantum.example.distributive Require Import language operational.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
 Module ProbabilisticDiamond.
 (* A finite-horizon argument for probabilistic strong diamonds.
    This abstract theorem is separate from establishing its hypotheses for
    distributed program transitions; it is not itself Theorem 3.9. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedOperational DistributedDistribution DistributedWeighted.
@@ -143,17 +141,12 @@ Qed.
 End FiniteHorizon.
 End ProbabilisticDiamond.
 
-
 Module DistributedLocalDiamond.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions DistributedInstruments DistributedInterchange DistributedProgress DistributedObservables DistributedDistribution.
@@ -234,7 +227,6 @@ move=>Hr Hcomm; case Hnz: (joint_weight E F rho == 0).
 - have Hne : joint_weight E F rho != 0 by rewrite Hnz.
   by rewrite (joint_state_commute Hr Hcomm Hne) (joint_weight_commute Hr Hcomm).
 Qed.
-
 
 Definition combine_store (first second : option cmem) :=
   if first is Some _ then second else None.
@@ -411,17 +403,12 @@ exact: (@joint_observe_commute (@local_cp s m i) (@local_cp t m j) rho
 Qed.
 End DistributedLocalDiamond.
 
-
 Module DistributedSchedulerSemantics.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedDistribution DistributedWeighted DistributedResults DistributedResidual DistributedGlobalActions DistributedObservables.
@@ -539,17 +526,12 @@ Qed.
 End Projected.
 End DistributedSchedulerSemantics.
 
-
 Module DistributedConfluence.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions DistributedInstruments DistributedInterchange DistributedProgress DistributedObservables DistributedDistribution DistributedGlobalInstruments DistributedGlobalActions DistributedResidual DistributedSchedulerSemantics DistributedLocalDiamond DistributedFootprint.

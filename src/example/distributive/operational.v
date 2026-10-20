@@ -7,29 +7,27 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From mathcomp.classical Require Import boolp classical_sets functions.
-From quantum Require Import extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From Stdlib Require Import String.
-From quantum Require Import mcextra extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
-From quantum Require Import notation mxpred extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
-From quantum Require Import notation mxpred extnum ctopology hermitian quantum hspace summable qreg qmem.
-From quantum Require Import mcextra mxpred extnum ctopology hermitian inhabited quantum hspace summable qreg qmem.
 From quantum.example.distributive Require Import language.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
+From Stdlib Require List.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Unset SsrOldRewriteGoalsOrder.
+
 Module DistributedOperational.
 (* Explicit probabilistic small-step semantics, distributive.pdf Table 1 and
    Section 3.2. Branch families retain multiplicity; zero-weight outcomes have
    no probabilistic support. Scheduling choices remain in the step relation. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage.
@@ -417,17 +415,12 @@ Definition denotational_results n (p : 'I_n -> process) c :=
   [set d : cmem -> 'End(Hq) | exists pi : computation p c, computes pi d]%classic.
 End DistributedOperational.
 
-
 Module DistributedDistribution.
 (* Explicit probabilistic small-step semantics, distributive.pdf Table 1 and
    Section 3.2. Branch families retain multiplicity; zero-weight outcomes have
    no probabilistic support. Scheduling choices remain in the step relation. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational.
@@ -805,17 +798,12 @@ Proof. by move=>Hc; exists (canonical_computation Hc). Qed.
 End CanonicalComputation.
 End DistributedDistribution.
 
-
 Module DistributedScheduler.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational.
@@ -886,7 +874,6 @@ Qed.
 Inductive enabled_label n (p : 'I_n -> process) pc m rho : {set 'I_n} -> Prop :=
 | EnabledLocal i : local_enabled p pc m rho i -> enabled_label p pc m rho [set i]
 | EnabledPair i k : pair_enabled p pc m i k -> enabled_label p pc m rho [set i; k].
-
 
 Lemma global_step_has_label n (p : 'I_n -> process) c mu : global_step p c mu ->
   exists pc m rho A, c = global_config pc (Some m) rho /\ enabled_label p pc m rho A.
@@ -968,7 +955,6 @@ move/eqP: Eki=>Eki; subst k.
 by move: Hij; rewrite Ekj.
 Qed.
 
-
 Definition residual_wf s := s = Finished \/ statement_wf s.
 
 Lemma append_wf s t : residual_wf s -> statement_wf t -> statement_wf (append s t).
@@ -1006,7 +992,6 @@ move=>H; induction H; cbn [local_config certain branch_value fmap];
 - exact: branch_changes_subset.
 - by rewrite /= fsubUset branch_changes_subset fsubset_refl.
 Qed.
-
 
 Local Close Scope fset_scope.
 
@@ -1055,17 +1040,12 @@ by move=>Hr Hcomm; rewrite !weighted_two_normalized_outputs //;
 Qed.
 End DistributedScheduler.
 
-
 Module DistributedObservables.
 (* Explicit probabilistic small-step semantics, distributive.pdf Table 1 and
    Section 3.2. Branch families retain multiplicity; zero-weight outcomes have
    no probabilistic support. Scheduling choices remain in the step relation. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedDistribution.
@@ -1220,7 +1200,6 @@ move=>Hw Hv HM Hf; apply: pseries2_exchange_lim.
 by exists M=>A B; exact: (@probability_rectangle I J w v f M Hw Hv HM Hf A B).
 Qed.
 
-
 Lemma observe_bind_nested X Y (mu : family X) (nu : branch_index mu -> family Y)
     (f : Y -> C) M :
   probability_family mu -> (forall i, probability_family (nu i)) ->
@@ -1238,17 +1217,12 @@ by rewrite summable_sumZ.
 Qed.
 End DistributedObservables.
 
-
 Module DistributedWeighted.
 (* Explicit probabilistic small-step semantics, distributive.pdf Table 1 and
    Section 3.2. Branch families retain multiplicity; zero-weight outcomes have
    no probabilistic support. Scheduling choices remain in the step relation. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedDistribution.
@@ -1421,17 +1395,12 @@ Qed.
 End BindWeighted.
 End DistributedWeighted.
 
-
 Module DistributedLocalActions.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler.
@@ -1503,7 +1472,6 @@ move=>Hwf Hmu Hnu.
 by rewrite (local_step_canonical Hmu Hwf erefl) (local_step_canonical Hnu Hwf erefl).
 Qed.
 
-
 Lemma append_reads s t :
   (statement_reads (append s t) `<=` (statement_reads s `|` statement_reads t))%classic.
 Proof.
@@ -1546,7 +1514,6 @@ move=>d; induction d; cbn [local_config certain branch_value fmap];
 - exact: branch_quantum_subset.
 - by rewrite /= finset.subUset branch_quantum_subset subxx.
 Qed.
-
 
 Local Open Scope fset_scope.
 Definition unchanged (xs : {fset classical_name}) (s t : cmem) :=
@@ -1591,15 +1558,10 @@ exact: Hfresh.
 Qed.
 End DistributedLocalActions.
 
-
 Module DistributedResults.
 (* Well-formed cq-states of successful finite-stage outcomes, Section 3.2. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedDistribution DistributedWeighted.
@@ -1778,17 +1740,12 @@ exists (fun m => result_state pi m); exists pi; exact: computation_converges.
 Qed.
 End DistributedResults.
 
-
 Module DistributedInstruments.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions.
@@ -1896,7 +1853,6 @@ elim: s i=>[|a|s IH t IHt|n g b IH|n g b IH] i /= Hdis;
 - apply: IH; exact: fintype.disjointWl (finset.subsetUl _ _) Hdis.
 Qed.
 
-
 Lemma normalized_channel (E : 'QC(Hq)) rho : rho \is den1lf ->
   normalized_output E rho = E rho.
 Proof.
@@ -1947,17 +1903,12 @@ move=>Hr; elim: s=>[|a|s IH t IHt|n g b IH|n g b IH] /=.
 Qed.
 End DistributedInstruments.
 
-
 Module DistributedProgress.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions.
@@ -1983,17 +1934,12 @@ elim: s=>[|a|s IHs t IHt|n g b IHb|n g b IHb] //= Hwf m rho.
 Qed.
 End DistributedProgress.
 
-
 Module DistributedResidual.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedDistribution DistributedScheduler DistributedLocalActions DistributedResults.
@@ -2211,17 +2157,12 @@ exact: successful_component_not_stopped Hi.
 Qed.
 End DistributedResidual.
 
-
 Module DistributedInterchange.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions DistributedInstruments.
@@ -2309,7 +2250,6 @@ apply/eqP; rewrite /name_of /CL.key xpair_eqE; apply/andP; split; apply/eqP.
 - exact: (eq_trans (eqP Exz) (esym (eqP Eyz))).
 Qed.
 
-
 Lemma update_agree R u (x : CL.variable u) v m :
   ~ R (name_of x) -> ClassicalFootprint.agree_on R m (m.[x <- v])%M.
 Proof.
@@ -2367,7 +2307,6 @@ Proof.
 move=>Hfresh; symmetry; apply: local_map_agree.
 exact: update_agree.
 Qed.
-
 
 Local Open Scope fset_scope.
 Definition store_outcome (xs : {fset classical_name}) m out :=
@@ -2440,7 +2379,6 @@ case: B=>[B|[B|[w [y [z [Hy B]]]]]]; rewrite A B /=; try by rewrite ?A ?B.
 Qed.
 End DistributedInterchange.
 
-
 Module DistributedLocalMaps.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
@@ -2449,11 +2387,7 @@ Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedLocalActions DistributedInstruments.
@@ -2486,20 +2420,14 @@ elim: s i=>[|a|s IH t IHt|n g b IH|n g b IH] i //=; try exact: atom_mapsE;
   by case: i; rewrite /sunit_def /=.
 Qed.
 
-
 End DistributedLocalMaps.
-
 
 Module DistributedGlobalActions.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions DistributedResults DistributedResidual DistributedCommunication DistributedWeighted.
@@ -2609,7 +2537,6 @@ all: try congruence.
   by rewrite Em.
 Qed.
 
-
 Lemma ordered_participants_injective n (a b : action n) :
   ordered a -> ordered b -> participants a = participants b -> a = b.
 Proof.
@@ -2685,17 +2612,12 @@ case: (pselect (a = b))=>[E|E].
 Qed.
 End DistributedGlobalActions.
 
-
 Module DistributedGlobalInstruments.
 (* Enabled-action structure and finite interchanges for Appendix C.1.
    The full scheduler theorem additionally needs the weighted operational
    diamond and its finite-horizon induction, as recorded in PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions DistributedResults DistributedResidual DistributedProgress DistributedGlobalActions DistributedInstruments.
@@ -2980,7 +2902,6 @@ have Hfresh := proj1 (@processes_private P i j Hij) (name_of x) Hx.
 by move: Hfresh; rewrite Hjw.
 Qed.
 
-
 Lemma descriptor_other_enabled (P : program) pc m rho a b d e :
   configuration_owned (processes P) (global_config pc (Some m) rho) ->
   enabled_descriptor (processes P) pc m a d ->
@@ -3014,20 +2935,11 @@ move: Hstep; rewrite -Hout; by case: (branch_value (descriptor_run d pc m rho) o
 Qed.
 End DistributedGlobalInstruments.
 
-
 Module DistributedChangeAccess.
 (* Global Change and Access, distributive paper Lemma 3.4 in fixed ambient memory. *)
 
-
-From Stdlib Require List.
-
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -3207,7 +3119,6 @@ congr (@Family _ _ _ _); apply/funext=>i.
   by rewrite Ec (local_map_agree i Hlocal).
 Qed.
 
-
 Record change_access_witness (P : program) pc m rho mu
     (a : action (process_count P)) (d : descriptor (process_count P)) : Prop :=
   ChangeAccessWitness {
@@ -3281,17 +3192,12 @@ exact: initial_configuration_owned (@processes_wf P).
 Qed.
 End DistributedChangeAccess.
 
-
 Module DistributedMemoryReplay.
 (* Explicit probabilistic small-step semantics, distributive.pdf Table 1 and
    Section 3.2. Branch families retain multiplicity; zero-weight outcomes have
    no probabilistic support. Scheduling choices remain in the step relation. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Import ClassicalSemantics.
 Import DistributedCommunication.
 Import DistributedLanguage DistributedOperational DistributedScheduler DistributedLocalActions DistributedInstruments DistributedGlobalInstruments DistributedResidual DistributedChangeAccess DistributedInterchange ClassicalFootprint CQMemoryInterpretation.
@@ -3397,7 +3303,6 @@ Inductive global_step n (p : 'I_n -> process) :
         (replace (replace pc i (Executing (process_body (p i) j)))
           k (Executing (process_body (p k) l)))
         (Some (m.[x <- eval e m])%M) rho)).
-
 
 Lemma measurement_probability_nonnegative t u (q : wf_qreg u) (qS : mset q :<=: S)
     (M : mexpr (eval_qtype t) (eval_qtype u)) m rho : rho \is den1lf ->
@@ -3573,7 +3478,6 @@ Definition local_family s sS m rho : family local_configuration :=
   @Family _ (local_index s) (fun i => \Tr (local_map s sS m i rho))
     (fun i => local_config (@local_control s m i).1 (@local_control s m i).2
       (normalized_output (local_map s sS m i) rho)).
-
 
 Arguments local_family : clear implicits.
 

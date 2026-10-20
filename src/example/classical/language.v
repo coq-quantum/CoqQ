@@ -7,24 +7,24 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From mathcomp.classical Require Import boolp classical_sets functions.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Unset SsrOldRewriteGoalsOrder.
+
 Module ClassicalLanguage.
 (* Classical-quantum language of Feng and Ying (2021), Sections 3.1 and 4.
    The kernel combinators and unbounded loop construction are reused from
    CoqQ's veri_QEC/cqwhile.v, including its classical types, higher-order
    expressions and state-dependent quantum operations. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Definition sort := cType.
@@ -129,19 +129,13 @@ Fixpoint unroll (b : bool_expr) (c : command) n :=
   | n.+1 => Conditional b (Sequence c (unroll b c n)) Skip
   end.
 
-
 End ClassicalLanguage.
-
 
 Module ClassicalFootprint.
 (* Expression supports and store locality for the inherited cqwhile syntax. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.

@@ -7,19 +7,22 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From mathcomp.classical Require Import boolp classical_sets functions.
 From mathcomp.analysis Require Import exp trigo.
 From quantum Require Import qtype.
-From mathcomp Require Import all_ssreflect finmap perm.
-From mathcomp Require Import all_ssreflect.
-From quantum Require Import mcextra mcaextra notation mxpred svd mxnorm
-  hermitian ctopology quantum hspace inhabited.
-From mathcomp Require Import all_ssreflect finmap field_tactic ring_tactic.
-From quantum.example.classical Require Import language state assertion semantics hoare auxiliary.
+From mathcomp Require Import perm.
+From mathcomp Require Import field_tactic ring_tactic.
+From quantum.example.classical Require Import language state assertion semantics hoare
+  auxiliary.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Unset SsrOldRewriteGoalsOrder.
+
 Module ClassicalGrover.
 Import trigo.
 (* Grover's search, classical.pdf Examples 4.5/4.11 and Section 7.1.
@@ -27,13 +30,8 @@ Import trigo.
    example/coqq_paper/example.v, GroverAlgorithm (MIT; see
    UPSTREAM-LICENSE). The program uses a classical counted while loop. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -260,18 +258,12 @@ Qed.
 End Grover.
 End ClassicalGrover.
 
-
 Module ClassicalFourier.
 (* Quantum Fourier circuit, classical.pdf Section 7.2.
    See PROOF_NOTES.md; reference proof patterns are MIT-licensed. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -542,16 +534,10 @@ by rewrite fourier_circuit_basis /tuple_fourier PUnitaryE.
 Qed.
 End ClassicalFourier.
 
-
 Module ClassicalPhaseProbability.
 (* Generic Born-event complement bound; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Import ClassicalSemantics.
 Local Notation C := hermitian.C.
@@ -593,14 +579,9 @@ Theorem computational_event_complement_bound (T : ihbFinType)
 Proof. apply: onb_event_complement_bound; exact: ns_dot. Qed.
 End ClassicalPhaseProbability.
 
-
 Module ClassicalGroverCorrectness.
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -703,18 +684,12 @@ Qed.
 End Grover.
 End ClassicalGroverCorrectness.
 
-
 Module ClassicalFourierProgram.
 (* The nested-While Fourier program of classical.pdf Section 7.2.
    See PROOF_NOTES.md for the invariant and exact circuit argument. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -970,17 +945,11 @@ Qed.
 End Program.
 End ClassicalFourierProgram.
 
-
 Module ClassicalPhaseEstimation.
 (* Exact phase-estimation identities; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1085,18 +1054,12 @@ Qed.
 End Eigenstate.
 End ClassicalPhaseEstimation.
 
-
 Module ClassicalPhaseProgram.
 (* The actual nested-While PE program from classical.pdf, Section 7.3.
    Invalid dynamic register indices abort, as in the paper syntax sugar. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1175,17 +1138,11 @@ Definition phase_estimation (x y : variable Integer)
 End Program.
 End ClassicalPhaseProgram.
 
-
 Module ClassicalPhaseBounds.
 (* Exact geometric phase amplitudes and bounds; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1261,17 +1218,11 @@ exact: (ler_pM (normr_ge0 _) (normr_ge0 _) HB HB).
 Qed.
 End ClassicalPhaseBounds.
 
-
 Module ClassicalPhaseExecution.
 (* Deterministic certificates for the actual nested phase-estimation loops. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1405,17 +1356,11 @@ Proof. apply: execution_pre; exact: phase_prefix_execution. Qed.
 End Program.
 End ClassicalPhaseExecution.
 
-
 Module ClassicalPhaseTensor.
 (* Repeated controlled-U on one indexed control qubit. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1504,19 +1449,13 @@ by rewrite !mulrA [(bs~_i)%:R * _ * 2]mulrAC [(bs~_i)%:R * 2]mulrC.
 Qed.
 End ClassicalPhaseTensor.
 
-
 Module ClassicalPhaseCounterexample.
 Import trigo.
 (* Counterexample to the printed ordinary-distance phase bound (C6).
    See PROOF_NOTES.md. *)
 
-
 Import Order.TTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1656,17 +1595,11 @@ apply: le_trans (ltW Hlo); exact: divr_ge0.
 Qed.
 End ClassicalPhaseCounterexample.
 
-
 Module ClassicalPhaseStages.
 (* Gate-by-gate phase-estimation invariant; see PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1757,17 +1690,11 @@ Theorem estimation_circuit_eigen n T (U : 'FU('Ht T)) phi (u : 'Ht T) :
 Proof. by move=>Hu; rewrite (estimation_circuit_prefixE Hu) // estimation_layer_final. Qed.
 End ClassicalPhaseStages.
 
-
 Module ClassicalPhaseCorrectness.
 (* Deterministic certificates for the actual nested phase-estimation loops. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.

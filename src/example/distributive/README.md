@@ -1,6 +1,8 @@
 # Distributed quantum programs
 
-The development is organized into eight topic files. Definitions and proofs remain in named Rocq modules within each file.
+The framework is organized into eight topic files, with three additional files
+for distributed QFT. Definitions and proofs remain in named Rocq modules within
+each file.
 
 | File | Topic |
 | --- | --- |
@@ -13,12 +15,57 @@ The development is organized into eight topic files. Definitions and proofs rema
 | [auxiliary.v](auxiliary.v) | alternative rankings and classical ghost rules |
 | [protocols.v](protocols.v) | teleportation and remote CNOT, from source programs to correctness |
 
+For the QFT example, open [qft.v](qft.v) at `DistributedQFTProgram` first.
+Its contiguous program section gives explicit Hadamard/phase matrices and
+the allowed native endpoint statements,
+the two rank-local loops, the explicit `DL.Process` / `DL.Program`, and main
+initialization. `qft_rank_scriptE`, `qft_processE`, `qft_programE`,
+`qft_initializeE`, and `qft_mainE` connect this code by structural equality to
+the existing proof program. Immediately afterward, `DistributedQFTSpecification`
+defines the input, Bell-resource, and Fourier-output assertions and the
+correctness formulas in the existing distributed Hoare logic. At the end of
+the same file, `DistributedQFTProgramCorrectness.qft_program_correct` proves
+the total network triple for every normalized pure input. The resource
+condition is part of the explicit precondition. `qft_main_correct` specializes
+this triple to the source's prepared main input. The global initializer
+establishes that precondition, and Hoare sequence composition proves the
+initialized main. Exact output-state formulas follow from Hoare soundness.
+
+The physical source scope is the literal `n = 8` main for every accepted
+node count `{2,3,4,8}`. The exact data unitary is `D = F composed with input
+bit reversal`, matching the source's omitted final SWAP. It models an ideal
+fresh Bell service prepared before the private processes, with valid hardware
+allocation; raw isQ parser/compiler translation, QMPI implementation,
+floating-point rounding, and physical gate errors are outside the theorem.
+
+[qft_model.v](qft_model.v) supplies the layout, allocation, source-index
+certificates, Fourier circuit, and proof-side native program.
+[qft_teleport.v](qft_teleport.v) supplies Bell resources and transfer proofs.
+The [semantic audit guide](QFT_PROOF_NOTES.md#semantic-audit-guide) maps
+[qft.isq](../../../qft.isq) to the visible program declarations and explains
+the exact output and model boundaries before the proof strategy.
+The complete corrected source marks its unequal-block phase fix as `FIX F1`
+and its allocation guard as `FIX F2`. After building, run
+`python3 src/example/distributive/check_qft_source.py` from the repository root
+to compare the current source's complete rank traces with the checked model.
+
+Every source file keeps its dependency commands and shared `Set`/`Unset`
+settings in the file prelude. Module-specific `Import`s, local notation, and
+scopes remain with the definitions that use them.
+
+For a semantic audit of the framework, start with
+`DistributedLanguage.program` in `language.v`, its `global_step` execution
+rules in `operational.v`, and `DistributedSchedulerResults.denote_program`
+in `semantics.v`. `DistributedCorrespondence.denote_program_sequentialize`
+in `sequentialization.v` connects that distributed execution to the classical
+successful-command semantics; the Hoare systems reason about those meanings.
+
 ## Reading and building
 
 Read the files in the order above. The distributed development reuses the classical language, states, assertions, and logic. The existing `veri_QEC/cqwhile.v` is preserved.
 
 ```sh
-opam exec --switch=rocq.9.1 -- dune build
+opam exec --switch=coqq -- dune build
 ```
 
 [PROOF_NOTES.md](PROOF_NOTES.md) retains the mathematical arguments and paper-gap diagnoses. [VALIDATION.md](VALIDATION.md) records compilation and assumption checks.
@@ -112,6 +159,11 @@ for the current whole-project build and audit status.
 
 ## Reorganization
 
-The previous small proof files have been merged into the eight files above. Internal theorem namespaces are retained where practical. All named definitions and results are retained, except the earlier structural-only classical judgment, its soundness lemma, and its now-unnecessary embedding lemma; the complete `CQHoare` calculus replaces them.
+The previous small framework proof files have been merged into the eight topic
+files above; the QFT development is grouped into its three files. Internal
+theorem namespaces are retained where practical. All named definitions and
+results are retained, except the earlier structural-only classical judgment,
+its soundness lemma, and its now-unnecessary embedding lemma; the complete
+`CQHoare` calculus replaces them.
 
 The 39 pre-existing foundation and veriQEC source files are unchanged. No mathematical correction to the papers is adopted by this file reorganization.

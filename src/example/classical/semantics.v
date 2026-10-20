@@ -7,27 +7,25 @@ From mathcomp.classical Require Import boolp classical_sets functions cardinalit
 From mathcomp.reals Require Import reals.
 From mathcomp.analysis Require Import topology normedtype sequences.
 From mathcomp Require Import -(notations) sesquilinear.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
+From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology svd
+  mxnorm hermitian inhabited prodvect tensor quantum hspace summable qreg qmem.
 From quantum.dirac Require Import hstensor.
 From quantum.example.veri_QEC Require Import cqwhile.
-From mathcomp.classical Require Import boolp classical_sets functions.
-From quantum Require Import mcextra mcaextra notation mxpred extnum ctopology
-  svd mxnorm hermitian inhabited prodvect tensor quantum hspace summable.
 From quantum.example.classical Require Import language state assertion.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+Unset SsrOldRewriteGoalsOrder.
+
 Module ClassicalSemantics.
 (* Classical-quantum language of Feng and Ying (2021), Sections 3.1 and 4.
    The kernel combinators and unbounded loop construction are reused from
    CoqQ's veri_QEC/cqwhile.v, including its classical types, higher-order
    expressions and state-dependent quantum operations. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalLanguage.
@@ -239,12 +237,8 @@ End ClassicalSemantics.
 Module CQKernel.
 (* Extension of cqwhile kernels to arbitrary cq-states, classical.pdf 4.3–4.4. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.
@@ -445,20 +439,14 @@ Qed.
 End Composition.
 End CQKernel.
 
-
 Module ClassicalDeterministic.
 (* Deterministic execution certificates for concrete algorithm loops.
    Each constructor follows the language semantics. Certificates describe
    finite runs, and the theorem below identifies their full unbounded-loop
    denotation, without a truncation or a program-correctness assumption. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -527,20 +515,14 @@ move=>D; elim: c s t F / D=>[s|t x e s|u q phi s|u q ue s|
 Qed.
 End ClassicalDeterministic.
 
-
 Module ClassicalRegisterTensor.
 (* Deterministic execution certificates for concrete algorithm loops.
    Each constructor follows the language semantics. Certificates describe
    finite runs, and the theorem below identifies their full unbounded-loop
    denotation, without a truncation or a program-correctness assumption. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -607,16 +589,11 @@ by rewrite /liftf_fun /tv2v_fun /= lift_pair_outp tentv_t2tv.
 Qed.
 End ClassicalRegisterTensor.
 
-
 Module CQInstrument.
 (* Extension of cqwhile kernels to arbitrary cq-states, classical.pdf 4.3–4.4. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.
@@ -678,20 +655,14 @@ Qed.
 End Instrument.
 End CQInstrument.
 
-
 Module ClassicalCQWhile.
 (* Classical-quantum language of Feng and Ying (2021), Sections 3.1 and 4.
    The kernel combinators and unbounded loop construction are reused from
    CoqQ's veri_QEC/cqwhile.v, including its classical types, higher-order
    expressions and state-dependent quantum operations. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -733,18 +704,12 @@ elim: c=>[| |t x e|t x p|t u x q me|u q phi|u q ue|
 Qed.
 End ClassicalCQWhile.
 
-
 Module CQMemoryInstruments.
 (* Countable local instruments and their cylindrical lifts.
    See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -786,16 +751,11 @@ Qed.
 End Instruments.
 End CQMemoryInstruments.
 
-
 Module ClassicalMeasurementExamples.
 (* Extension of cqwhile kernels to arbitrary cq-states, classical.pdf 4.3–4.4. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.
@@ -833,18 +793,12 @@ Lemma selected_measurement_eval u (x : variable Boolean)
 Proof. by []. Qed.
 End ClassicalMeasurementExamples.
 
-
 Module CQMemoryTransport.
 (* Generic change of finite quantum-memory coordinates.
    See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory.
 Import Summable.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -941,17 +895,11 @@ Qed.
 End Algebra.
 End CQMemoryTransport.
 
-
 Module CQKernelLimits.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -1036,17 +984,11 @@ Lemma unroll_expect_cvg P b c (rho : @CQState.state cmem Hq) :
 Proof. apply: CQExpectation.expect_cvg; exact: unroll_apply_cvg. Qed.
 End CQKernelLimits.
 
-
 Module CQKernelExpectation.
 (* Absolute Fubini and expectation for cq kernels. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1104,20 +1046,14 @@ by rewrite psum1 /sunit /= /sunit_def eqxx.
 Qed.
 End CQKernelExpectation.
 
-
 Module ClassicalAlgorithmLoops.
 (* Deterministic execution certificates for concrete algorithm loops.
    Each constructor follows the language semantics. Certificates describe
    finite runs, and the theorem below identifies their full unbounded-loop
    denotation, without a truncation or a program-correctness assumption. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -1176,20 +1112,14 @@ exact: (@counted_unitary_execution u q U x n k s Hs).
 Qed.
 End ClassicalAlgorithmLoops.
 
-
 Module ClassicalOperational.
 (* Finite terminating routes for Feng and Ying (2021), Section 4.2.
    The route representation and summation proof pattern adapt CoqQ's
    example/veri_QEC/cqwhile.v; its original file is preserved. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
 Import ClassicalLanguage Summable_Reindex.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.
@@ -1356,7 +1286,6 @@ move=>Pq; case E: (eval_route r c (mi,qi))=>[[m q]|].
   exact (@terminates_positive c mi qi m q (@eval_route_sound r c mi qi m q E) Pq).
 - exact Pq.
 Qed.
-
 
 Local Notation "\`| f |" := (fun x => `|f x|) (at level 2).
 
@@ -1712,7 +1641,6 @@ rewrite -(@sum_reindexV _ _ _ _ _ h h')=>[[i/=Pi]|i|/=i||].
 Unshelve. all: end_near.
 Qed.
 
-
 (* A generic atomic command, encoded by outcome-labelled routes.  These
    hypotheses are the primitive's defining equations, discharged below for
    each language constructor; no correctness judgment is postulated. *)
@@ -1845,22 +1773,15 @@ Unshelve. end_near.
 Qed.
 End ClassicalOperational.
 
-
 Module CQMemoryInterpretation.
 (* Typed primitive interpretation in an arbitrary finite tensor memory.
    See PROOF_NOTES.md for construction and covariance. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
 Import ClassicalLanguage.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
-
 
 Import CQMemoryTransport.
 Import ClassicalSemantics.
@@ -1883,7 +1804,6 @@ HB.instance Definition _ := GRing.isLinear.Build hermitian.C _ _ *:%R
 
 Lemma transport1 : transport \:1 = \:1.
 Proof. by rewrite /transport conjugate1 liftso1. Qed.
-
 
 Lemma transport_summable (I : choiceType) (f : I -> 'SO[msys]_S) :
   summable f -> summable (fun i => transport (f i)).
@@ -1940,7 +1860,6 @@ Proof. exact: is_cpmap. Qed.
 Lemma initialize_channel_cp u (q : wf_qreg u) qS phi :
   @initialize_channel u q qS phi \is cpmap.
 Proof. exact: is_cpmap. Qed.
-
 
 Lemma unitary_channelE u (q : wf_qreg u) qS A :
   @unitary_channel u q qS A =
@@ -2051,17 +1970,11 @@ by rewrite /transport /conjugate adjf1 !formso1 comp_so1l comp_so1r.
 Qed.
 End CQMemoryInterpretation.
 
-
 Module ClassicalBoundedUnroll.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -2153,18 +2066,12 @@ Lemma bounded_unroll_chain c s : nondecreasing_seq (fun k => denote (bounded_unr
 Proof. move=>j k jk; exact: bounded_unroll_mono jk s. Qed.
 End ClassicalBoundedUnroll.
 
-
 Module CQPredicate.
 (* Weakest preconditions for arbitrary classical-quantum kernels.
    See PROOF_NOTES.md for the infinite-sum and duality arguments. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2533,20 +2440,14 @@ Proof. by move=>KT; case: total=>//; apply: wlp_wp; exact: wp_top KT. Qed.
 End Channels.
 End CQPredicate.
 
-
 Module ClassicalIndexedLoops.
 (* Deterministic execution certificates for concrete algorithm loops.
    Each constructor follows the language semantics. Certificates describe
    finite runs, and the theorem below identifies their full unbounded-loop
    denotation, without a truncation or a program-correctness assumption. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2631,17 +2532,11 @@ move=>Hs; apply: RunIfTrue.
 Qed.
 End ClassicalIndexedLoops.
 
-
 Module ClassicalComputations.
 (* Maximal computations, classical.pdf Definition 4.1. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -2891,16 +2786,11 @@ rewrite successful_maximal_iff; split.
 Qed.
 End ClassicalComputations.
 
-
 Module ClassicalLocality.
 (* Expression supports and store locality for the inherited cqwhile syntax. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope fset_scope.
@@ -2972,22 +2862,15 @@ exact (@terminates_unchanged c s r s' r' d u x (fresh (key x) Hx)).
 Qed.
 End ClassicalLocality.
 
-
 Module ClassicalMemorySteps.
 (* Classical Table 2 interpreted independently in an arbitrary finite memory.
    See PROOF_NOTES.md for the construction and replay proof. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
 Import ClassicalLanguage.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
-
 
 Import CQMemoryInterpretation.
 Import ClassicalSemantics.
@@ -3029,7 +2912,6 @@ Inductive memory_step : command -> store -> 'End(HW) ->
       memory_step (While b c) s r (Some (Sequence c (While b c))) s r
   | MemoryWhileFalse b c s r : eval b s = false ->
       memory_step (While b c) s r None s r.
-
 
 Lemma memory_step_positive c s r k s' r' (d : memory_step c s r k s' r') :
   0%:VF ⊑ r -> 0%:VF ⊑ r'.
@@ -3092,7 +2974,6 @@ induction d; move=>S Hs; try exact I.
 - by rewrite /= finset.setUid.
 Qed.
 
-
 Section Replay.
 Variable S : {set mlab}.
 Variable L : finType.
@@ -3145,17 +3026,11 @@ Qed.
 End Replay.
 End ClassicalMemorySteps.
 
-
 Module ClassicalBoundedLimits.
 (* Order separation and continuous expectations. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -3277,20 +3152,14 @@ Theorem bounded_unroll_suffix_limit c (K : kernel) :
 Proof. by rewrite (slet_liml K (bounded_unroll_chain c)) bounded_unroll_limit. Qed.
 End ClassicalBoundedLimits.
 
-
 Module ClassicalAlgorithmSemantics.
 (* Deterministic execution certificates for concrete algorithm loops.
    Each constructor follows the language semantics. Certificates describe
    finite runs, and the theorem below identifies their full unbounded-loop
    denotation, without a truncation or a program-correctness assumption. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -3349,17 +3218,11 @@ elim: n=>[|n IH].
 Qed.
 End ClassicalAlgorithmSemantics.
 
-
 Module CQKernelLinearity.
 (* Absolute-series linearity of cq kernels. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -3429,18 +3292,12 @@ Qed.
 End Kernels.
 End CQKernelLinearity.
 
-
 Module CQPrimitive.
 (* Weakest preconditions for arbitrary classical-quantum kernels.
    See PROOF_NOTES.md for the infinite-sum and duality arguments. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -3462,7 +3319,6 @@ Lemma unitary_pre total t (q : wf_qreg t) U Q s :
   (xp total (denote (Unitary q U)) Q s : 'End(Hq)) =
     (liftfso (formso (tf2f q q (esem U s))))^*o (Q s).
 Proof. by rewrite /= /unitary_sem xp_sunit. Qed.
-
 
 Lemma random_complete t (x : variable t) p s :
   sum (denote (Random x p) s) \is tpmap.
@@ -3501,17 +3357,11 @@ by rewrite /smeas /= /smeas_def dualso_formE.
 Qed.
 End CQPrimitive.
 
-
 Module ClassicalOperationalApproximants.
 (* Bounded operational completions, Lemma 4.2. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -3713,19 +3563,13 @@ Proof. rewrite -completion_state_sup; exact: chain_sup_least completion_state_ch
 End Routes.
 End ClassicalOperationalApproximants.
 
-
 Module ClassicalOperationalRouteCost.
 (* Exact operational transition counts, classical.pdf Lemma 4.2.
    See PROOF_NOTES.md for the argument. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
 Import ClassicalLanguage ClassicalOperational ClassicalComputations.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.
@@ -3867,17 +3711,11 @@ split.
 Qed.
 End ClassicalOperationalRouteCost.
 
-
 Module ClassicalOperationalCompletions.
 (* Bounded operational completions, Lemma 4.2. See PROOF_NOTES.md. *)
 
-
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports ExtNumTopology HermitianTopology.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Local Open Scope classical_set_scope.
@@ -3998,20 +3836,14 @@ Qed.
 End Completions.
 End ClassicalOperationalCompletions.
 
-
 Module ClassicalOperationalCountedPaths.
 (* Nonzero, step-counted computation paths for classical.pdf Lemma 4.2.
    See PROOF_NOTES.md. *)
-
 
 Import Order.LTheory GRing.Theory Num.Def Num.Theory DefaultQMem.Exports.
 Import Summable.Exports VDistr.Exports HermitianTopology ExtNumTopology.
 Import ClassicalLanguage ClassicalOperational ClassicalComputations
   ClassicalOperationalRouteCost.
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-Unset SsrOldRewriteGoalsOrder.
 Local Open Scope ring_scope.
 Local Open Scope lfun_scope.
 Import ClassicalSemantics.

@@ -1,5 +1,25 @@
 # Validation
 
+## Current header cleanup and QFT checkpoint
+
+Date: 2026-10-05. The repository-wide build passes in the named `coqq` switch:
+
+```sh
+opam exec --switch=coqq -- dune build -j4
+```
+
+All 70 Rocq sources match their final Dune inputs and have compiled `.vo`
+artifacts. The eight classical and eleven distributed files keep dependency
+commands and shared `Set`/`Unset` settings in their preludes. Their non-header
+code is preserved, allowing the QFT model's local sequence imports and explicit
+qualifications of the same library functions needed after import relocation.
+The build log is `/tmp/coqq-example-header-build-final.log` (exit status 0).
+The [QFT semantic audit guide](../distributive/QFT_PROOF_NOTES.md#semantic-audit-guide)
+explains its program model and correctness statements; its Validation section
+records the four final QFT theorem audits.
+
+## Earlier reorganization checkpoint
+
 Date: 2026-10-04. The reorganized project passes:
 
 ```sh

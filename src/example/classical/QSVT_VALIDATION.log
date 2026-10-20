@@ -1,0 +1,3240 @@
+qsvt_poly.v 5a61013ebabdaca4bfe3f3dac7c65bd9623236d00b2e4b83279d23fb49343958
+qsvt_model.v 517d1c82a1d92ad336300cc81d2496de7aeb0a911ed111cee17b77a77fac7d78
+qsvt.v 0f6882e418760c1cdebd8a012fcc0269348c0eb6ce2b068aaf37efa2e658eb54
+Source scans passed (ordinary executable audit).
+$ git rev-parse HEAD
+1a106f2f0ff74473dac41683c69c175023d9e752
+$ opam exec --switch=coqq -- ocamlc -version
+5.2.0
+$ opam exec --switch=coqq -- rocq -v
+The Rocq Prover, version 9.1.1
+compiled with OCaml 5.2.0
+atd                              4.2.0
+atdgen                           4.2.0
+atdgen-runtime                   4.2.0
+atdts                            4.2.0
+base                             v0.17.3
+base-bigarray                    base
+base-domains                     base
+base-nnp                         base
+base-threads                     base
+base-unix                        base
+biniou                           1.2.2
+camlp-streams                    5.0.1
+cmdliner                         2.1.1
+conf-gmp                         5
+conf-linux-libc-dev              0
+conf-pkg-config                  5
+coq-core                         9.1.1
+cppo                             1.8.0
+csexp                            1.5.2
+dune                             3.23.1
+dune-configurator                3.23.1
+easy-format                      1.3.4
+elpi                             3.7.3
+menhir                           20260209
+menhirCST                        20260209
+menhirGLR                        20260209
+menhirLib                        20260209
+menhirSdk                        20260209
+ocaml                            5.2.0
+ocaml-base-compiler              5.2.0
+ocaml-compiler-libs              v0.17.0
+ocaml-config                     3
+ocaml-options-vanilla            1
+ocaml_intrinsics_kernel          v0.17.2
+ocamlfind                        1.9.8
+ppx_derivers                     1.2.1
+ppx_deriving                     6.2.0
+ppx_optcomp                      v0.17.1
+ppxlib                           0.38.0
+re                               1.14.0
+rocq-core                        9.1.1
+rocq-elpi                        3.5.1
+rocq-hierarchy-builder           1.10.3
+rocq-mathcomp-algebra            2.6.0
+rocq-mathcomp-analysis           1.18.0
+rocq-mathcomp-bigenough          1.0.4
+rocq-mathcomp-boot               2.6.0
+rocq-mathcomp-classical          1.18.0
+rocq-mathcomp-experimental-reals 1.18.0
+rocq-mathcomp-field              2.6.0
+rocq-mathcomp-finite-group       2.6.0
+rocq-mathcomp-finmap             2.2.4
+rocq-mathcomp-order              2.6.0
+rocq-mathcomp-real-closed        2.0.6
+rocq-mathcomp-reals              1.18.0
+rocq-mathcomp-reals-stdlib       1.18.0
+rocq-mathcomp-solvable           2.6.0
+rocq-mathcomp-ssreflect          2.6.0
+rocq-micromega-plugin            1.1.1
+rocq-runtime                     9.1.1
+rocq-stdlib                      9.2.0
+sexplib0                         v0.17.0
+stdio                            v0.17.0
+stdlib-shims                     0.3.0
+yojson                           3.0.0
+zarith                           1.14
+
+Named switch and repository dependency pins match.
+$ opam exec --switch=coqq -- dune build
+File "./src/example/classical/qsvt_poly.v", line 6, characters 0-51:
+Warning: Library File mathcomp.ssreflect.all_ssreflect is deprecated
+since mathcomp 2.5.0. Use 'boot' and/or 'order' instead.
+[deprecated-library-file-since-mathcomp-2.5.0,deprecated-since-mathcomp-2.5.0,deprecated-library-file,deprecated,default]
+File "./src/example/classical/qsvt_poly.v", line 13, characters 0-45:
+Warning: Notations "_ ~_ _ { in _ }" defined at level 70 with arguments
+constr at next level, constr at level 0 and "_ ~_ _" defined at level 3
+with arguments constr at next level, constr at level 2
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_poly.v", line 905, characters 13-21:
+Warning: Notation ringType is deprecated since mathcomp 2.4.0.
+Try pzRingType (the potentially-zero counterpart) first, or use nzRingType instead.
+[deprecated-syntactic-definition-since-mathcomp-2.4.0,deprecated-since-mathcomp-2.4.0,deprecated-syntactic-definition,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 3, characters 0-43:
+Warning: Library File mathcomp.ssreflect.all_ssreflect is deprecated
+since mathcomp 2.5.0. Use 'boot' and/or 'order' instead.
+[deprecated-library-file-since-mathcomp-2.5.0,deprecated-since-mathcomp-2.5.0,deprecated-library-file,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 6, characters 0-70:
+Warning: Notations "[ fun _ => _ ]" defined at level 0 with arguments name
+and "[ fun _ in _ ]" defined at level 0 with arguments constr
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "_ ~_ _ { in _ }" defined at level 70 with arguments
+constr at next level, constr at level 0 and "_ ~_ _" defined at level 3
+with arguments constr at next level, constr at level 2
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FN" defined at level 0 and "'FN ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FH" defined at level 0 and "'FH ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'F+" defined at level 0 and "'F+ ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FO" defined at level 0 and "'FO ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FD" defined at level 0 and "'FD ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FD1" defined at level 0 and "'FD1 ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FP" defined at level 0 and "'FP ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FP1" defined at level 0 and "'FP1 ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FI" defined at level 0 and "'FI ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FU" defined at level 0 and "'FU ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'SO" defined at level 0 and "'SO ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'PONB" defined at level 0 and "'PONB ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'ONB" defined at level 0 and "'ONB ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'PS" defined at level 0 and "'PS ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'NS" defined at level 0 and "'NS ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'TN" defined at level 0 and "'TN ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'QM" defined at level 0 and "'QM ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'CP" defined at level 0 and "'CP ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'QO" defined at level 0 and "'QO ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'QC" defined at level 0 and "'QC ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'[ _ , _ ]" defined at level 0 with arguments constr
+and "'[ _ ; _ ]" defined at level 0 with arguments constr at level 200
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'[ _ , _ ]" defined at level 0 with arguments constr,
+constr and "'[ _ , _ ; _ ]" defined at level 0 with arguments constr
+at level 200, constr at level 200 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FB1" defined at level 0 and "'FB1 ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 10, characters 0-142:
+Warning: Notations "'FGI" defined at level 0 and "'FGI ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt_model.v", line 123, characters 2-34:
+Warning: Notation "[ proj of _ ]" is deprecated since mathcomp 2.0.0.
+Use ProjLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 496, characters 4-161:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 498, characters 22-38:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 761, characters 17-33:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 766, characters 35-51:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 766, characters 35-51:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 781, characters 21-37:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 901, characters 24-40:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 901, characters 24-40:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt_model.v", line 901, characters 24-40:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 6, characters 0-50:
+Warning: Library File mathcomp.ssreflect.all_ssreflect is deprecated
+since mathcomp 2.5.0. Use 'boot' and/or 'order' instead.
+[deprecated-library-file-since-mathcomp-2.5.0,deprecated-since-mathcomp-2.5.0,deprecated-library-file,deprecated,default]
+File "./src/example/classical/qsvt.v", line 6, characters 0-50:
+Warning: Notations "[ fset _ | _ : _ in _ ]" defined at level 0
+with arguments constr at level 99, constr at level 99, constr, constr
+and "[ fset _ | _ : _ in _ , _ : _ in _ ]" defined at level 0 with arguments
+constr at level 99, constr at level 99, constr, constr at level 200
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 6, characters 0-50:
+Warning: Notations "[ fset _ | _ in _ ]" defined at level 0 with arguments
+constr at level 99, constr at level 99, constr
+and "[ fset _ | _ in _ , _ in _ ]" defined at level 0 with arguments constr
+at level 99, constr at level 99, constr at level 200
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 6, characters 0-50:
+Warning: Notations "[ fset[ _ ] _ | _ : _ in _ ]" defined at level 0
+with arguments constr, constr at level 99, constr at level 99, constr, constr
+and "[ fset[ _ ] _ | _ : _ in _ , _ : _ in _ ]" defined at level 0
+with arguments constr, constr at level 99, constr at level 99, constr, constr
+at level 200 have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 6, characters 0-50:
+Warning: Notations "[ fset[ _ ] _ | _ in _ ]" defined at level 0
+with arguments constr, constr at level 99, constr at level 99, constr
+and "[ fset[ _ ] _ | _ in _ , _ in _ ]" defined at level 0 with arguments
+constr, constr at level 99, constr at level 99, constr at level 200
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 6, characters 0-50:
+Warning: Notations "[ fset[ _ ] _ | _ : _ in _ ]" defined at level 0
+with arguments constr, constr at level 99, constr at level 99, constr
+and "[ fset[ _ ] _ | _ : _ , _ : _ ]" defined at level 0 with arguments
+constr, constr at level 99, constr at level 99, constr at level 200
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 6, characters 0-50:
+Warning: Notations "[ f set _ | _ in _ ]" defined at level 0 with arguments
+constr at level 99, constr at level 99, constr
+and "[ f set _ | _ in _ , _ in _ ]" defined at level 0 with arguments constr
+at level 99, constr at level 99, constr at level 200
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 9, characters 0-82:
+Warning: Notations "[ fun _ => _ ]" defined at level 0 with arguments name
+and "[ fun _ in _ ]" defined at level 0 with arguments constr
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "_ ~_ _ { in _ }" defined at level 70 with arguments
+constr at next level, constr at level 0 and "_ ~_ _" defined at level 3
+with arguments constr at next level, constr at level 2
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FN" defined at level 0 and "'FN ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FH" defined at level 0 and "'FH ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'F+" defined at level 0 and "'F+ ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FO" defined at level 0 and "'FO ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FD" defined at level 0 and "'FD ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FD1" defined at level 0 and "'FD1 ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FP" defined at level 0 and "'FP ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FP1" defined at level 0 and "'FP1 ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FI" defined at level 0 and "'FI ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FU" defined at level 0 and "'FU ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'SO" defined at level 0 and "'SO ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'PONB" defined at level 0 and "'PONB ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'ONB" defined at level 0 and "'ONB ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'PS" defined at level 0 and "'PS ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'NS" defined at level 0 and "'NS ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'TN" defined at level 0 and "'TN ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'QM" defined at level 0 and "'QM ( _ ; _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'CP" defined at level 0 and "'CP ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'QO" defined at level 0 and "'QO ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'QC" defined at level 0 and "'QC ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'[ _ , _ ]" defined at level 0 with arguments constr
+and "'[ _ ; _ ]" defined at level 0 with arguments constr at level 200
+have incompatible prefixes. One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'[ _ , _ ]" defined at level 0 with arguments constr,
+constr and "'[ _ , _ ; _ ]" defined at level 0 with arguments constr
+at level 200, constr at level 200 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FB1" defined at level 0 and "'FB1 ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 13, characters 0-169:
+Warning: Notations "'FGI" defined at level 0 and "'FGI ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 16, characters 0-43:
+Warning: Notations "'F_ _" defined at level 0 and "'F_ ( _ )"
+defined at level 8 have incompatible prefixes.
+One of them will likely not work.
+[notation-incompatible-prefix,parsing,default]
+File "./src/example/classical/qsvt.v", line 55, characters 2-97:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 60, characters 23-39:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 77, characters 2-39:
+Warning: Notation "[ NS of _ ]" is deprecated since mathcomp 2.0.0.
+Use NormalState.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 81, characters 42-63:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 84, characters 26-59:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 100, characters 11-117:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 102, characters 6-42:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 105, characters 9-95:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 106, characters 34-54:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 116, characters 2-93:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 120, characters 7-60:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 123, characters 2-58:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 129, characters 2-59:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 132, characters 7-60:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 135, characters 2-74:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 139, characters 2-53:
+Warning: Notation "[ QC of _ ]" is deprecated since mathcomp 2.0.0.
+Use QChannel.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 141, characters 2-130:
+Warning: Notation "[ QC of _ ]" is deprecated since mathcomp 2.0.0.
+Use QChannel.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 141, characters 37-58:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 147, characters 11-72:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 151, characters 9-41:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 349, characters 25-46:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 370, characters 32-65:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 370, characters 32-65:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 374, characters 32-65:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 374, characters 32-65:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 374, characters 32-65:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 417, characters 26-59:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 467, characters 2-65:
+Warning: Notation "[ unitary of _ ]" is deprecated since mathcomp 2.0.0.
+Use GisoLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 604, characters 2-63:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 607, characters 4-65:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 628, characters 12-45:
+Warning: Notation "[ QM of _ ]" is deprecated since mathcomp 2.0.0.
+Use QMeasure.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 729, characters 2-38:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+File "./src/example/classical/qsvt.v", line 731, characters 2-22:
+Warning: Notation "[ obs of _ ]" is deprecated since mathcomp 2.0.0.
+Use ObsLf.clone instead.
+[deprecated-notation-since-mathcomp-2.0.0,deprecated-since-mathcomp-2.0.0,deprecated-notation,deprecated,default]
+$ opam exec --switch=coqq -- rocq compile -w -all -R /home/zhou/Desktop/CoqQ/_build/default/src quantum -Q /tmp/qsvt-final-audit-3inqkgiz QSVTAudit /tmp/qsvt-final-audit-3inqkgiz/assumptions.v
+QSVTSynthesis.qsp_pair_converse
+     : forall (R : reals.Real.type) (d : nat)
+         (p q : poly.polynomial (complex.complex (reals.Real.sort R))),
+       QSVTPolynomial.valid_pair (R:=R) d p q ->
+       exists (prefix : list (reals.Real.sort R)) 
+       (last : reals.Real.sort R),
+         seq.size prefix = d /\
+         QSVTPolynomial.qsp_pair (R:=R) prefix last = (p, q)
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTRealCompletion.even_nonnegative_completion
+     : forall (F : reals.Real.type) (d : nat)
+         (p : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing F)),
+       is_true (ssrnat.leq (seq.size (poly.polyseq p)) (S (ssrnat.muln 2 d))) ->
+       poly.comp_poly
+         (nmodule.Algebra.opp
+            (poly.polyX
+               (rings_modules_and_algebras.GRing.NzRing.Exports.GRing_NzRing__to__GRing_NzSemiRing
+                  (reals.Real.Exports.reals_Real__to__GRing_NzRing F))))
+         p =
+       p ->
+       QSVTRealCompletion.interval_nonnegative (F:=F) p ->
+       exists
+         B
+          C : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing F),
+         QSVTCompletionBudget.completion_budget (F:=F) d B C /\
+         QSVTCompletion.completion_norm (R:=F) B C = p
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTRealPair.real_qsp_phase_witness
+     : forall (R : reals.Real.type) (d : nat)
+         (p : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing R)),
+       QSVTRealPair.admissible (R:=R) d p ->
+       exists (prefix : list (reals.Real.sort R)) 
+       (last : reals.Real.sort R),
+         seq.size prefix = d /\
+         nmodule.Algebra.add
+           (fst (QSVTPolynomial.qsp_pair (R:=R) prefix last))
+           (QSVTPolynomial.poly_star (R:=R)
+              (fst (QSVTPolynomial.qsp_pair (R:=R) prefix last))) =
+         rings_modules_and_algebras.GRing.scale
+           (nmodule.Algebra.natmul
+              (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                    (rings_modules_and_algebras.GRing.NzSemiRing.Exports.GRing_NzSemiRing__to__GRing_PzSemiRing
+                       (complex.ComplexField.complex_complex__canonical__GRing_NzSemiRing
+                          (reals.Real.Exports.reals_Real__to__GRing_Field R))))
+              (rings_modules_and_algebras.GRing.one
+                 (rings_modules_and_algebras.GRing.NzSemiRing.Exports.GRing_NzSemiRing__to__GRing_PzSemiRing
+                    (complex.ComplexField.complex_complex__canonical__GRing_NzSemiRing
+                       (reals.Real.Exports.reals_Real__to__GRing_Field R))))
+              2)
+           (QSVTRealPair.r_embed (R:=R) p) /\
+         nmodule.Algebra.add
+           (snd (QSVTPolynomial.qsp_pair (R:=R) prefix last))
+           (QSVTPolynomial.poly_star (R:=R)
+              (snd (QSVTPolynomial.qsp_pair (R:=R) prefix last))) =
+         nmodule.Algebra.zero
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTModel.qsvt_full_column
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+         (t : nat),
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (quantum.GisoLf.sort (QSVTModel.qsvt_prefix U JR JL d phi t))
+         (quantum.IsoLf.sort JR) =
+       (if ssrnat.odd t
+        then
+         QSVTModel.odd_column U JR JL (fst (QSVTModel.split_pair d phi t))
+           (snd (QSVTModel.split_pair d phi t))
+        else
+         QSVTModel.even_column U JR JL (fst (QSVTModel.split_pair d phi t))
+           (snd (QSVTModel.split_pair d phi t)))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTModel.qsvt_complex_even
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+         (t : nat),
+       ssrnat.odd t = false ->
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  H)
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  H)
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (hermitian.adj_lfun.body (quantum.IsoLf.sort JR))
+            (quantum.GisoLf.sort (QSVTModel.qsvt_prefix U JR JL d phi t)))
+         (quantum.IsoLf.sort JR) =
+       QSVTModel.sv_even (H:=HR) (K:=HL)
+         (fst (QSVTModel.scalar_pair d phi t)) (QSVTModel.encoded U JR JL)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTModel.qsvt_complex_odd
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+         (t : nat),
+       ssrnat.odd t = true ->
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HL)
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  H)
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  H)
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HL)
+            (hermitian.adj_lfun.body (quantum.IsoLf.sort JL))
+            (quantum.GisoLf.sort (QSVTModel.qsvt_prefix U JR JL d phi t)))
+         (quantum.IsoLf.sort JR) =
+       QSVTModel.sv_odd (H:=HR) (K:=HL) (fst (QSVTModel.scalar_pair d phi t))
+         (QSVTModel.encoded U JR JL)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTSVD.sv_even_svd
+     : forall (H K : hermitian.CanonicalHermitianSpace.type)
+         (A : hermitian.forward_hom
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   H)
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   K))
+         (p : poly.polynomial hermitian.C),
+       QSVTPolynomial.poly_parity (R:=hermitian.R.body) p false ->
+       hermitian.h2mx.body (QSVTModel.sv_even (H:=H) (K:=K) p A) =
+       matrix.mulmx
+         (matrix.mulmx
+            (svd.svd_v
+               (R:=complex.complex_complex__canonical__Num_ClosedField
+                     (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                        hermitian.R.body))
+               (hermitian.h2mx.body A))
+            (matrix.diag_mx
+               (matrix.matrix_of_fun.body matrix.matrix_key
+                  (fun (_ : fintype.ordinal 1)
+                     (j : fintype.ordinal
+                            (vector.dim
+                               (hermitian.CanonicalHermitianSpace.sort H))) =>
+                   poly.horner p
+                     (matrix.fun_of_matrix
+                        (svd.svd_d_exdr
+                           (R:=complex.complex_complex__canonical__Num_ClosedField
+                                 (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                                    hermitian.R.body))
+                           (p:=vector.dim
+                                 (vector.Vector.Exports.vector_Vector__to__vector_SemiVector
+                                    (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_Vector
+                                       K)))
+                           (q:=vector.dim
+                                 (hermitian.CanonicalHermitianSpace.sort H))
+                           (svd.svd_d
+                              (R:=complex.complex_complex__canonical__Num_ClosedField
+                                    (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                                       hermitian.R.body))
+                              (hermitian.h2mx.body A)))
+                        nmodule.Algebra.zero j)))))
+         (mxpred.adjmx
+            (R:=complex.complex_complex__canonical__Num_ClosedField
+                  (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                     hermitian.R.body))
+            (svd.svd_v
+               (R:=complex.complex_complex__canonical__Num_ClosedField
+                     (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                        hermitian.R.body))
+               (hermitian.h2mx.body A)))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTSVD.sv_odd_svd
+     : forall (H K : hermitian.CanonicalHermitianSpace.type)
+         (A : hermitian.forward_hom
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   H)
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   K))
+         (p : poly.polynomial hermitian.C),
+       QSVTPolynomial.poly_parity (R:=hermitian.R.body) p true ->
+       hermitian.h2mx.body (QSVTModel.sv_odd (H:=H) (K:=K) p A) =
+       matrix.mulmx
+         (matrix.mulmx
+            (svd.svd_u
+               (R:=complex.complex_complex__canonical__Num_ClosedField
+                     (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                        hermitian.R.body))
+               (hermitian.h2mx.body A))
+            (svd.cdiag_mx
+               (R:=complex.complex_complex__canonical__Num_ClosedField
+                     (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                        hermitian.R.body))
+               (p:=vector.dim
+                     (vector.Vector.Exports.vector_Vector__to__vector_SemiVector
+                        (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_Vector
+                           K)))
+               (q:=vector.dim (hermitian.CanonicalHermitianSpace.sort H))
+               (matrix.map_mx
+                  (fun
+                     z : rings_modules_and_algebras.GRing.NzSemiRing.sort
+                           hermitian.C =>
+                   poly.horner p z)
+                  (svd.svd_d
+                     (R:=complex.complex_complex__canonical__Num_ClosedField
+                           (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                              hermitian.R.body))
+                     (hermitian.h2mx.body A)))))
+         (mxpred.adjmx
+            (R:=complex.complex_complex__canonical__Num_ClosedField
+                  (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                     hermitian.R.body))
+            (svd.svd_v
+               (R:=complex.complex_complex__canonical__Num_ClosedField
+                     (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                        hermitian.R.body))
+               (hermitian.h2mx.body A)))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTSVD.sv_even_kernel
+     : forall (H K : hermitian.CanonicalHermitianSpace.type)
+         (A : hermitian.forward_hom
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   H)
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   K))
+         (p : poly.polynomial hermitian.C)
+         (v : hermitian.CanonicalHermitianSpace.sort H),
+       vector.fun_of_lfun A v = nmodule.Algebra.zero ->
+       vector.fun_of_lfun (QSVTModel.sv_even (H:=H) (K:=K) p A) v =
+       rings_modules_and_algebras.GRing.scale
+         (poly.horner p nmodule.Algebra.zero) v
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTSVD.sv_odd_kernel
+     : forall (H K : hermitian.CanonicalHermitianSpace.type)
+         (A : hermitian.forward_hom
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   H)
+                (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                   K))
+         (p : poly.polynomial hermitian.C)
+         (v : hermitian.CanonicalHermitianSpace.sort H),
+       vector.fun_of_lfun A v = nmodule.Algebra.zero ->
+       vector.fun_of_lfun (QSVTModel.sv_odd (H:=H) (K:=K) p A) v =
+       nmodule.Algebra.zero
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTWords.qsvt_prefix_adjoint_even
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body),
+       ssrnat.odd d = false ->
+       hermitian.adj_lfun.body
+         (quantum.GisoLf.sort (QSVTModel.qsvt_prefix U JR JL d phi d)) =
+       quantum.GisoLf.sort
+         (QSVTModel.qsvt_prefix U JR JL d
+            (fun j : nat => nmodule.Algebra.opp (phi (ssrnat.subn d j))) d)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTWords.qsvt_prefix_adjoint_odd
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body),
+       ssrnat.odd d = true ->
+       hermitian.adj_lfun.body
+         (quantum.GisoLf.sort (QSVTModel.qsvt_prefix U JR JL d phi d)) =
+       quantum.GisoLf.sort
+         (QSVTModel.qsvt_prefix
+            (quantum.GisoLf.phant_clone
+               (cT:=quantum.adj_lfun_body__canonical__quantum_GisoLf U)
+               (c:={|
+                     quantum.GisoLf.quantum_isBound1Lf_mixin :=
+                       quantum.HB_unnamed_factory_319
+                         (quantum.GisoLf.Exports.quantum_GisoLf__to__quantum_Bound1Lf
+                            U);
+                     quantum.GisoLf.quantum_Bound1_isIsoLf_mixin :=
+                       quantum.HB_unnamed_factory_431 U;
+                     quantum.GisoLf.quantum_Iso_isGisoLf_mixin :=
+                       quantum.HB_unnamed_factory_434 U
+                   |})
+               structures.id_phant structures.id_phant)
+            JL JR d
+            (fun j : nat => nmodule.Algebra.opp (phi (ssrnat.subn d j))) d)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTRows.real_qsvt_row_even
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body),
+       ssrnat.odd d = false ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (hermitian.adj_lfun.body
+            (QSVTModel.success_operator U JR JL d phi d))
+         (quantum.IsoLf.sort JR) =
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (quantum.IsoLf.sort JR)
+         (hermitian.adj_lfun.body
+            (QSVTModel.sv_even (H:=HR) (K:=HL)
+               (QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)))
+               (QSVTModel.encoded U JR JL)))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTRows.real_qsvt_row_odd
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body),
+       ssrnat.odd d = true ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HL)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (hermitian.adj_lfun.body
+            (QSVTModel.success_operator U JR JL d phi d))
+         (quantum.IsoLf.sort JL) =
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HL)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (quantum.IsoLf.sort JR)
+         (hermitian.adj_lfun.body
+            (QSVTModel.sv_odd (H:=HR) (K:=HL)
+               (QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)))
+               (QSVTModel.encoded U JR JL)))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTUniformPhase.real_polynomial_phase_witness
+     : forall (d : nat)
+         (p : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing
+                   hermitian.R.body)),
+       QSVTRealPair.admissible (R:=hermitian.R.body) d p ->
+       exists phi : nat -> reals.Real.sort hermitian.R.body,
+         QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) =
+         QSVTRealPair.r_embed (R:=hermitian.R.body) p /\
+         QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+         nmodule.Algebra.zero
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTImaginaryColumns.explicit_failure_column_even
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+         (t : nat),
+       ssrnat.odd t = false ->
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (QSVTImaginaryColumns.difference_operator U JR JL d phi t)
+         (quantum.IsoLf.sort JR) =
+       rings_modules_and_algebras.GRing.scale
+         {|
+           complex.Re := nmodule.Algebra.zero;
+           complex.Im :=
+             rings_modules_and_algebras.GRing.one
+               (reals.Real.Exports.reals_Real__to__GRing_PzSemiRing
+                  hermitian.R.body)
+         |} (QSVTImaginaryColumns.failure_column_even U JR JL d phi t)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTImaginaryColumns.explicit_failure_column_odd
+     : forall (H HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type H H) (JR : quantum.IsoLf.type HR H)
+         (JL : quantum.IsoLf.type HL H) (d : nat)
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+         (t : nat),
+       ssrnat.odd t = true ->
+       hermitian.forward_comp
+         (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)
+         (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               H)
+         (QSVTImaginaryColumns.difference_operator U JR JL d phi t)
+         (quantum.IsoLf.sort JR) =
+       rings_modules_and_algebras.GRing.scale
+         {|
+           complex.Re := nmodule.Algebra.zero;
+           complex.Im :=
+             rings_modules_and_algebras.GRing.one
+               (reals.Real.Exports.reals_Real__to__GRing_PzSemiRing
+                  hermitian.R.body)
+         |} (QSVTImaginaryColumns.failure_column_odd U JR JL d phi t)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTClassicalProgram.coherent_core_prefix
+     : forall (T : qreg.qType)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (PiR
+          PiL : quantum.ProjLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T))),
+       PiR = QSVTModel.range_projector JR ->
+       PiL = QSVTModel.range_projector JL ->
+       quantum.GisoLf.sort
+         (QSVTClassicalProgram.coherent_core (T:=T) U PiR PiL d phi) =
+       qtype.Multiplexer.body
+         (T1:=inhabited.Datatypes_bool__canonical__inhabited_FinInhabited)
+         (T2:=qreg.eval_qtype T)
+         (fun b : bool =>
+          quantum.GisoLf.sort
+            (QSVTModel.qsvt_prefix U JR JL d
+               (QSVTClassicalProgram.signed_phase phi b) d))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTClassicalProgram.qsvt_core_execution
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (PiR
+          PiL : quantum.ProjLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (s : language.ClassicalLanguage.store),
+       semantics.ClassicalDeterministic.execution
+         (QSVTClassicalProgram.qsvt_core qr U PiR PiL d phi x) s
+         (QSVTClassicalProgram.qsvt_final_store d x s)
+         (quantum.QChannel.sort
+            (QSVTClassicalProgram.qsvt_core_channel qr U PiR PiL d phi))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTClassicalProgram.qsvt_core_denote
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (PiR
+          PiL : quantum.ProjLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (s m : choice.Choice.sort qreg.cmem),
+       summable.VDistr.sort
+         (cqwhile.semtype_val
+            (semantics.ClassicalSemantics.denote
+               (QSVTClassicalProgram.qsvt_core qr U PiR PiL d phi x))
+            s)
+         m =
+       semantics.ClassicalDeterministic.point
+         (QSVTClassicalProgram.qsvt_final_store d x s)
+         (quantum.QChannel.sort
+            (QSVTClassicalProgram.qsvt_core_channel qr U PiR PiL d phi))
+         m
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTClassicalProgram.qsvt_heralded_branches
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (PiR
+          PiL : quantum.ProjLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (s : choice.Choice.sort qreg.cmem)
+         (rho : quantum.DenLf.type
+                  (hstensor.Hs.body
+                     (I:=qmem.QMemory.mem_label
+                           qmem.DefaultQMem.Exports.default_qmemory.body)
+                     (qmem.QMemory.mem_system
+                        (q:=qmem.DefaultQMem.Exports.default_qmemory.body))
+                     (finset.setTfor
+                        (qmem.QMemory.mem_label
+                           qmem.DefaultQMem.Exports.default_qmemory.body))))
+         (b : bool),
+       summable.VDistr.sort
+         (hoare.CQHoare.run
+            (QSVTClassicalProgram.qsvt_heralded qr U PiR PiL d phi x y)
+            (state.CQState.point s rho))
+         (qreg.cmset (QSVTClassicalProgram.qsvt_final_store d x s)
+            (T:=qreg.cvtype y) (qreg.cvname y) b) =
+       quantum.fun_of_superof
+         (QSVTClassicalProgram.herald_branch qr U PiR PiL d phi b)
+         (quantum.DenLf.sort rho)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTClassicalProgram.qsvt_heralded_total
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (PiR
+          PiL : quantum.ProjLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool)),
+       hoare.CQHoare.derives true assertion.CQAssertion.semantic_top
+         (QSVTClassicalProgram.qsvt_heralded qr U PiR PiL d phi x y)
+         assertion.CQAssertion.semantic_top
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTClassicalProgram.qsvt_heralded_mass
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (PiR
+          PiL : quantum.ProjLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (rho : state.CQState.state),
+       state.CQState.mass
+         (hoare.CQHoare.run
+            (QSVTClassicalProgram.qsvt_heralded qr U PiR PiL d phi x y) rho) =
+       state.CQState.mass rho
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+AncillaHeralding.register_success_kraus
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (V : bool ->
+              quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))),
+       AncillaHeralding.success_channel qr V =
+       quantum.krausso.body
+         (U:=hstensor.Hs.body
+               (I:=qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)
+               (qmem.QMemory.mem_system
+                  (q:=qmem.DefaultQMem.Exports.default_qmemory.body))
+               (finset.setTfor
+                  (qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)))
+         (V:=hstensor.Hs.body
+               (I:=qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)
+               (qmem.QMemory.mem_system
+                  (q:=qmem.DefaultQMem.Exports.default_qmemory.body))
+               (finset.setTfor
+                  (qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)))
+         (F:=fintype.Datatypes_bool__canonical__fintype_Finite)
+         (fun i : bool =>
+          hstensor.liftf_lf
+            (H:=qmem.QMemory.mem_system
+                  (q:=qmem.DefaultQMem.Exports.default_qmemory.body))
+            (S:=qmem.QMemory.qreg_set
+                  qmem.DefaultQMem.Exports.default_qmemory.body
+                  (qreg.qreg_base qr))
+            (qmem.QMemory.tf2f.body
+               qmem.DefaultQMem.Exports.default_qmemory.body
+               (qreg.qreg_base qr) (qreg.qreg_base qr)
+               (inhabited.tentf
+                  (S1:=inhabited.Datatypes_bool__canonical__inhabited_FinInhabited)
+                  (S2:=qreg.eval_qtype T)
+                  (T1:=inhabited.Datatypes_bool__canonical__inhabited_FinInhabited)
+                  (T2:=qreg.eval_qtype T)
+                  (hermitian.outp.body (inhabited.t2tv false)
+                     (inhabited.t2tv i))
+                  (quantum.Bound1Lf.sort
+                     (AncillaHeralding.symmetric_circuit V)))))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTFailureSemantics.register_failure_kraus
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (V : bool ->
+              quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))),
+       QSVTFailureSemantics.failure_channel qr V =
+       quantum.krausso.body
+         (U:=hstensor.Hs.body
+               (I:=qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)
+               (qmem.QMemory.mem_system
+                  (q:=qmem.DefaultQMem.Exports.default_qmemory.body))
+               (finset.setTfor
+                  (qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)))
+         (V:=hstensor.Hs.body
+               (I:=qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)
+               (qmem.QMemory.mem_system
+                  (q:=qmem.DefaultQMem.Exports.default_qmemory.body))
+               (finset.setTfor
+                  (qmem.QMemory.mem_label
+                     qmem.DefaultQMem.Exports.default_qmemory.body)))
+         (F:=fintype.Datatypes_bool__canonical__fintype_Finite)
+         (fun i : bool =>
+          hstensor.liftf_lf
+            (H:=qmem.QMemory.mem_system
+                  (q:=qmem.DefaultQMem.Exports.default_qmemory.body))
+            (S:=qmem.QMemory.qreg_set
+                  qmem.DefaultQMem.Exports.default_qmemory.body
+                  (qreg.qreg_base qr))
+            (qmem.QMemory.tf2f.body
+               qmem.DefaultQMem.Exports.default_qmemory.body
+               (qreg.qreg_base qr) (qreg.qreg_base qr)
+               (inhabited.tentf
+                  (S1:=inhabited.Datatypes_bool__canonical__inhabited_FinInhabited)
+                  (S2:=qreg.eval_qtype T)
+                  (T1:=inhabited.Datatypes_bool__canonical__inhabited_FinInhabited)
+                  (T2:=qreg.eval_qtype T)
+                  (hermitian.outp.body (inhabited.t2tv true)
+                     (inhabited.t2tv i))
+                  (quantum.Bound1Lf.sort
+                     (QSVTFailureSemantics.antisymmetric_circuit V)))))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTPolynomialCorrectness.even_preE
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C)
+         (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p)
+         (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+                nmodule.Algebra.zero)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (Hd : ssrnat.odd d = false) (E : quantum.ObsLf.type HR)
+         (s : choice.Choice.sort qreg.cmem),
+       quantum.ObsLf.sort
+         (hoare.CQHoare.pre true
+            (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x
+               y)
+            (QSVTPolynomialCorrectness.even_post qr JR d x y E) s) =
+       quantum.ObsLf.sort
+         (QSVTPolynomialCorrectness.even_pre qr U JR JL (d:=d) (phi:=phi) Hp
+            Hq0 Hd E s)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTPolynomialCorrectness.odd_preE
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C)
+         (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p)
+         (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+                nmodule.Algebra.zero)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (Hd : ssrnat.odd d = true) (E : quantum.ObsLf.type HL)
+         (s : choice.Choice.sort qreg.cmem),
+       quantum.ObsLf.sort
+         (hoare.CQHoare.pre true
+            (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x
+               y)
+            (QSVTPolynomialCorrectness.odd_post qr JL d x y E) s) =
+       quantum.ObsLf.sort
+         (QSVTPolynomialCorrectness.odd_pre qr U JR JL (d:=d) (phi:=phi) Hp
+            Hq0 Hd E s)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTPolynomialCorrectness.even_correct
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C)
+         (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p)
+         (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+                nmodule.Algebra.zero)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (Hd : ssrnat.odd d = false) (E : quantum.ObsLf.type HR),
+       hoare.CQHoare.derives true
+         (QSVTPolynomialCorrectness.even_pre qr U JR JL (d:=d) (phi:=phi) Hp
+            Hq0 Hd E)
+         (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x y)
+         (QSVTPolynomialCorrectness.even_post qr JR d x y E)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTPolynomialCorrectness.odd_correct
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C)
+         (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p)
+         (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+                nmodule.Algebra.zero)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (Hd : ssrnat.odd d = true) (E : quantum.ObsLf.type HL),
+       hoare.CQHoare.derives true
+         (QSVTPolynomialCorrectness.odd_pre qr U JR JL (d:=d) (phi:=phi) Hp
+            Hq0 Hd E)
+         (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x y)
+         (QSVTPolynomialCorrectness.odd_post qr JL d x y E)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTPolynomialCorrectness.even_expect
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C)
+         (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p)
+         (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+                nmodule.Algebra.zero)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (Hd : ssrnat.odd d = false) (E : quantum.ObsLf.type HR)
+         (rho : state.CQState.state),
+       assertion.CQAssertion.expect
+         (QSVTPolynomialCorrectness.even_pre qr U JR JL (d:=d) (phi:=phi) Hp
+            Hq0 Hd E)
+         rho =
+       assertion.CQAssertion.expect
+         (QSVTPolynomialCorrectness.even_post qr JR d x y E)
+         (hoare.CQHoare.run
+            (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x
+               y)
+            rho)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTPolynomialCorrectness.odd_expect
+     : forall (T : qreg.qType) (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C)
+         (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p)
+         (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+                nmodule.Algebra.zero)
+         (x : language.ClassicalLanguage.variable
+                language.ClassicalLanguage.Integer)
+         (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool))
+         (Hd : ssrnat.odd d = true) (E : quantum.ObsLf.type HL)
+         (rho : state.CQState.state),
+       assertion.CQAssertion.expect
+         (QSVTPolynomialCorrectness.odd_pre qr U JR JL (d:=d) (phi:=phi) Hp
+            Hq0 Hd E)
+         rho =
+       assertion.CQAssertion.expect
+         (QSVTPolynomialCorrectness.odd_post qr JL d x y E)
+         (hoare.CQHoare.run
+            (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x
+               y)
+            rho)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTPolynomialCorrectness.qsvt_framework_and_program
+     : forall (d : nat)
+         (p : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing
+                   hermitian.R.body)),
+       QSVTRealPair.admissible (R:=hermitian.R.body) d p ->
+       exists
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+       (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) =
+             QSVTRealPair.r_embed (R:=hermitian.R.body) p) 
+       (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+              nmodule.Algebra.zero),
+         forall (T : qreg.qType)
+           (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+           (HR HL : hermitian.CanonicalHermitianSpace.type)
+           (U : quantum.GisoLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JR : quantum.IsoLf.type HR
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JL : quantum.IsoLf.type HL
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (x : language.ClassicalLanguage.variable
+                  language.ClassicalLanguage.Integer)
+           (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool)),
+         (forall (Hd : ssrnat.odd d = false) (E : quantum.ObsLf.type HR),
+          hoare.CQHoare.derives true
+            (QSVTPolynomialCorrectness.even_pre qr U JR JL (d:=d) (phi:=phi)
+               Hp Hq0 Hd E)
+            (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x
+               y)
+            (QSVTPolynomialCorrectness.even_post qr JR d x y E)) /\
+         (forall (Hd : ssrnat.odd d = true) (E : quantum.ObsLf.type HL),
+          hoare.CQHoare.derives true
+            (QSVTPolynomialCorrectness.odd_pre qr U JR JL (d:=d) (phi:=phi)
+               Hp Hq0 Hd E)
+            (QSVTPolynomialCorrectness.polynomial_command qr U JR JL d phi x
+               y)
+            (QSVTPolynomialCorrectness.odd_post qr JL d x y E))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTNativeStateCorrectness.qsvt_native_framework_contract
+     : forall (d : nat)
+         (p : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing
+                   hermitian.R.body)),
+       QSVTRealPair.admissible (R:=hermitian.R.body) d p ->
+       exists
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+       (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) =
+             QSVTRealPair.r_embed (R:=hermitian.R.body) p) 
+       (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+              nmodule.Algebra.zero),
+         forall (T : qreg.qType)
+           (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+           (HR HL : hermitian.CanonicalHermitianSpace.type)
+           (U : quantum.GisoLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JR : quantum.IsoLf.type HR
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JL : quantum.IsoLf.type HL
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (x : language.ClassicalLanguage.variable
+                  language.ClassicalLanguage.Integer)
+           (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool)),
+         (forall Hd : ssrnat.odd d = false,
+          QSVTClassicalProgram.qsvt_polynomial_contract qr U
+            (QSVTModel.range_projector JR) (QSVTModel.range_projector JL) d
+            phi x y JR JR
+            (QSVTPolynomialCorrectness.even_target (T:=T) U JR JL (d:=d)
+               (phi:=phi) Hp Hq0 Hd)) /\
+         (forall Hd : ssrnat.odd d = true,
+          QSVTClassicalProgram.qsvt_polynomial_contract qr U
+            (QSVTModel.range_projector JR) (QSVTModel.range_projector JL) d
+            phi x y JR JL
+            (QSVTPolynomialCorrectness.odd_target (T:=T) U JR JL (d:=d)
+               (phi:=phi) Hp Hq0 Hd))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTNativeStateCorrectness.qsvt_framework_exact
+     : forall (d : nat)
+         (p : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing
+                   hermitian.R.body)),
+       QSVTRealPair.admissible (R:=hermitian.R.body) d p ->
+       exists
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+       (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) =
+             QSVTRealPair.r_embed (R:=hermitian.R.body) p) 
+       (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+              nmodule.Algebra.zero),
+         forall (T : qreg.qType)
+           (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+           (HR HL : hermitian.CanonicalHermitianSpace.type)
+           (U : quantum.GisoLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JR : quantum.IsoLf.type HR
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JL : quantum.IsoLf.type HL
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (x : language.ClassicalLanguage.variable
+                  language.ClassicalLanguage.Integer)
+           (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool)),
+         QSVTNativeStateCorrectness.native_exact_contract qr U JR JL (d:=d)
+           (phi:=phi) Hp Hq0 x y
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTNormCompleteness.symmetric_antisymmetric_complete
+     : forall (T : inhabited.FinInhabited.type)
+         (V : bool ->
+              quantum.GisoLf.type (inhabited.ihb_chsType.body T)
+                (inhabited.ihb_chsType.body T)),
+       nmodule.Algebra.add
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body T))
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body T))
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body T))
+            (hermitian.adj_lfun.body
+               (quantum.Bound1Lf.sort (AncillaHeralding.symmetric_circuit V)))
+            (quantum.Bound1Lf.sort (AncillaHeralding.symmetric_circuit V)))
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body T))
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body T))
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body T))
+            (hermitian.adj_lfun.body
+               (quantum.Bound1Lf.sort
+                  (QSVTFailureSemantics.antisymmetric_circuit V)))
+            (quantum.Bound1Lf.sort
+               (QSVTFailureSemantics.antisymmetric_circuit V))) =
+       hermitian.forward_id
+         (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+            (inhabited.ihb_chsType.body T))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeCompleteness.qsvt_framework_complete
+     : forall (d : nat)
+         (p : poly.polynomial
+                (reals.Real.Exports.reals_Real__to__GRing_NzSemiRing
+                   hermitian.R.body)),
+       QSVTRealPair.admissible (R:=hermitian.R.body) d p ->
+       exists
+         (phi : nat -> reals.Real.sort hermitian.R.body) 
+       (Hp : QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) =
+             QSVTRealPair.r_embed (R:=hermitian.R.body) p) 
+       (Hq0 : QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+              nmodule.Algebra.zero),
+         forall (T : qreg.qType)
+           (qr : qreg.wf_qreg (qreg.QPair qreg.QBool T))
+           (HR HL : hermitian.CanonicalHermitianSpace.type)
+           (U : quantum.GisoLf.type
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JR : quantum.IsoLf.type HR
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (JL : quantum.IsoLf.type HL
+                   (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+           (x : language.ClassicalLanguage.variable
+                  language.ClassicalLanguage.Integer)
+           (y : language.ClassicalLanguage.variable (qreg.QType qreg.QBool)),
+         QSVTNativeStateCorrectness.native_exact_contract qr U JR JL (d:=d)
+           (phi:=phi) Hp Hq0 x y /\
+         (ssrnat.odd d = false ->
+          nmodule.Algebra.add
+            (hermitian.forward_comp
+               (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (hermitian.adj_lfun.body
+                  (QSVTModel.sv_even (H:=HR) (K:=HL)
+                     (QSVTRealPair.r_embed (R:=hermitian.R.body) p)
+                     (QSVTModel.encoded U JR JL)))
+               (QSVTModel.sv_even (H:=HR) (K:=HL)
+                  (QSVTRealPair.r_embed (R:=hermitian.R.body) p)
+                  (QSVTModel.encoded U JR JL)))
+            (hermitian.forward_comp
+               (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+               (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (hermitian.adj_lfun.body
+                  (QSVTImaginaryColumns.failure_column_even U JR JL d phi d))
+               (QSVTImaginaryColumns.failure_column_even U JR JL d phi d)) =
+          hermitian.forward_id
+            (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR)) /\
+         (ssrnat.odd d = true ->
+          nmodule.Algebra.add
+            (hermitian.forward_comp
+               (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HL)
+               (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (hermitian.adj_lfun.body
+                  (QSVTModel.sv_odd (H:=HR) (K:=HL)
+                     (QSVTRealPair.r_embed (R:=hermitian.R.body) p)
+                     (QSVTModel.encoded U JR JL)))
+               (QSVTModel.sv_odd (H:=HR) (K:=HL)
+                  (QSVTRealPair.r_embed (R:=hermitian.R.body) p)
+                  (QSVTModel.encoded U JR JL)))
+            (hermitian.forward_comp
+               (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+               (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                     HR)
+               (hermitian.adj_lfun.body
+                  (QSVTImaginaryColumns.failure_column_odd U JR JL d phi d))
+               (QSVTImaginaryColumns.failure_column_odd U JR JL d phi d)) =
+          hermitian.forward_id
+            (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+               HR))
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+qreg.G : qreg.context
+QSVTNativeCompleteness.native_even_completion_gram
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = false ->
+       nmodule.Algebra.add
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (hermitian.adj_lfun.body
+               (QSVTModel.sv_even (H:=HR) (K:=HL) p
+                  (QSVTModel.encoded U JR JL)))
+            (QSVTModel.sv_even (H:=HR) (K:=HL) p (QSVTModel.encoded U JR JL)))
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (hermitian.adj_lfun.body
+               (QSVTImaginaryColumns.failure_column_even U JR JL d phi d))
+            (QSVTImaginaryColumns.failure_column_even U JR JL d phi d)) =
+       hermitian.forward_id
+         (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+            HR)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeCompleteness.native_odd_completion_gram
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = true ->
+       nmodule.Algebra.add
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HL)
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (hermitian.adj_lfun.body
+               (QSVTModel.sv_odd (H:=HR) (K:=HL) p
+                  (QSVTModel.encoded U JR JL)))
+            (QSVTModel.sv_odd (H:=HR) (K:=HL) p (QSVTModel.encoded U JR JL)))
+         (hermitian.forward_comp
+            (U:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (V:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+            (W:=hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                  HR)
+            (hermitian.adj_lfun.body
+               (QSVTImaginaryColumns.failure_column_odd U JR JL d phi d))
+            (QSVTImaginaryColumns.failure_column_odd U JR JL d phi d)) =
+       hermitian.forward_id
+         (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+            HR)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeCompleteness.native_even_outcome_mass
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = false ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       nmodule.Algebra.add
+         (quantum.lftrace (H:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.fun_of_superof
+               (quantum.formso
+                  (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.Bound1Lf.sort
+                     (AncillaHeralding.symmetric_circuit
+                        (QSVTClassicalProgram.sector_core (T:=T) U
+                           (QSVTModel.range_projector JR)
+                           (QSVTModel.range_projector JL) d phi))))
+               (quantum.formlf.body (U:=HR)
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.IsoLf.sort JR) rho)))
+         (quantum.lftrace (H:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.fun_of_superof
+               (quantum.formso
+                  (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.Bound1Lf.sort
+                     (QSVTFailureSemantics.antisymmetric_circuit
+                        (QSVTClassicalProgram.sector_core (T:=T) U
+                           (QSVTModel.range_projector JR)
+                           (QSVTModel.range_projector JL) d phi))))
+               (quantum.formlf.body (U:=HR)
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.IsoLf.sort JR) rho))) =
+       quantum.lftrace (H:=HR) rho
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeCompleteness.native_odd_outcome_mass
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = true ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       nmodule.Algebra.add
+         (quantum.lftrace (H:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.fun_of_superof
+               (quantum.formso
+                  (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.Bound1Lf.sort
+                     (AncillaHeralding.symmetric_circuit
+                        (QSVTClassicalProgram.sector_core (T:=T) U
+                           (QSVTModel.range_projector JR)
+                           (QSVTModel.range_projector JL) d phi))))
+               (quantum.formlf.body (U:=HR)
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.IsoLf.sort JR) rho)))
+         (quantum.lftrace (H:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.fun_of_superof
+               (quantum.formso
+                  (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.Bound1Lf.sort
+                     (QSVTFailureSemantics.antisymmetric_circuit
+                        (QSVTClassicalProgram.sector_core (T:=T) U
+                           (QSVTModel.range_projector JR)
+                           (QSVTModel.range_projector JL) d phi))))
+               (quantum.formlf.body (U:=HR)
+                  (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                  (quantum.IsoLf.sort JR) rho))) =
+       quantum.lftrace (H:=HR) rho
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeStateCorrectness.native_even_success_density
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = false ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       quantum.fun_of_superof
+         (quantum.formso (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.Bound1Lf.sort
+               (AncillaHeralding.symmetric_circuit
+                  (QSVTClassicalProgram.sector_core (T:=T) U
+                     (QSVTModel.range_projector JR)
+                     (QSVTModel.range_projector JL) d phi))))
+         (quantum.formlf.body (U:=HR)
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.IsoLf.sort JR) rho) =
+       quantum.formlf.body (U:=HR)
+         (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+         (quantum.IsoLf.sort JR)
+         (quantum.formlf.body (U:=HR) (V:=HR)
+            (QSVTModel.sv_even (H:=HR) (K:=HL) p (QSVTModel.encoded U JR JL))
+            rho)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeStateCorrectness.native_odd_success_density
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = true ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       quantum.fun_of_superof
+         (quantum.formso (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.Bound1Lf.sort
+               (AncillaHeralding.symmetric_circuit
+                  (QSVTClassicalProgram.sector_core (T:=T) U
+                     (QSVTModel.range_projector JR)
+                     (QSVTModel.range_projector JL) d phi))))
+         (quantum.formlf.body (U:=HR)
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.IsoLf.sort JR) rho) =
+       quantum.formlf.body (U:=HL)
+         (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+         (quantum.IsoLf.sort JL)
+         (quantum.formlf.body (U:=HR) (V:=HL)
+            (QSVTModel.sv_odd (H:=HR) (K:=HL) p (QSVTModel.encoded U JR JL))
+            rho)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeStateCorrectness.native_even_success_mass
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = false ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       quantum.lftrace (H:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+         (quantum.fun_of_superof
+            (quantum.formso
+               (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+               (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+               (quantum.Bound1Lf.sort
+                  (AncillaHeralding.symmetric_circuit
+                     (QSVTClassicalProgram.sector_core (T:=T) U
+                        (QSVTModel.range_projector JR)
+                        (QSVTModel.range_projector JL) d phi))))
+            (quantum.formlf.body (U:=HR)
+               (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+               (quantum.IsoLf.sort JR) rho)) =
+       quantum.lftrace (H:=HR)
+         (quantum.fun_of_superof
+            (quantum.formso (U:=HR) (V:=HR)
+               (QSVTModel.sv_even (H:=HR) (K:=HL) p
+                  (QSVTModel.encoded U JR JL)))
+            rho)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeStateCorrectness.native_odd_success_mass
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body)
+         (p : poly.polynomial hermitian.C),
+       QSVTModel.poly_real (fst (QSVTModel.scalar_pair d phi d)) = p ->
+       QSVTModel.poly_real (snd (QSVTModel.scalar_pair d phi d)) =
+       nmodule.Algebra.zero ->
+       ssrnat.odd d = true ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       quantum.lftrace (H:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+         (quantum.fun_of_superof
+            (quantum.formso
+               (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+               (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+               (quantum.Bound1Lf.sort
+                  (AncillaHeralding.symmetric_circuit
+                     (QSVTClassicalProgram.sector_core (T:=T) U
+                        (QSVTModel.range_projector JR)
+                        (QSVTModel.range_projector JL) d phi))))
+            (quantum.formlf.body (U:=HR)
+               (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+               (quantum.IsoLf.sort JR) rho)) =
+       quantum.lftrace (H:=HL)
+         (quantum.fun_of_superof
+            (quantum.formso (U:=HR) (V:=HL)
+               (QSVTModel.sv_odd (H:=HR) (K:=HL) p
+                  (QSVTModel.encoded U JR JL)))
+            rho)
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeStateCorrectness.native_even_failure_density
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body),
+       ssrnat.odd d = false ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       quantum.fun_of_superof
+         (quantum.formso (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.Bound1Lf.sort
+               (QSVTFailureSemantics.antisymmetric_circuit
+                  (QSVTClassicalProgram.sector_core (T:=T) U
+                     (QSVTModel.range_projector JR)
+                     (QSVTModel.range_projector JL) d phi))))
+         (quantum.formlf.body (U:=HR)
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.IsoLf.sort JR) rho) =
+       quantum.formlf.body (U:=HR)
+         (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+         (QSVTImaginaryColumns.failure_column_even U JR JL d phi d) rho
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTNativeStateCorrectness.native_odd_failure_density
+     : forall (T : qreg.qType)
+         (HR HL : hermitian.CanonicalHermitianSpace.type)
+         (U : quantum.GisoLf.type
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T))
+                (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JR : quantum.IsoLf.type HR
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (JL : quantum.IsoLf.type HL
+                 (inhabited.ihb_chsType.body (qreg.eval_qtype T)))
+         (d : nat) (phi : nat -> reals.Real.sort hermitian.R.body),
+       ssrnat.odd d = true ->
+       forall
+         rho : hermitian.forward_hom
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR)
+                 (hermitian.CanonicalHermitianSpace.Exports.hermitian_CanonicalHermitianSpace__to__vector_SemiVector
+                    HR),
+       quantum.fun_of_superof
+         (quantum.formso (U:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.Bound1Lf.sort
+               (QSVTFailureSemantics.antisymmetric_circuit
+                  (QSVTClassicalProgram.sector_core (T:=T) U
+                     (QSVTModel.range_projector JR)
+                     (QSVTModel.range_projector JL) d phi))))
+         (quantum.formlf.body (U:=HR)
+            (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+            (quantum.IsoLf.sort JR) rho) =
+       quantum.formlf.body (U:=HR)
+         (V:=inhabited.ihb_chsType.body (qreg.eval_qtype T))
+         (QSVTImaginaryColumns.failure_column_odd U JR JL d phi d) rho
+Axioms:
+ClassicalDedekindReals.sig_not_dec : forall P : Prop, {~ ~ P} + {~ P}
+ClassicalDedekindReals.sig_forall_dec :
+  forall P : nat -> Prop,
+  (forall n : nat, {P n} + {~ P n}) ->
+  {n : nat | ~ P n} + {forall n : nat, P n}
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+Epsilon.epsilon_statement :
+  forall (A : Type) (P : A -> Prop),
+  inhabited A -> {x : A | (exists x0 : A, P x0) -> P x}
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTExamples.qsp_reflection_W_bridge
+     : forall (R : reals.Real.type)
+         (x s : complex.complex (reals.Real.sort R)),
+       QSVTExamples.scalar_reflection (R:=R) x s =
+       rings_modules_and_algebras.GRing.scale
+         (nmodule.Algebra.opp
+            {|
+              complex.Re := nmodule.Algebra.zero;
+              complex.Im :=
+                rings_modules_and_algebras.GRing.one
+                  (rings_modules_and_algebras.GRing.NzRing.Exports.GRing_NzRing__to__GRing_PzSemiRing
+                     (divalg.GRing.Field.Exports.GRing_Field__to__GRing_NzRing
+                        (reals.Real.Exports.reals_Real__to__GRing_Field R)))
+            |})
+         (matrix.mulmx
+            (matrix.mulmx
+               (QSVTExamples.scalar_diagonal (R:=R)
+                  (rings_modules_and_algebras.GRing.mul
+                     trigonometry_functions.pi
+                     (divalg.GRing.inv
+                        (nmodule.Algebra.natmul
+                           (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                                 (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                                    (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                       R)))
+                           (rings_modules_and_algebras.GRing.one
+                              (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                                 (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                    R)))
+                           4))))
+               (QSVTExamples.scalar_W (R:=R) x s))
+            (QSVTExamples.scalar_diagonal (R:=R)
+               (rings_modules_and_algebras.GRing.mul
+                  trigonometry_functions.pi
+                  (divalg.GRing.inv
+                     (nmodule.Algebra.natmul
+                        (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                              (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                                 (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                    R)))
+                        (rings_modules_and_algebras.GRing.one
+                           (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                              (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                 R)))
+                        4)))))
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTExamples.qsp_example_degree_zero
+     : forall (R : reals.Real.type) (c : reals.Real.sort R),
+       is_true
+         (preorder.Order.le
+            (nmodule.Algebra.opp
+               (rings_modules_and_algebras.GRing.one
+                  (rings_modules_and_algebras.GRing.PzRing.Exports.join_GRing_PzRing_between_Algebra_BaseZmodule_and_GRing_PzSemiRing
+                     (numdomain.Num.NumDomain.Exports.join_Num_NumDomain_between_Num_POrderZmodule_and_GRing_PzRing
+                        (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))))
+            c &&
+          preorder.Order.le c
+            (rings_modules_and_algebras.GRing.one
+               (numdomain.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_Preorder_and_GRing_PzSemiRing
+                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->
+       QSVTPolynomial.qsp_pair (R:=R) nil
+         (trigonometry_functions.acos.body c) =
+       (poly.polyC
+          {|
+            complex.Re := c;
+            complex.Im :=
+              numfield.Num.Def.sqrtr
+                (nmodule.Algebra.add
+                   (rings_modules_and_algebras.GRing.one
+                      (rings_modules_and_algebras.GRing.PzRing.Exports.join_GRing_PzRing_between_Algebra_BaseZmodule_and_GRing_PzSemiRing
+                         (reals.Real.Exports.reals_Real__to__GRing_PzRing R)))
+                   (nmodule.Algebra.opp
+                      (rings_modules_and_algebras.GRing.exp
+                         (R:=reals.Real.Exports.reals_Real__to__GRing_PzSemiRing
+                               R)
+                         c 2)))
+          |},
+        nmodule.Algebra.zero)
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTExamples.qsp_example_degree_one_X
+     : forall R : reals.Real.type,
+       QSVTPolynomial.qsp_pair (R:=R)
+         (rings_modules_and_algebras.GRing.mul trigonometry_functions.pi
+            (divalg.GRing.inv
+               (nmodule.Algebra.natmul
+                  (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                        (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                           (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                              R)))
+                  (rings_modules_and_algebras.GRing.one
+                     (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                        (reals.Real.Exports.reals_Real__to__GRing_UnitRing R)))
+                  4))
+          :: nil)
+         (nmodule.Algebra.opp
+            (rings_modules_and_algebras.GRing.mul trigonometry_functions.pi
+               (divalg.GRing.inv
+                  (nmodule.Algebra.natmul
+                     (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                           (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                              (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                 R)))
+                     (rings_modules_and_algebras.GRing.one
+                        (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                           (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                              R)))
+                     4)))) =
+       (poly.polyX (complex.complex (reals.Real.sort R)),
+        poly.polyC
+          (nmodule.Algebra.opp
+             {|
+               complex.Re := nmodule.Algebra.zero;
+               complex.Im :=
+                 rings_modules_and_algebras.GRing.one
+                   (rings_modules_and_algebras.GRing.NzRing.Exports.GRing_NzRing__to__GRing_PzSemiRing
+                      (divalg.GRing.Field.Exports.GRing_Field__to__GRing_NzRing
+                         (reals.Real.Exports.reals_Real__to__GRing_Field R)))
+             |}))
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTExamples.qsp_example_degree_one_zero
+     : forall R : reals.Real.type,
+       QSVTPolynomial.qsp_pair (R:=R) (nmodule.Algebra.zero :: nil)
+         (rings_modules_and_algebras.GRing.mul trigonometry_functions.pi
+            (divalg.GRing.inv
+               (nmodule.Algebra.natmul
+                  (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                        (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                           (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                              R)))
+                  (rings_modules_and_algebras.GRing.one
+                     (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                        (reals.Real.Exports.reals_Real__to__GRing_UnitRing R)))
+                  2))) =
+       (rings_modules_and_algebras.GRing.mul
+          (poly.polyC
+             {|
+               complex.Re := nmodule.Algebra.zero;
+               complex.Im :=
+                 rings_modules_and_algebras.GRing.one
+                   (divalg.GRing.Field.Exports.GRing_Field__to__GRing_PzSemiRing
+                      (reals.Real.Exports.reals_Real__to__GRing_Field R))
+             |})
+          (poly.polyX
+             (complex.ComplexField.complex_complex__canonical__GRing_NzSemiRing
+                (reals.Real.Exports.reals_Real__to__GRing_Field R))),
+        poly.polyC
+          {|
+            complex.Re := nmodule.Algebra.zero;
+            complex.Im :=
+              rings_modules_and_algebras.GRing.one
+                (divalg.GRing.Field.Exports.GRing_Field__to__GRing_PzSemiRing
+                   (reals.Real.Exports.reals_Real__to__GRing_Field R))
+          |})
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTExamples.qsp_example_degree_two_one
+     : forall R : reals.Real.type,
+       QSVTPolynomial.qsp_pair (R:=R)
+         (nmodule.Algebra.zero :: nmodule.Algebra.zero :: nil)
+         nmodule.Algebra.zero =
+       (rings_modules_and_algebras.GRing.one
+          (poly.poly_polynomial__canonical__GRing_PzSemiRing
+             (complex.complex (reals.Real.sort R))),
+        nmodule.Algebra.zero)
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTExamples.qsp_example_degree_two_chebyshev
+     : forall R : reals.Real.type,
+       QSVTPolynomial.qsp_pair (R:=R)
+         (rings_modules_and_algebras.GRing.mul trigonometry_functions.pi
+            (divalg.GRing.inv
+               (nmodule.Algebra.natmul
+                  (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                        (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                           (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                              R)))
+                  (rings_modules_and_algebras.GRing.one
+                     (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                        (reals.Real.Exports.reals_Real__to__GRing_UnitRing R)))
+                  4))
+          :: nmodule.Algebra.opp
+               (rings_modules_and_algebras.GRing.mul
+                  trigonometry_functions.pi
+                  (divalg.GRing.inv
+                     (nmodule.Algebra.natmul
+                        (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                              (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                                 (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                    R)))
+                        (rings_modules_and_algebras.GRing.one
+                           (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                              (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                 R)))
+                        2)))
+             :: nil)
+         (rings_modules_and_algebras.GRing.mul trigonometry_functions.pi
+            (divalg.GRing.inv
+               (nmodule.Algebra.natmul
+                  (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                        (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                           (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                              R)))
+                  (rings_modules_and_algebras.GRing.one
+                     (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                        (reals.Real.Exports.reals_Real__to__GRing_UnitRing R)))
+                  4))) =
+       (nmodule.Algebra.add
+          (rings_modules_and_algebras.GRing.scale
+             (nmodule.Algebra.natmul
+                (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                      (rings_modules_and_algebras.GRing.NzSemiRing.Exports.GRing_NzSemiRing__to__GRing_PzSemiRing
+                         (complex.complex (reals.Real.sort R))))
+                (rings_modules_and_algebras.GRing.one
+                   (rings_modules_and_algebras.GRing.NzSemiRing.Exports.GRing_NzSemiRing__to__GRing_PzSemiRing
+                      (complex.complex (reals.Real.sort R))))
+                2)
+             (rings_modules_and_algebras.GRing.exp
+                (R:=poly.poly_polynomial__canonical__GRing_PzSemiRing
+                      (complex.complex (reals.Real.sort R)))
+                (poly.polyX (complex.complex (reals.Real.sort R))) 2))
+          (nmodule.Algebra.opp
+             (rings_modules_and_algebras.GRing.one
+                (rings_modules_and_algebras.GRing.PzRing.Exports.join_GRing_PzRing_between_Algebra_BaseZmodule_and_GRing_PzSemiRing
+                   (rings_modules_and_algebras.GRing.PzLalgebra.Exports.join_GRing_PzLalgebra_between_GRing_LSemiModule_and_GRing_PzRing
+                      (poly.poly_polynomial__canonical__GRing_PzLalgebra
+                         (complex.ComplexField.complex_complex__canonical__GRing_NzRing
+                            (reals.Real.Exports.reals_Real__to__GRing_Field R))))))),
+        rings_modules_and_algebras.GRing.mul
+          (poly.polyC
+             (rings_modules_and_algebras.GRing.mul
+                (nmodule.Algebra.opp
+                   (nmodule.Algebra.natmul
+                      (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                            (complex.ComplexField.complex_complex__canonical__GRing_PzSemiRing
+                               (reals.Real.Exports.reals_Real__to__GRing_Field
+                                  R)))
+                      (rings_modules_and_algebras.GRing.one
+                         (complex.ComplexField.complex_complex__canonical__GRing_PzSemiRing
+                            (reals.Real.Exports.reals_Real__to__GRing_Field R)))
+                      2))
+                {|
+                  complex.Re := nmodule.Algebra.zero;
+                  complex.Im :=
+                    rings_modules_and_algebras.GRing.one
+                      (divalg.GRing.Field.Exports.GRing_Field__to__GRing_PzSemiRing
+                         (reals.Real.Exports.reals_Real__to__GRing_Field R))
+                |}))
+          (poly.polyX
+             (rings_modules_and_algebras.GRing.NzRing.Exports.join_GRing_NzRing_between_Algebra_BaseZmodule_and_GRing_NzSemiRing
+                (complex.ComplexField.complex_complex__canonical__GRing_NzRing
+                   (reals.Real.Exports.reals_Real__to__GRing_Field R)))))
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTExamples.qsp_example_degree_two_square
+     : forall R : reals.Real.type,
+       QSVTPolynomial.qsp_pair (R:=R)
+         (rings_modules_and_algebras.GRing.mul trigonometry_functions.pi
+            (divalg.GRing.inv
+               (nmodule.Algebra.natmul
+                  (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                        (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                           (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                              R)))
+                  (rings_modules_and_algebras.GRing.one
+                     (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                        (reals.Real.Exports.reals_Real__to__GRing_UnitRing R)))
+                  8))
+          :: nmodule.Algebra.opp
+               (rings_modules_and_algebras.GRing.mul
+                  trigonometry_functions.pi
+                  (divalg.GRing.inv
+                     (nmodule.Algebra.natmul
+                        (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                              (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                                 (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                    R)))
+                        (rings_modules_and_algebras.GRing.one
+                           (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                              (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                                 R)))
+                        4)))
+             :: nil)
+         (rings_modules_and_algebras.GRing.mul trigonometry_functions.pi
+            (divalg.GRing.inv
+               (nmodule.Algebra.natmul
+                  (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                        (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                           (reals.Real.Exports.reals_Real__to__GRing_UnitRing
+                              R)))
+                  (rings_modules_and_algebras.GRing.one
+                     (divalg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_PzSemiRing
+                        (reals.Real.Exports.reals_Real__to__GRing_UnitRing R)))
+                  8))) =
+       (nmodule.Algebra.add
+          (rings_modules_and_algebras.GRing.exp
+             (R:=poly.poly_polynomial__canonical__GRing_PzSemiRing
+                   (complex.complex (reals.Real.sort R)))
+             (poly.polyX (complex.complex (reals.Real.sort R))) 2)
+          (rings_modules_and_algebras.GRing.mul
+             (poly.polyC
+                {|
+                  complex.Re := nmodule.Algebra.zero;
+                  complex.Im :=
+                    rings_modules_and_algebras.GRing.one
+                      (divalg.GRing.Field.Exports.GRing_Field__to__GRing_PzSemiRing
+                         (reals.Real.Exports.reals_Real__to__GRing_Field R))
+                |})
+             (QSVTPolynomial.defect R)),
+        rings_modules_and_algebras.GRing.mul
+          (poly.polyC
+             (rings_modules_and_algebras.GRing.mul
+                (nmodule.Algebra.opp
+                   {|
+                     complex.Re := nmodule.Algebra.zero;
+                     complex.Im :=
+                       rings_modules_and_algebras.GRing.one
+                         (rings_modules_and_algebras.GRing.NzRing.Exports.GRing_NzRing__to__GRing_PzSemiRing
+                            (divalg.GRing.Field.Exports.GRing_Field__to__GRing_NzRing
+                               (numfield.Num.RealClosedField.Exports.Num_RealClosedField__to__GRing_Field
+                                  (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                                     R))))
+                   |})
+                (complex.real_complex_def
+                   (F:=numdomain.Num.NumDomain.Exports.Num_NumDomain__to__GRing_NzRing
+                         (numfield.Num.RealClosedField.Exports.Num_RealClosedField__to__Num_NumDomain
+                            (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                               R)))
+                   (ssreflect.Phant
+                      (rings_modules_and_algebras.GRing.NzRing.sort
+                         (numdomain.Num.NumDomain.Exports.Num_NumDomain__to__GRing_NzRing
+                            (numfield.Num.RealClosedField.Exports.Num_RealClosedField__to__Num_NumDomain
+                               (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                                  R)))))
+                   (numfield.Num.Def.sqrtr
+                      (nmodule.Algebra.natmul
+                         (V:=rings_modules_and_algebras.GRing.PzSemiRing.Exports.GRing_PzSemiRing__to__Algebra_BaseAddUMagma
+                               (numfield.Num.RealClosedField.Exports.Num_RealClosedField__to__GRing_PzSemiRing
+                                  (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                                     R)))
+                         (rings_modules_and_algebras.GRing.one
+                            (numfield.Num.RealClosedField.Exports.Num_RealClosedField__to__GRing_PzSemiRing
+                               (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                                  R)))
+                         2)))))
+          (poly.polyX
+             (rings_modules_and_algebras.GRing.NzRing.Exports.join_GRing_NzRing_between_Algebra_BaseZmodule_and_GRing_NzSemiRing
+                (complex.ComplexField.complex_complex__canonical__GRing_NzRing
+                   (numfield.Num.RealClosedField.Exports.Num_RealClosedField__to__GRing_Field
+                      (reals.Real.Exports.reals_Real__to__Num_RealClosedField
+                         R))))))
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTEndpointConvention.qsvt_endpoint_corner_bridge
+     : forall (R : reals.Real.type) (a last : reals.Real.sort R)
+         (middle : list
+                     (nmodule.Algebra.BaseAddMagma.sort
+                        (reals.Real.Exports.reals_Real__to__Algebra_BaseAddMagma
+                           R))),
+       QSVTPolynomial.qsp_pair (R:=R) (nmodule.Algebra.add a last :: middle)
+         nmodule.Algebra.zero =
+       (fst (QSVTPolynomial.qsp_pair (R:=R) (a :: middle) last),
+        rings_modules_and_algebras.GRing.mul
+          (poly.polyC
+             (mcaextra.expi (R:=R)
+                (nmodule.Algebra.opp (nmodule.Algebra.add last last))))
+          (snd (QSVTPolynomial.qsp_pair (R:=R) (a :: middle) last)))
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+QSVTRejectedParity.mixed_parity_not_admissible
+     : forall (R : reals.Real.type) (d : nat),
+       ~
+       QSVTRealPair.admissible (R:=R) d
+         (QSVTRejectedParity.mixed_parity_example R)
+Axioms:
+boolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q
+boolp.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+boolp.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+$ opam exec --switch=coqq -- rocq check -silent -R /home/zhou/Desktop/CoqQ/_build/default/src quantum quantum.example.classical.qsvt_poly quantum.example.classical.qsvt_model quantum.example.classical.qsvt
+QSVT validation passed.
+
+Final preservation audit: all 100 pre-existing files match their initial SHA-256 hashes.
+All final proof-source hashes match the hashes recorded before the successful build.
+All 55 public declaration/assumption audits passed; the union is the eight inherited foundations documented in QSVT_PROOF_NOTES.md.
+Recursive rocq check completed with exit status 0.
+Branch: cqwhile+distributive. All QSVT additions remain local; no push performed.
